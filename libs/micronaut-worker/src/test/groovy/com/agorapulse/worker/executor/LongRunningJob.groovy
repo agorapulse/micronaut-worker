@@ -45,12 +45,11 @@ class LongRunningJob {
     final AtomicInteger unlimited = new AtomicInteger()
     final AtomicInteger concurrent = new AtomicInteger()
 
-
     @Job(initialDelay = JOBS_INITIAL_DELAY)
     Publisher<String> executeProducer() {
         runLongTask()
         producer.incrementAndGet()
-        Flowable.just("Hello")
+        return Flowable.just('Hello')
     }
 
     @LeaderOnly
@@ -87,15 +86,14 @@ class LongRunningJob {
         concurrent.incrementAndGet()
     }
 
+    @Override
+    String toString() {
+        return "LongRunningJob{producer=$producer, leader=$leader, follower=$follower, consecutive=$consecutive, unlimited=$unlimited, concurrent=$concurrent}"
+    }
 
     private static void runLongTask() {
         Thread.sleep(LONG_RUNNING_JOB_DURATION)
     }
 
-
-    @Override
-    String toString() {
-        return "LongRunningJob{producer=$producer, leader=$leader, follower=$follower, consecutive=$consecutive, unlimited=$unlimited, concurrent=$concurrent}"
-    }
 }
 

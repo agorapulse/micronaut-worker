@@ -30,13 +30,13 @@ class RedisJobSpec extends AbstractConcurrencySpec {
     @Shared
     GenericContainer redis = new GenericContainer('redis:3-alpine').withExposedPorts(6379)
 
-    Class<?> getRequiredExecutorType() { RedisJobExecutor }
+    @SuppressWarnings('GetterMethodCouldBeProperty')
+    Class<?> getRequiredExecutorType() { return RedisJobExecutor }
 
     protected ApplicationContext buildContext(String... envs) {
         ApplicationContext ctx = ApplicationContext
                 .builder(
-                        'redis.host': redis.containerIpAddress,
-                        'redis.port': redis.getMappedPort(6379),
+                        'redis.uri': "redis://$redis.containerIpAddress:${redis.getMappedPort(6379)}"
                 )
                 .environments(envs)
                 .build()

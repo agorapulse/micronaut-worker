@@ -33,7 +33,7 @@ public interface DistributedJobExecutor {
      * @param <R>           the type of the task's result
      * @return publisher which calls to the original supplier or empty publisher if the task should not be executed
      */
-    <R> Publisher<R>executeOnlyOnLeader(String jobName, Callable<R> task);
+    <R> Publisher<R> executeOnlyOnLeader(String jobName, Callable<R> task);
 
     /**
      * Executes the tasks only if it's not already running.
@@ -54,6 +54,6 @@ public interface DistributedJobExecutor {
      * @param <R>           the type of the task's result
      * @return publisher which calls the original supplier or empty publisher if the task should not be executed
      */
-    <R> Publisher<R>executeOnlyOnFollower(String jobName, Callable<R> task);
+    <R> Publisher<R> executeOnlyOnFollower(String jobName, Callable<R> task);
 
 }

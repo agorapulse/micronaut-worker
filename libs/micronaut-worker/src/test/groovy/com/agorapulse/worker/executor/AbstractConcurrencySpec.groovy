@@ -27,7 +27,6 @@ abstract class AbstractConcurrencySpec extends Specification {
     public static final long LONG_RUNNING_JOB_DURATION = 500
     public static final long SLEEP_BEFORE_CHECKING = 2000
 
-
     void 'jobs executed appropriate times on three servers'() {
         given:
             ApplicationContext one = buildContext(CONCURRENT_JOB_TEST_ENVIRONMENT).start()
@@ -53,7 +52,7 @@ abstract class AbstractConcurrencySpec extends Specification {
             jobs.count { it.concurrent.get() == 1 } == 2
 
             // leader job is executed only on leader
-            jobs.count {it.leader.get() == 1 } == 1
+            jobs.count { it.leader.get() == 1 } == 1
 
             // follower job is executed only on followers
             jobs.count { it.follower.get() == 1  } == 2
@@ -62,7 +61,7 @@ abstract class AbstractConcurrencySpec extends Specification {
             jobs.count { it.consecutive.get() == 1 } == 1
 
             // producer job is executed only on leader
-            jobs.count {it.producer.get() == 1 } == 1
+            jobs.count { it.producer.get() == 1 } == 1
         cleanup:
             closeQuietly one, two, three
     }
@@ -70,7 +69,10 @@ abstract class AbstractConcurrencySpec extends Specification {
     protected abstract ApplicationContext buildContext(String... envs)
     protected abstract Class<?> getRequiredExecutorType()
 
-    private static closeQuietly(Closeable... closeable) {
+    @SuppressWarnings([
+        'CatchException',
+    ])
+    private static void closeQuietly(Closeable... closeable) {
         for (Closeable c : closeable) {
             try {
                 c.close()

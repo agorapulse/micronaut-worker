@@ -20,10 +20,10 @@ package com.agorapulse.worker.local
 import com.agorapulse.worker.queue.AbstractQueuesSpec
 import io.micronaut.context.ApplicationContext
 
-
 class LocalQueuesSpec extends AbstractQueuesSpec {
 
-    Class<?> getExpectedImplementation() { LocalQueues }
+    @SuppressWarnings('GetterMethodCouldBeProperty')
+    Class<?> getExpectedImplementation() { return LocalQueues }
 
     @Override
     ApplicationContext buildContext(String[] envs) {

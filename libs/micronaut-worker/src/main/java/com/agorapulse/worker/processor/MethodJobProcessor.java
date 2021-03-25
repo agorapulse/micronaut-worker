@@ -52,7 +52,6 @@ import java.util.Optional;
  * jobs using configuration properties, reacting on incoming messages from a queue and publishing results of the
  * execution to a queue.
  *
- * @author graemerocher
  * @since 1.0
  */
 @Singleton

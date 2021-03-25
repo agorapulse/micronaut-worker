@@ -30,7 +30,8 @@ import spock.lang.Shared
 @Testcontainers
 class SqsQueuesSpec extends AbstractQueuesSpec {
 
-    Class<?> getExpectedImplementation() { SqsQueues }
+    @SuppressWarnings('GetterMethodCouldBeProperty')
+    Class<?> getExpectedImplementation() { return SqsQueues }
 
     @Shared LocalStackContainer localstack = new LocalStackContainer().withServices(LocalStackContainer.Service.SQS)
 
@@ -41,7 +42,6 @@ class SqsQueuesSpec extends AbstractQueuesSpec {
                 .withEndpointConfiguration(localstack.getEndpointConfiguration(LocalStackContainer.Service.SQS))
                 .withCredentials(localstack.defaultCredentialsProvider)
                 .build()
-
 
         return ApplicationContext.build(envs).properties('aws.sqs.auto-create-queue': 'true').build()
                 .registerSingleton(AmazonSQS, sqs)

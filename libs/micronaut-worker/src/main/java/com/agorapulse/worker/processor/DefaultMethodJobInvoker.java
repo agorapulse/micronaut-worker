@@ -96,7 +96,7 @@ public class DefaultMethodJobInvoker implements MethodJobInvoker {
                     queueConfiguration.getMaxMessages() < 1 ? 1 : queueConfiguration.getMaxMessages(),
                     Optional.ofNullable(queueConfiguration.getWaitingTime()).orElse(Duration.ZERO),
                     method.getArguments()[0],
-                    (message) -> handleResult(configuration, method, executor.apply(() -> method.invoke(bean, message)))
+                    message -> handleResult(configuration, method, executor.apply(() -> method.invoke(bean, message)))
             );
         } else {
             LOGGER.error("Too many arguments for " + method + "! The job method wasn't executed!");

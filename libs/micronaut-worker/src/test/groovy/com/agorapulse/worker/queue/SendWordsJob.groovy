@@ -18,12 +18,14 @@
 package com.agorapulse.worker.queue
 
 import com.agorapulse.worker.annotation.Job
+import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Requires
 import io.reactivex.Flowable
 
 import javax.inject.Singleton
 
 @Singleton
+@CompileStatic
 @Requires(env = AbstractQueuesSpec.QUEUE_SPEC_ENV_NAME)
 class SendWordsJob {
 

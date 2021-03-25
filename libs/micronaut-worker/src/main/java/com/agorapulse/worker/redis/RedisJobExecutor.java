@@ -19,12 +19,9 @@ package com.agorapulse.worker.redis;
 
 import com.agorapulse.worker.executor.DistributedJobExecutor;
 import io.lettuce.core.ScriptOutputType;
-import io.lettuce.core.SetArgs;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.async.RedisAsyncCommands;
-import io.micronaut.configuration.lettuce.DefaultRedisConfiguration;
 import io.micronaut.context.annotation.Requires;
-import io.micronaut.core.util.StringUtils;
 import io.reactivex.Maybe;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
@@ -35,7 +32,7 @@ import javax.inject.Singleton;
 import java.util.concurrent.Callable;
 
 @Singleton
-@Requires(beans = { StatefulRedisConnection.class }, property = "redis.uri")
+@Requires(beans = {StatefulRedisConnection.class}, property = "redis.uri")
 public class RedisJobExecutor implements DistributedJobExecutor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RedisJobExecutor.class);
@@ -48,14 +45,21 @@ public class RedisJobExecutor implements DistributedJobExecutor {
     private static final int LEADER_INACTIVITY_TIMEOUT = 500;
     private static final int LOCK_TIMEOUT = 60;
     private static final int COUNT_TIMEOUT = 600;
-    private static final String OK_RESPONSE = "OK";
 
-    private static final String LEADER_CHECK =
-            "redis.call('set', KEYS[1], KEYS[2], 'nx', 'ex', KEYS[3])\n"
-                    + "local result = redis.call('get', KEYS[1])\n"
-                    + "if result and result == KEYS[2]\n"
-                    + "then redis.call('expire', KEYS[1], KEYS[3]) end\n"
-                    + "return result";
+    private static final String LEADER_CHECK = String.join("\n",
+        "redis.call('set', KEYS[1], KEYS[2], 'nx', 'ex', KEYS[3])",
+        "local result = redis.call('get', KEYS[1])",
+        "if result and result == KEYS[2]",
+        "then redis.call('expire', KEYS[1], KEYS[3]) end",
+        "return result"
+    );
+
+    private static final String INCREASE_JOB_COUNT = String.join("\n",
+        "redis.call('set', KEYS[1], 0, 'nx', 'ex', KEYS[2])",
+        "return redis.call('incr', KEYS[1])"
+    );
+
+    private static final String DECREASE_JOB_COUNT = "return redis.call('decr', KEYS[1])";
 
     private final StatefulRedisConnection<String, String> connection;
     private final String hostname;
@@ -79,41 +83,18 @@ public class RedisJobExecutor implements DistributedJobExecutor {
 
     @Override
     public <R> Publisher<R> executeConcurrently(String jobName, int maxConcurrency, Callable<R> supplier) {
-        // TODO: rewrite with inc/decr
         RedisAsyncCommands<String, String> commands = connection.async();
-
-        String key = PREFIX_COUNT + jobName;
-        // concurrent jobs have more graceful timeout as the may run for a long time
-        SetArgs args = maxConcurrency <= 1 ? SetArgs.Builder.nx().ex(LOCK_TIMEOUT) : SetArgs.Builder.ex(COUNT_TIMEOUT);
-
-        return getInteger(commands, key)
-                .flatMap(count -> {
-                    if (count >= maxConcurrency) {
-                        if (LOGGER.isTraceEnabled()) {
-                            LOGGER.trace("Skipping execution of the job {} as the concurrency level {} is already reached", jobName, maxConcurrency);
-                        }
-                        return Maybe.empty();
+        return readAndIncreaseCurrentCount(jobName, commands, maxConcurrency <= 1 ? LOCK_TIMEOUT : COUNT_TIMEOUT)
+            .flatMap(count -> {
+                if (count > maxConcurrency) {
+                    if (LOGGER.isTraceEnabled()) {
+                        LOGGER.trace("Skipping execution of the job {} as the concurrency level {} is already reached", jobName, maxConcurrency);
                     }
+                    return decreaseCurrentExecutionCount(jobName, commands).flatMap(decreased -> Maybe.empty());
+                }
 
-                    return Maybe.fromFuture(commands.set(key, String.valueOf(count + 1), args))
-                            .flatMap(r -> {
-                                if (!OK_RESPONSE.equals(r)) {
-                                    LOGGER.warn("Failed to increase run count for {}", jobName);
-                                }
-                                return Maybe.fromCallable(supplier);
-                            })
-                            .doFinally(() ->
-                                    getInteger(commands, key)
-                                            .flatMap(newCount ->
-                                                    Maybe.fromFuture(commands.set(key, String.valueOf(newCount - 1), args))
-                                            )
-                                            .subscribe(r -> {
-                                                if (!OK_RESPONSE.equals(r)) {
-                                                    LOGGER.warn("Failed to decrease run count for {}", jobName);
-                                                }
-                                            })
-                            );
-                }).toFlowable();
+                return Maybe.fromCallable(supplier).doFinally(() -> decreaseCurrentExecutionCount(jobName, commands).subscribe());
+            }).toFlowable();
     }
 
     @Override
@@ -127,17 +108,28 @@ public class RedisJobExecutor implements DistributedJobExecutor {
         }).toFlowable();
     }
 
-    private Maybe<Integer> getInteger(RedisAsyncCommands<String, String> commands, String key) {
-        return Maybe.fromFuture(commands.get(key))
-                .defaultIfEmpty("")
-                .map(r -> StringUtils.isEmpty(r) ? 0 : Integer.parseInt(r, 10));
+
+    private static Maybe<Long> readAndIncreaseCurrentCount(String jobName, RedisAsyncCommands<String, String> commands, int timeout) {
+        return Maybe.fromFuture(commands.eval(
+            INCREASE_JOB_COUNT,
+            ScriptOutputType.INTEGER,
+            PREFIX_COUNT + jobName, String.valueOf(timeout)
+        )).map(Long.class::cast);
+    }
+
+    private static Maybe<Long> decreaseCurrentExecutionCount(String jobName, RedisAsyncCommands<String, String> commands) {
+        return Maybe.fromFuture(commands.eval(
+            DECREASE_JOB_COUNT,
+            ScriptOutputType.INTEGER,
+            PREFIX_COUNT + jobName
+        )).map(Long.class::cast);
     }
 
     private Maybe<Object> readMasterHostname(String jobName, RedisAsyncCommands<String, String> commands) {
         return Maybe.fromFuture(commands.eval(
-                LEADER_CHECK,
-                ScriptOutputType.VALUE,
-                PREFIX_LEADER + jobName, hostname, String.valueOf(LEADER_INACTIVITY_TIMEOUT)
+            LEADER_CHECK,
+            ScriptOutputType.VALUE,
+            PREFIX_LEADER + jobName, hostname, String.valueOf(LEADER_INACTIVITY_TIMEOUT)
         )).defaultIfEmpty("");
     }
 }

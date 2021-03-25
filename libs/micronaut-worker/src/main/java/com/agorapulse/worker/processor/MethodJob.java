@@ -17,7 +17,6 @@
  */
 package com.agorapulse.worker.processor;
 
-import com.agorapulse.worker.Job;
 import com.agorapulse.worker.JobConfiguration;
 import com.agorapulse.worker.job.AbstractJob;
 import com.agorapulse.worker.queue.JobQueues;
@@ -27,8 +26,6 @@ import io.micronaut.inject.BeanDefinition;
 import io.micronaut.inject.ExecutableMethod;
 import io.micronaut.inject.qualifiers.Qualifiers;
 import io.micronaut.scheduling.TaskExceptionHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.inject.Qualifier;
 import java.util.Collection;
@@ -39,7 +36,7 @@ class MethodJob<B, R> extends AbstractJob {
 
     private final ExecutableMethod<B, R> method;
 
-    private final BeanDefinition<?>beanDefinition;
+    private final BeanDefinition<?> beanDefinition;
 
     private final BeanContext beanContext;
     private final MethodJobInvoker jobMethodInvoker;

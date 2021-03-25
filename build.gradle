@@ -88,11 +88,13 @@ config {
 
     quality {
         checkstyle {
-            toolVersion = '8.27'
+            ignoreFailures  = false
+            toolVersion     = '8.27'
         }
 
         codenarc {
-            toolVersion = '1.5'
+            ignoreFailures  = false
+            toolVersion     = '1.5'
         }
     }
 
