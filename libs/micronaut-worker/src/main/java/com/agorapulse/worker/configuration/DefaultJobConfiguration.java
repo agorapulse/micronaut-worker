@@ -28,14 +28,16 @@ import javax.annotation.Nullable;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import java.time.Duration;
+import java.util.function.Consumer;
 
 @EachProperty("jobs")
 @Requires(property = "jobs.enabled", notEquals = "false")
-public class DefaultJobConfiguration implements JobConfiguration {
+public class DefaultJobConfiguration implements MutableJobConfiguration {
 
-    public static class DefaultQueueConfiguration implements QueueConfiguration {
+    public static class DefaultQueueConfiguration implements MutableQueueConfiguration {
 
         private String queueName;
+        private String queueQualifier;
         private int maxMessages = 1;
         private Duration waitingTime = Duration.ZERO;
 
@@ -45,8 +47,20 @@ public class DefaultJobConfiguration implements JobConfiguration {
             return queueName;
         }
 
+        @Override
         public void setQueueName(String queueName) {
             this.queueName = queueName;
+        }
+
+        @Nullable
+        @Override
+        public String getQueueQualifier() {
+            return queueQualifier;
+        }
+
+        @Override
+        public void setQueueQualifier(String queueQualifier) {
+            this.queueQualifier = queueQualifier;
         }
 
         @Min(1)
@@ -55,7 +69,8 @@ public class DefaultJobConfiguration implements JobConfiguration {
             return maxMessages;
         }
 
-        public void setMaxMessages(@Min(1)int maxMessages) {
+        @Override
+        public void setMaxMessages(@Min(1) int maxMessages) {
             this.maxMessages = maxMessages;
         }
 
@@ -65,6 +80,7 @@ public class DefaultJobConfiguration implements JobConfiguration {
             return waitingTime;
         }
 
+        @Override
         public void setWaitingTime(Duration waitingTime) {
             this.waitingTime = waitingTime;
         }
@@ -75,11 +91,15 @@ public class DefaultJobConfiguration implements JobConfiguration {
                 this.queueName = overrides.getQueueName();
             }
 
-            if (overrides.getMaxMessages() != this.maxMessages) {
+            if (overrides.getQueueQualifier() != null) {
+                this.queueQualifier = overrides.getQueueQualifier();
+            }
+
+            if (overrides.getMaxMessages() > 1 && overrides.getMaxMessages() != this.maxMessages) {
                 this.maxMessages = overrides.getMaxMessages();
             }
 
-            if (overrides.getWaitingTime() != null) {
+            if (overrides.getWaitingTime() != null && !overrides.getWaitingTime().isZero() && overrides.getWaitingTime() != this.waitingTime) {
                 this.waitingTime = overrides.getWaitingTime();
             }
         }
@@ -123,6 +143,7 @@ public class DefaultJobConfiguration implements JobConfiguration {
         return enabled;
     }
 
+    @Override
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
@@ -132,6 +153,7 @@ public class DefaultJobConfiguration implements JobConfiguration {
         return concurrency;
     }
 
+    @Override
     public void setConcurrency(int concurrency) {
         this.concurrency = concurrency;
     }
@@ -141,6 +163,7 @@ public class DefaultJobConfiguration implements JobConfiguration {
         return leaderOnly;
     }
 
+    @Override
     public void setLeaderOnly(boolean leaderOnly) {
         this.leaderOnly = leaderOnly;
     }
@@ -150,6 +173,7 @@ public class DefaultJobConfiguration implements JobConfiguration {
         return followerOnly;
     }
 
+    @Override
     public void setFollowerOnly(boolean followerOnly) {
         this.followerOnly = followerOnly;
     }
@@ -160,6 +184,7 @@ public class DefaultJobConfiguration implements JobConfiguration {
         return cron;
     }
 
+    @Override
     public void setCron(@Nullable String cron) {
         this.cron = cron;
     }
@@ -170,6 +195,7 @@ public class DefaultJobConfiguration implements JobConfiguration {
         return fixedDelay;
     }
 
+    @Override
     public void setFixedDelay(@Nullable Duration fixedDelay) {
         this.fixedDelay = fixedDelay;
     }
@@ -180,6 +206,7 @@ public class DefaultJobConfiguration implements JobConfiguration {
         return initialDelay;
     }
 
+    @Override
     public void setInitialDelay(@Nullable Duration initialDelay) {
         this.initialDelay = initialDelay;
     }
@@ -190,6 +217,7 @@ public class DefaultJobConfiguration implements JobConfiguration {
         return fixedRate;
     }
 
+    @Override
     public void setFixedRate(@Nullable Duration fixedRate) {
         this.fixedRate = fixedRate;
     }
@@ -200,6 +228,7 @@ public class DefaultJobConfiguration implements JobConfiguration {
         return scheduler;
     }
 
+    @Override
     public void setScheduler(@NotBlank String scheduler) {
         this.scheduler = scheduler;
     }
@@ -214,12 +243,22 @@ public class DefaultJobConfiguration implements JobConfiguration {
     }
 
     @Override
+    public void withConsumer(Consumer<MutableQueueConfiguration> consumer) {
+        consumer.accept(this.consumer);
+    }
+
+    @Override
     public ProducerQueueConfiguration getProducer() {
         return producer;
     }
 
     public void setProducer(ProducerQueueConfiguration producer) {
         this.producer = producer;
+    }
+
+    @Override
+    public void withProducer(Consumer<MutableQueueConfiguration> consumer) {
+        consumer.accept(this.producer);
     }
 
     @Override
@@ -234,34 +273,40 @@ public class DefaultJobConfiguration implements JobConfiguration {
 
         if (overrides.isLeaderOnly()) {
             this.leaderOnly = overrides.isLeaderOnly();
+            this.followerOnly = false;
         }
 
         if (overrides.isFollowerOnly()) {
             this.followerOnly = overrides.isFollowerOnly();
+            this.leaderOnly = false;
         }
 
         if (overrides.getCron() != null) {
             this.cron = overrides.getCron();
+            this.initialDelay = null;
+            this.fixedDelay = null;
+            this.fixedRate = null;
         }
 
         if (overrides.getFixedDelay() != null) {
+            this.cron = null;
+            this.fixedRate = null;
             this.fixedDelay = overrides.getFixedDelay();
-
-        }
-
-        if (overrides.getInitialDelay() != null) {
-            this.initialDelay = overrides.getInitialDelay();
-
         }
 
         if (overrides.getFixedRate() != null) {
+            this.cron = null;
+            this.fixedDelay = null;
             this.fixedRate = overrides.getFixedRate();
+        }
 
+        if (overrides.getInitialDelay() != null) {
+            this.cron = null;
+            this.initialDelay = overrides.getInitialDelay();
         }
 
         if (overrides.getScheduler() != null && !overrides.getScheduler().equals(TaskExecutors.SCHEDULED)) {
             this.scheduler = overrides.getScheduler();
-
         }
 
         consumer.mergeWith(overrides.getConsumer());

@@ -17,16 +17,16 @@
  */
 package com.agorapulse.worker;
 
-import com.agorapulse.worker.queue.JobQueues;
-import io.micronaut.context.Qualifier;
-
-import java.time.Duration;
-import java.time.Instant;
+import com.agorapulse.worker.job.SimpleJob;
 
 /**
  * Job is a {@link Runnable} with a name.
  */
 public interface Job extends Runnable {
+
+    static Job create(JobConfiguration configuration, Runnable task) {
+        return new SimpleJob(configuration, task);
+    }
 
     /**
      * @return the name of the job
@@ -40,17 +40,8 @@ public interface Job extends Runnable {
      */
     String getSource();
 
-    /**
-     * @return the qualifier to be used find the appropriate {@link com.agorapulse.worker.queue.JobQueues} bean.
-     */
-    Qualifier<JobQueues> getJobQueueQualifier();
-
     JobConfiguration getConfiguration();
 
-    // TODO: move following properties into status object
-    Instant getLastTriggered();
-    Instant getLastFinished();
-    Duration getLastDuration();
-    Throwable getLastException();
-    int getCurrentExecutionCount();
+    JobStatus getStatus();
+
 }

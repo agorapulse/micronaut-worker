@@ -34,4 +34,9 @@ public @interface Consumes {
      */
     String value();
 
+    /**
+     * @return the preferred type of the queue implementation, such as sqs or redis
+     */
+    String type() default "";
+
 }

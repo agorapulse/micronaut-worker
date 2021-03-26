@@ -52,9 +52,9 @@ public class DefaultMethodJobInvoker implements MethodJobInvoker {
     private final DistributedJobExecutor distributedJobExecutor;
 
     public DefaultMethodJobInvoker(
-            BeanContext context,
-            ApplicationEventPublisher applicationEventPublisher,
-            DistributedJobExecutor distributedJobExecutor
+        BeanContext context,
+        ApplicationEventPublisher applicationEventPublisher,
+        DistributedJobExecutor distributedJobExecutor
     ) {
         this.context = context;
         this.applicationEventPublisher = applicationEventPublisher;
@@ -84,26 +84,26 @@ public class DefaultMethodJobInvoker implements MethodJobInvoker {
         Function<Callable<Object>, Publisher<Object>> executor = executor(configuration.getName(), leaderOnly, followerOnly, concurrency);
 
         applicationEventPublisher.publishEvent(new JobExecutionStartedEvent(
-                configuration.getName()
+            configuration.getName()
         ));
 
         if (method.getArguments().length == 0) {
             handleResult(configuration, method, executor.apply(() -> method.invoke(bean)));
         } else if (method.getArguments().length == 1) {
             JobConfiguration.QueueConfiguration queueConfiguration = configuration.getConsumer();
-            queues(method).readMessages(
-                    queueConfiguration.getQueueName(),
-                    queueConfiguration.getMaxMessages() < 1 ? 1 : queueConfiguration.getMaxMessages(),
-                    Optional.ofNullable(queueConfiguration.getWaitingTime()).orElse(Duration.ZERO),
-                    method.getArguments()[0],
-                    message -> handleResult(configuration, method, executor.apply(() -> method.invoke(bean, message)))
+            queues(queueConfiguration.getQueueQualifier()).readMessages(
+                queueConfiguration.getQueueName(),
+                queueConfiguration.getMaxMessages() < 1 ? 1 : queueConfiguration.getMaxMessages(),
+                Optional.ofNullable(queueConfiguration.getWaitingTime()).orElse(Duration.ZERO),
+                method.getArguments()[0],
+                message -> handleResult(configuration, method, executor.apply(() -> method.invoke(bean, message)))
             );
         } else {
             LOGGER.error("Too many arguments for " + method + "! The job method wasn't executed!");
         }
 
         applicationEventPublisher.publishEvent(new JobExecutionFinishedEvent(
-                configuration.getName()
+            configuration.getName()
         ));
     }
 
@@ -124,8 +124,8 @@ public class DefaultMethodJobInvoker implements MethodJobInvoker {
         Object result = Flowable.fromPublisher(resultPublisher).blockingFirst(null);
 
         applicationEventPublisher.publishEvent(new JobExecutionResultEvent(
-                configuration.getName(),
-                result
+            configuration.getName(),
+            result
         ));
 
         if (result == null) {
@@ -134,7 +134,7 @@ public class DefaultMethodJobInvoker implements MethodJobInvoker {
 
         String queueName = configuration.getProducer().getQueueName();
 
-        JobQueues sender = queues(method);
+        JobQueues sender = queues(configuration.getProducer().getQueueQualifier());
 
         if (result instanceof Publisher) {
             Flowable<?> publisher = Flowable.fromPublisher((Publisher<?>) result);
@@ -156,13 +156,12 @@ public class DefaultMethodJobInvoker implements MethodJobInvoker {
         sender.sendMessage(queueName, result);
     }
 
-    private JobQueues queues(ExecutableMethod<?, ?> method) {
-        return context.getBean(JobQueues.class, (Qualifier<JobQueues>) getQualifier(method));
+    private JobQueues queues(String qualifier) {
+        return context.findBean(
+            JobQueues.class,
+            qualifier == null ? null : Qualifiers.byName(qualifier)
+        )
+            .orElseGet(() -> context.getBean(JobQueues.class));
     }
 
-    private Qualifier<?> getQualifier(ExecutableMethod<?, ?> method) {
-        return method.getAnnotationTypeByStereotype(javax.inject.Qualifier.class)
-                .map(type -> Qualifiers.byAnnotation(method, type))
-                .orElse(null);
-    }
 }

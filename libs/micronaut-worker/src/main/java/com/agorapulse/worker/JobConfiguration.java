@@ -17,16 +17,28 @@
  */
 package com.agorapulse.worker;
 
+import com.agorapulse.worker.configuration.DefaultJobConfiguration;
+import com.agorapulse.worker.configuration.MutableJobConfiguration;
+
 import javax.annotation.Nullable;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.Duration;
+import java.util.function.Consumer;
 
 /**
  * Job configuration.
  */
 public interface JobConfiguration {
+
+    static JobConfiguration create(String name, Consumer<MutableJobConfiguration> configuration) {
+        // using merge prevents misconfiguration
+        DefaultJobConfiguration first = new DefaultJobConfiguration(name);
+        DefaultJobConfiguration second = new DefaultJobConfiguration(name);
+        configuration.accept(second);
+        return first.mergeWith(second);
+    }
 
     interface QueueConfiguration {
 
@@ -39,6 +51,16 @@ public interface JobConfiguration {
          */
         @Nullable
         String getQueueName();
+
+        /**
+         * Returns the name of the preferred queue implementation or <code>null</code> if the default should be used.
+         *
+         * If there is no queue implementation of given name present the default one will be used.
+         *
+         * @return the name of the preferred queue implementation
+         */
+        @Nullable
+        String getQueueQualifier();
 
         /**
          * @return the number of messages which are fetched from the queue in a single poll, defaults to one

@@ -19,7 +19,6 @@ package com.agorapulse.worker.processor;
 
 import com.agorapulse.worker.JobConfiguration;
 import com.agorapulse.worker.job.AbstractJob;
-import com.agorapulse.worker.queue.JobQueues;
 import io.micronaut.context.BeanContext;
 import io.micronaut.core.type.Argument;
 import io.micronaut.inject.BeanDefinition;
@@ -31,6 +30,7 @@ import javax.inject.Qualifier;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 class MethodJob<B, R> extends AbstractJob {
 
@@ -63,20 +63,13 @@ class MethodJob<B, R> extends AbstractJob {
         return String.format("method %s#%s", method.getDeclaringType().getName(), method.getMethodName());
     }
 
-    @Override
-    public io.micronaut.context.Qualifier<JobQueues> getJobQueueQualifier() {
-        return method.getAnnotationTypeByStereotype(javax.inject.Qualifier.class)
-                .map(type -> Qualifiers.<JobQueues>byAnnotation(method, type))
-                .orElse(null);
-    }
-
     public ExecutableMethod<B, R> getMethod() {
         return method;
     }
 
     @Override
     @SuppressWarnings({"rawtypes", "unchecked"})
-    protected void doRun() {
+    protected void doRun(Consumer<Throwable> onError) {
         io.micronaut.context.Qualifier<Object> qualifer = beanDefinition
                 .getAnnotationTypeByStereotype(Qualifier.class)
                 .map(type -> Qualifiers.byAnnotation(beanDefinition, type))
@@ -88,7 +81,7 @@ class MethodJob<B, R> extends AbstractJob {
             bean = (B) beanContext.getBean(beanType, qualifer);
             jobMethodInvoker.invoke(this, bean);
         } catch (Throwable e) {
-            setLastException(e);
+            onError.accept(e);
             io.micronaut.context.Qualifier<TaskExceptionHandler> qualifier = Qualifiers.byTypeArguments(beanType, e.getClass());
             Collection<BeanDefinition<TaskExceptionHandler>> definitions = beanContext.getBeanDefinitions(TaskExceptionHandler.class, qualifier);
             Optional<BeanDefinition<TaskExceptionHandler>> mostSpecific = definitions.stream().filter(def -> {

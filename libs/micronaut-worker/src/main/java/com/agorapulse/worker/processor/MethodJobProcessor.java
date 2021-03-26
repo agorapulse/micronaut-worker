@@ -29,6 +29,7 @@ import io.micronaut.context.processor.ExecutableMethodProcessor;
 import io.micronaut.core.annotation.AnnotationValue;
 import io.micronaut.core.convert.ConversionService;
 import io.micronaut.core.naming.NameUtils;
+import io.micronaut.core.util.StringUtils;
 import io.micronaut.inject.BeanDefinition;
 import io.micronaut.inject.ExecutableMethod;
 import io.micronaut.inject.qualifiers.Qualifiers;
@@ -161,8 +162,30 @@ public class MethodJobProcessor implements ExecutableMethodProcessor<Job> {
         configuration.setFollowerOnly(method.findAnnotation(FollowerOnly.class).isPresent());
 
         method.findAnnotation(Concurrency.class).flatMap(a -> a.getValue(Integer.class)).ifPresent(configuration::setConcurrency);
-        method.findAnnotation(Consumes.class).flatMap(AnnotationValue::stringValue).ifPresent(configuration.getConsumer()::setQueueName);
-        method.findAnnotation(Produces.class).flatMap(AnnotationValue::stringValue).ifPresent(configuration.getProducer()::setQueueName);
+
+        Optional<AnnotationValue<Consumes>> consumesAnnotation = method.findAnnotation(Consumes.class);
+        if (consumesAnnotation.isPresent()) {
+            AnnotationValue<Consumes> annotationValue = consumesAnnotation.get();
+            configuration.getConsumer().setQueueName(annotationValue.getRequiredValue(String.class));
+
+            annotationValue.stringValue("type").ifPresent(type -> {
+                if (StringUtils.isNotEmpty(type)) {
+                    configuration.getConsumer().setQueueQualifier(type);
+                }
+            });
+        }
+
+        Optional<AnnotationValue<Produces>> producesAnnotation = method.findAnnotation(Produces.class);
+        if (producesAnnotation.isPresent()) {
+            AnnotationValue<Produces> annotationValue = producesAnnotation.get();
+            configuration.getProducer().setQueueName(annotationValue.getRequiredValue(String.class));
+
+            annotationValue.stringValue("type").ifPresent(type -> {
+                if (StringUtils.isNotEmpty(type)) {
+                    configuration.getProducer().setQueueQualifier(type);
+                }
+            });
+        }
 
         configuration.mergeWith(configurationOverrides);
 
