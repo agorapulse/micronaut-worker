@@ -45,10 +45,8 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- *
- *
  * A {@link ExecutableMethodProcessor} for the {@link Job} annotation.
- *
+ * <p>
  * Based on {@link io.micronaut.scheduling.processor.ScheduledMethodProcessor} with additional option to configure
  * jobs using configuration properties, reacting on incoming messages from a queue and publishing results of the
  * execution to a queue.
@@ -77,22 +75,22 @@ public class MethodJobProcessor implements ExecutableMethodProcessor<Job> {
     private final ConversionService<?> conversionService;
 
     /**
-     * @param beanContext               The bean context for DI of beans annotated with {@link javax.inject.Inject}
-     * @param taskExceptionHandler      The default task exception handler
-     * @param jobMethodInvoker          The job invoker
-     * @param jobManager                The job manager
-     * @param applicationConfiguration  The application configuration
-     * @param jobScheduler              The job scheduler
+     * @param beanContext              The bean context for DI of beans annotated with {@link javax.inject.Inject}
+     * @param taskExceptionHandler     The default task exception handler
+     * @param jobMethodInvoker         The job invoker
+     * @param jobManager               The job manager
+     * @param applicationConfiguration The application configuration
+     * @param jobScheduler             The job scheduler
      */
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     public MethodJobProcessor(
-            BeanContext beanContext,
-            TaskExceptionHandler<?, ?> taskExceptionHandler,
-            MethodJobInvoker jobMethodInvoker,
-            JobManager jobManager,
-            ApplicationConfiguration applicationConfiguration,
-            JobScheduler jobScheduler,
-            Optional<ConversionService<?>> optionalConversionService
+        BeanContext beanContext,
+        TaskExceptionHandler<?, ?> taskExceptionHandler,
+        MethodJobInvoker jobMethodInvoker,
+        JobManager jobManager,
+        ApplicationConfiguration applicationConfiguration,
+        JobScheduler jobScheduler,
+        Optional<ConversionService<?>> optionalConversionService
     ) {
         this.beanContext = beanContext;
         this.taskExceptionHandler = taskExceptionHandler;
@@ -109,32 +107,28 @@ public class MethodJobProcessor implements ExecutableMethodProcessor<Job> {
             return;
         }
 
-        List<AnnotationValue<Job>> jobAnnotations = method.getAnnotationValuesByType(Job.class);
-        for (AnnotationValue<Job> jobAnnotation : jobAnnotations) {
+        JobConfiguration configuration = getJobConfiguration(beanDefinition, method);
 
-            JobConfiguration configuration = getJobConfiguration(beanDefinition, method, jobAnnotation);
-
-            if (!configuration.isEnabled()) {
-                LOG.info("Job {} is disabled in the configuration. Remove jobs.{}.enabled = false configuration to re-enable it.", configuration.getName(), configuration.getName());
-                continue;
-            }
-
-            com.agorapulse.worker.Job task = new MethodJob<>(
-                    configuration,
-                    method,
-                    beanDefinition,
-                    beanContext,
-                    jobMethodInvoker,
-                    taskExceptionHandler
-            );
-
-            jobManager.register(task);
-            jobScheduler.schedule(task);
+        if (!configuration.isEnabled()) {
+            LOG.info("Job {} is disabled in the configuration. Remove jobs.{}.enabled = false configuration to re-enable it.", configuration.getName(), configuration.getName());
+            return;
         }
+
+        com.agorapulse.worker.Job task = new MethodJob<>(
+            configuration,
+            method,
+            beanDefinition,
+            beanContext,
+            jobMethodInvoker,
+            taskExceptionHandler
+        );
+
+        jobManager.register(task);
+        jobScheduler.schedule(task);
     }
 
-    private String getJobName(BeanDefinition<?> beanDefinition, ExecutableMethod<?, ?> method, AnnotationValue<Job> jobAnnotation) {
-        return NameUtils.hyphenate(jobAnnotation.stringValue().orElseGet(() -> {
+    private String getJobName(BeanDefinition<?> beanDefinition, ExecutableMethod<?, ?> method) {
+        return NameUtils.hyphenate(method.stringValue(Job.class).orElseGet(() -> {
             // there are more then one job definition
             if (beanDefinition.getExecutableMethods().size() > 1) {
                 return method.getDeclaringType().getSimpleName() + "-" + method.getMethodName();
@@ -143,19 +137,19 @@ public class MethodJobProcessor implements ExecutableMethodProcessor<Job> {
         }));
     }
 
-    private JobConfiguration getJobConfiguration(BeanDefinition<?> beanDefinition, ExecutableMethod<?, ?> method, AnnotationValue<Job> jobAnnotation) {
-        String jobName = getJobName(beanDefinition, method, jobAnnotation);
+    private JobConfiguration getJobConfiguration(BeanDefinition<?> beanDefinition, ExecutableMethod<?, ?> method) {
+        String jobName = getJobName(beanDefinition, method);
 
         JobConfiguration configurationOverrides = beanContext.findBean(DefaultJobConfiguration.class, Qualifiers.byName(jobName))
-                .orElseGet(() -> new DefaultJobConfiguration(jobName));
+            .orElseGet(() -> new DefaultJobConfiguration(jobName));
 
         DefaultJobConfiguration configuration = new DefaultJobConfiguration(jobName);
 
-        jobAnnotation.get(MEMBER_CRON, String.class).ifPresent(configuration::setCron);
-        jobAnnotation.get(MEMBER_FIXED_DELAY, String.class).ifPresent(fixedDelay -> configuration.setFixedDelay(convertDuration(jobName, fixedDelay, "fixed delay")));
-        jobAnnotation.get(MEMBER_FIXED_RATE, String.class).ifPresent(fixedRate -> configuration.setFixedRate(convertDuration(jobName, fixedRate, "fixed rate")));
-        jobAnnotation.get(MEMBER_INITIAL_DELAY, String.class).ifPresent(initialDelay -> configuration.setInitialDelay(convertDuration(jobName, initialDelay, "initial delay")));
-        jobAnnotation.get(MEMBER_SCHEDULER, String.class).ifPresent(configuration::setScheduler);
+        method.stringValue(Job.class, MEMBER_CRON).ifPresent(configuration::setCron);
+        method.stringValue(Job.class, MEMBER_FIXED_DELAY).ifPresent(fixedDelay -> configuration.setFixedDelay(convertDuration(jobName, fixedDelay, "fixed delay")));
+        method.stringValue(Job.class, MEMBER_FIXED_RATE).ifPresent(fixedRate -> configuration.setFixedRate(convertDuration(jobName, fixedRate, "fixed rate")));
+        method.stringValue(Job.class, MEMBER_INITIAL_DELAY).ifPresent(initialDelay -> configuration.setInitialDelay(convertDuration(jobName, initialDelay, "initial delay")));
+        method.stringValue(Job.class, MEMBER_SCHEDULER).ifPresent(configuration::setScheduler);
 
 
         configuration.setLeaderOnly(method.findAnnotation(LeaderOnly.class).isPresent());
@@ -202,11 +196,11 @@ public class MethodJobProcessor implements ExecutableMethodProcessor<Job> {
 
     private String extractQueueNameFromMethod(ExecutableMethod<?, ?> method) {
         String name = SUFFIXES_TO_REMOVE
-                .stream()
-                .reduce(
-                        method.getDeclaringType().getSimpleName(),
-                        (acc, suffix) -> acc.endsWith(suffix) ? acc.substring(0, acc.length() - suffix.length()) : acc
-                );
+            .stream()
+            .reduce(
+                method.getDeclaringType().getSimpleName(),
+                (acc, suffix) -> acc.endsWith(suffix) ? acc.substring(0, acc.length() - suffix.length()) : acc
+            );
 
         String queueName = applicationConfiguration.getName().map(n -> n + "_" + name).orElse(name);
         if (LOG.isTraceEnabled()) {

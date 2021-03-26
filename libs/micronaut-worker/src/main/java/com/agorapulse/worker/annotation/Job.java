@@ -36,7 +36,6 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Retention(RUNTIME)
 @Target({ElementType.METHOD, ElementType.ANNOTATION_TYPE})
 @Executable(processOnStartup = true)
-@Repeatable(Jobs.class)
 @Parallel
 public @interface Job {
 
@@ -45,7 +44,7 @@ public @interface Job {
      * method (e.g. job definition) in the class or <code>JobClassName-methodName</code> if there is more then one executable method in the class.
      *
      * Either the job name specified here or the default name is converted using {@link io.micronaut.core.naming.NameUtils#hyphenate(String)}.
-     * 
+     *
      * @return the name of the job used for configuration
      */
     String value() default "";
