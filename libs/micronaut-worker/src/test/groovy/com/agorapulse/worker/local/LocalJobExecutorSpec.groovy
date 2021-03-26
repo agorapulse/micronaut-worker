@@ -15,17 +15,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.agorapulse.worker;
+package com.agorapulse.worker.local
 
-import java.time.Duration;
-import java.time.Instant;
+import com.agorapulse.worker.executor.AbstractJobExecutorSpec
+import io.micronaut.context.ApplicationContext
 
-public interface JobStatus {
+class LocalJobExecutorSpec extends AbstractJobExecutorSpec {
 
-    Instant getLastTriggered();
-    Instant getLastFinished();
-    Duration getLastDuration();
-    Throwable getLastException();
-    int getCurrentExecutionCount();
+    ApplicationContext context
+
+    @SuppressWarnings('GetterMethodCouldBeProperty')
+    Class<?> getRequiredExecutorType() { return LocalJobExecutor }
+
+    protected ApplicationContext buildContext() {
+
+        if (context != null) {
+            return context
+        }
+        ApplicationContext ctx = ApplicationContext
+            .builder(CONCURRENT_JOB_TEST_ENVIRONMENT)
+            .build()
+
+        return ctx.start()
+    }
 
 }

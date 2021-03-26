@@ -126,8 +126,8 @@ public class DefaultJobConfiguration implements MutableJobConfiguration {
     @Nullable private Duration fixedRate;
     @NotBlank private String scheduler = TaskExecutors.SCHEDULED;
 
-    private ConsumerQueueConfiguration consumer = new ConsumerQueueConfiguration();
-    private ProducerQueueConfiguration producer = new ProducerQueueConfiguration();
+    private final ConsumerQueueConfiguration consumer = new ConsumerQueueConfiguration();
+    private final ProducerQueueConfiguration producer = new ProducerQueueConfiguration();
 
     public DefaultJobConfiguration(@Parameter String name) {
         this.name = name;
@@ -238,10 +238,6 @@ public class DefaultJobConfiguration implements MutableJobConfiguration {
         return consumer;
     }
 
-    public void setConsumer(ConsumerQueueConfiguration consumer) {
-        this.consumer = consumer;
-    }
-
     @Override
     public void withConsumer(Consumer<MutableQueueConfiguration> consumer) {
         consumer.accept(this.consumer);
@@ -252,13 +248,9 @@ public class DefaultJobConfiguration implements MutableJobConfiguration {
         return producer;
     }
 
-    public void setProducer(ProducerQueueConfiguration producer) {
-        this.producer = producer;
-    }
-
     @Override
-    public void withProducer(Consumer<MutableQueueConfiguration> consumer) {
-        consumer.accept(this.producer);
+    public void withProducer(Consumer<MutableQueueConfiguration> producer) {
+        producer.accept(this.producer);
     }
 
     @Override

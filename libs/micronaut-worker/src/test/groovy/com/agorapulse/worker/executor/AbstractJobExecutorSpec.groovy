@@ -20,18 +20,19 @@ package com.agorapulse.worker.executor
 import io.micronaut.context.ApplicationContext
 import spock.lang.Specification
 
-abstract class AbstractConcurrencySpec extends Specification {
+abstract class AbstractJobExecutorSpec extends Specification {
 
     public static final String CONCURRENT_JOB_TEST_ENVIRONMENT = 'concurrent-job-test'
+
     public static final String JOBS_INITIAL_DELAY = '100ms'
     public static final long LONG_RUNNING_JOB_DURATION = 500
     public static final long SLEEP_BEFORE_CHECKING = 2000
 
     void 'jobs executed appropriate times on three servers'() {
         given:
-            ApplicationContext one = buildContext(CONCURRENT_JOB_TEST_ENVIRONMENT).start()
-            ApplicationContext two = buildContext(CONCURRENT_JOB_TEST_ENVIRONMENT).start()
-            ApplicationContext three = buildContext(CONCURRENT_JOB_TEST_ENVIRONMENT).start()
+            ApplicationContext one = buildContext()
+            ApplicationContext two = buildContext()
+            ApplicationContext three = buildContext()
 
         expect:
             requiredExecutorType.isInstance(one.getBean(DistributedJobExecutor))
@@ -66,16 +67,18 @@ abstract class AbstractConcurrencySpec extends Specification {
             closeQuietly one, two, three
     }
 
-    protected abstract ApplicationContext buildContext(String... envs)
+    protected abstract ApplicationContext buildContext()
     protected abstract Class<?> getRequiredExecutorType()
 
     @SuppressWarnings([
         'CatchException',
     ])
-    private static void closeQuietly(Closeable... closeable) {
-        for (Closeable c : closeable) {
+    private static void closeQuietly(ApplicationContext... contexts) {
+        for (ApplicationContext c : contexts) {
             try {
-                c.close()
+                if (c.running) {
+                    c.close()
+                }
             } catch (Exception ignored) {
                 // ignore
             }

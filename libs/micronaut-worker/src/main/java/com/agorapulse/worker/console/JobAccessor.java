@@ -21,10 +21,8 @@ import com.agorapulse.worker.JobManager;
 import com.agorapulse.worker.report.JobReport;
 
 import java.util.Collections;
-import java.util.concurrent.Callable;
-import java.util.function.Consumer;
 
-public class JobAccessor implements Callable<Void>, Consumer<Object> {
+public class JobAccessor {
 
     private final String jobName;
     private final JobManager jobManager;
@@ -34,21 +32,17 @@ public class JobAccessor implements Callable<Void>, Consumer<Object> {
         this.jobManager = jobManager;
     }
 
-    // groovy DSL sugar
-    @Override
-    public Void call() {
+    public void run() {
         jobManager.run(jobName);
-        return null;
     }
 
-    @Override
-    public void accept(Object o) {
+    public void enqueue(Object o) {
         jobManager.enqueue(jobName, o);
     }
 
     // groovy DSL sugar
     public void call(Object object) {
-        accept(object);
+        enqueue(object);
     }
 
     public String toString() {

@@ -1,3 +1,20 @@
+/*
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Copyright 2021 Agorapulse.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.agorapulse.worker
 
 import com.agorapulse.worker.configuration.DefaultJobConfiguration
@@ -38,7 +55,7 @@ class JobConfigurationSpec extends Specification {
         when:
             JobConfiguration first = createJobConfiguration()
             JobConfiguration second = createJobConfiguration {
-                enabled = false
+                enabled false
             }
             first.mergeWith(second)
         then:
@@ -49,8 +66,8 @@ class JobConfigurationSpec extends Specification {
         when:
             JobConfiguration first = createJobConfiguration()
             JobConfiguration second = createJobConfiguration {
-                fixedRate = Duration.ofMinutes(10)
-                initialDelay = Duration.ofMinutes(1)
+                fixedRate Duration.ofMinutes(10)
+                initialDelay Duration.ofMinutes(1)
             }
             first.mergeWith(second)
         then:
@@ -63,8 +80,8 @@ class JobConfigurationSpec extends Specification {
         when:
             JobConfiguration first = createJobConfiguration()
             JobConfiguration second = createJobConfiguration {
-                fixedDelay = Duration.ofMinutes(10)
-                initialDelay = Duration.ofMinutes(1)
+                fixedDelay Duration.ofMinutes(10)
+                initialDelay Duration.ofMinutes(1)
             }
             first.mergeWith(second)
         then:
@@ -77,7 +94,7 @@ class JobConfigurationSpec extends Specification {
         when:
             JobConfiguration first = createJobConfiguration()
             JobConfiguration second = createJobConfiguration {
-                followerOnly = true
+                followerOnly true
             }
             first.mergeWith(second)
         then:
@@ -88,10 +105,10 @@ class JobConfigurationSpec extends Specification {
     void 'switch to leader only'() {
         when:
             JobConfiguration first = createJobConfiguration() {
-                followerOnly = true
+                followerOnly true
             }
             JobConfiguration second = createJobConfiguration {
-                leaderOnly = true
+                leaderOnly true
             }
             first.mergeWith(second)
         then:
@@ -100,7 +117,7 @@ class JobConfigurationSpec extends Specification {
     }
 
     private static JobConfiguration createJobConfiguration(
-        @DelegatesTo(value = DefaultJobConfiguration, strategy = Closure.DELEGATE_FIRST) Closure<Object> adjust = {
+        @DelegatesTo(value = DefaultJobConfiguration, strategy = Closure.DELEGATE_FIRST) Closure<?> adjust = {
             consumer.maxMessages = 5
             consumer.queueName = 'test_FirstQueue'
             producer.waitingTime = Duration.ofSeconds(40)

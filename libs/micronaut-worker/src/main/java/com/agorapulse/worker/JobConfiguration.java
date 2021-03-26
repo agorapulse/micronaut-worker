@@ -158,4 +158,13 @@ public interface JobConfiguration {
      */
     JobConfiguration mergeWith(JobConfiguration overrides);
 
+    /**
+     * Creates new {@link Job} with current configuration and
+     * @param task the task definition
+     * @return new job with a copy of this configuration
+     */
+    default Job run(Runnable task) {
+        return Job.create(new DefaultJobConfiguration(getName()).mergeWith(this), task);
+    }
+
 }

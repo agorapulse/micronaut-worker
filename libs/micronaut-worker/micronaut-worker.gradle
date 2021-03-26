@@ -16,6 +16,8 @@
  * limitations under the License.
  */
 dependencies {
+    api "space.jasan:groovy-closure-support:$closureSupportVersion"
+
     annotationProcessor "io.micronaut:micronaut-inject-java"
     annotationProcessor "io.micronaut:micronaut-validation"
 
@@ -49,5 +51,9 @@ dependencies {
     testImplementation(group: 'org.testcontainers', name: 'spock', version: project.testcontainersVersion) {
         exclude group: "org.codehaus.groovy", module: "groovy-all"
     }
-    // add project's dependencies
+
+    testImplementation "io.micronaut:micronaut-http-server-netty"
+    testImplementation "com.agorapulse:micronaut-console:$micronautConsoleVersion"
+    testImplementation "com.agorapulse:gru-micronaut:$gruVersion"
+
 }

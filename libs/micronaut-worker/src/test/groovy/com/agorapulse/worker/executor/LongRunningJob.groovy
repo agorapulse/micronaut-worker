@@ -30,12 +30,12 @@ import org.reactivestreams.Publisher
 import javax.inject.Singleton
 import java.util.concurrent.atomic.AtomicInteger
 
-import static AbstractConcurrencySpec.JOBS_INITIAL_DELAY
-import static AbstractConcurrencySpec.LONG_RUNNING_JOB_DURATION
+import static AbstractJobExecutorSpec.JOBS_INITIAL_DELAY
+import static AbstractJobExecutorSpec.LONG_RUNNING_JOB_DURATION
 
 @Singleton
 @CompileStatic
-@Requires(env = AbstractConcurrencySpec.CONCURRENT_JOB_TEST_ENVIRONMENT)
+@Requires(env = AbstractJobExecutorSpec.CONCURRENT_JOB_TEST_ENVIRONMENT)
 class LongRunningJob {
 
     final AtomicInteger producer = new AtomicInteger()

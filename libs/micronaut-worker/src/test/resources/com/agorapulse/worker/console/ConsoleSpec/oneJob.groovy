@@ -15,17 +15,4 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.agorapulse.worker;
-
-import java.time.Duration;
-import java.time.Instant;
-
-public interface JobStatus {
-
-    Instant getLastTriggered();
-    Instant getLastFinished();
-    Duration getLastDuration();
-    Throwable getLastException();
-    int getCurrentExecutionCount();
-
-}
+sampleJob
