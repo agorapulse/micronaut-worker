@@ -51,7 +51,7 @@ public class JobReport {
                     out.println(String.format(
                             TABLE,
                             j.getName(),
-                            status.getCurrentExecutionCount(),
+                            status.getExecutionCount(),
                             status.getLastTriggered(),
                             status.getLastFinished(),
                             humanReadableFormat(status.getLastDuration())

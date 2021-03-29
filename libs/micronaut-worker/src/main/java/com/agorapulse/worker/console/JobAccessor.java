@@ -17,8 +17,11 @@
  */
 package com.agorapulse.worker.console;
 
+import com.agorapulse.worker.Job;
 import com.agorapulse.worker.JobManager;
+import com.agorapulse.worker.JobStatus;
 import com.agorapulse.worker.report.JobReport;
+import com.fasterxml.jackson.annotation.JsonValue;
 
 import java.util.Collections;
 
@@ -47,6 +50,11 @@ public class JobAccessor {
 
     public String toString() {
         return JobReport.report(jobManager, Collections.singleton(jobName));
+    }
+
+    @JsonValue
+    public JobStatus getStatus() {
+        return jobManager.getJob(jobName).map(Job::getStatus).orElse(null);
     }
 
 }

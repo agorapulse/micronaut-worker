@@ -22,10 +22,11 @@ import java.time.Instant;
 
 public interface JobStatus {
 
+    String getName();
     Instant getLastTriggered();
     Instant getLastFinished();
     Duration getLastDuration();
     Throwable getLastException();
-    int getCurrentExecutionCount();
+    int getExecutionCount();
 
 }

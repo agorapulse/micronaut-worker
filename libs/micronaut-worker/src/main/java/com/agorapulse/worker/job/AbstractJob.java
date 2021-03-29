@@ -26,10 +26,11 @@ import java.util.function.Consumer;
 public abstract class AbstractJob implements Job {
 
     private final JobConfiguration configuration;
-    private final DefaultJobStatus status = new DefaultJobStatus();
+    private final DefaultJobStatus status;
 
     protected AbstractJob(JobConfiguration configuration) {
         this.configuration = configuration;
+        this.status = new DefaultJobStatus(configuration.getName());
     }
 
     @Override

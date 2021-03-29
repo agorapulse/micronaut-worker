@@ -34,6 +34,17 @@ public final class DefaultJobStatus implements JobStatus {
     private final AtomicReference<Duration> lastDuration = new AtomicReference<>();
     private final AtomicReference<Throwable> lastException = new AtomicReference<>();
 
+    private final String name;
+
+    public DefaultJobStatus(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
     @Override
     public Instant getLastTriggered() {
         return lastTriggered.get();
@@ -50,7 +61,7 @@ public final class DefaultJobStatus implements JobStatus {
     }
 
     @Override
-    public int getCurrentExecutionCount() {
+    public int getExecutionCount() {
         return executionCount.get();
     }
 
