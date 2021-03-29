@@ -25,6 +25,8 @@ import spock.lang.Specification
 import javax.inject.Inject
 import java.time.Duration
 
+@SuppressWarnings('EmptyMethod')
+
 @MicronautTest
 class FixedDelaySpec extends Specification {
 

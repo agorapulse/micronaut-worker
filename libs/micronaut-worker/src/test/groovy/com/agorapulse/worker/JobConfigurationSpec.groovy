@@ -104,7 +104,7 @@ class JobConfigurationSpec extends Specification {
 
     void 'switch to leader only'() {
         when:
-            JobConfiguration first = createJobConfiguration() {
+            JobConfiguration first = createJobConfiguration {
                 followerOnly true
             }
             JobConfiguration second = createJobConfiguration {

@@ -72,8 +72,7 @@ public class DefaultJobManager implements JobManager {
 
     @Override
     public void enqueue(String jobName, Object payload) {
-        getJob(jobName).ifPresent(job ->
-            {
+        getJob(jobName).ifPresent(job -> {
                 JobConfiguration.QueueConfiguration consumer = job.getConfiguration().getConsumer();
 
                 beanContext.findBean(

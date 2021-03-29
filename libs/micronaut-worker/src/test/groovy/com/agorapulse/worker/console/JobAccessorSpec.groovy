@@ -17,7 +17,6 @@
  */
 package com.agorapulse.worker.console
 
-
 import com.agorapulse.worker.JobManager
 import spock.lang.Specification
 

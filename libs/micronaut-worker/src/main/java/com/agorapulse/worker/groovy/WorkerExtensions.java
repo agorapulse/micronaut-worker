@@ -25,7 +25,6 @@ import groovy.lang.Closure;
 import groovy.lang.DelegatesTo;
 import groovy.transform.stc.ClosureParams;
 import groovy.transform.stc.SimpleType;
-import io.micronaut.core.naming.NameUtils;
 import space.jasan.support.groovy.closure.ConsumerWithDelegate;
 
 import javax.annotation.Nullable;

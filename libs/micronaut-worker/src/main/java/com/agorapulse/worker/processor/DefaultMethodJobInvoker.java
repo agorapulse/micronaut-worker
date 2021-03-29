@@ -26,7 +26,6 @@ import com.agorapulse.worker.event.JobExecutionStartedEvent;
 import com.agorapulse.worker.executor.DistributedJobExecutor;
 import com.agorapulse.worker.queue.JobQueues;
 import io.micronaut.context.BeanContext;
-import io.micronaut.context.Qualifier;
 import io.micronaut.context.event.ApplicationEventPublisher;
 import io.micronaut.inject.ExecutableMethod;
 import io.micronaut.inject.qualifiers.Qualifiers;

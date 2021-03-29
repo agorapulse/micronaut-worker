@@ -18,8 +18,6 @@
 
 package com.agorapulse.worker;
 
-import io.micronaut.core.naming.NameUtils;
-
 public interface JobInfo {
 
     /**

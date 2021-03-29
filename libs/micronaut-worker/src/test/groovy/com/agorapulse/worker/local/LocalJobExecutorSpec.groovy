@@ -28,7 +28,6 @@ class LocalJobExecutorSpec extends AbstractJobExecutorSpec {
     Class<?> getRequiredExecutorType() { return LocalJobExecutor }
 
     protected ApplicationContext buildContext() {
-
         if (context != null) {
             return context
         }

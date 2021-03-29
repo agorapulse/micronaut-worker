@@ -62,7 +62,6 @@ class ConsoleSpec extends Specification {
                 }
                 expect {
                     text 'listJobsResponse.txt'
-
                 }
             }
     }
@@ -75,7 +74,6 @@ class ConsoleSpec extends Specification {
                 }
                 expect {
                     json 'listJobsResponse.json'
-
                 }
             }
     }
@@ -88,7 +86,6 @@ class ConsoleSpec extends Specification {
                 }
                 expect {
                     text 'oneJobResponse.txt'
-
                 }
             }
     }
@@ -101,7 +98,6 @@ class ConsoleSpec extends Specification {
                 }
                 expect {
                     json 'oneJobResponse.json'
-
                 }
             }
     }
@@ -114,7 +110,6 @@ class ConsoleSpec extends Specification {
                 }
                 expect {
                     json 'oneJobWithException.json'
-
                 }
             }
     }
@@ -122,6 +117,7 @@ class ConsoleSpec extends Specification {
 }
 
 @Singleton
+@SuppressWarnings('EmptyMethod')
 @Requires(env = ConsoleSpec.CONSOLE_SPEC_ENVIRONMENT)
 class SampleJob {
 

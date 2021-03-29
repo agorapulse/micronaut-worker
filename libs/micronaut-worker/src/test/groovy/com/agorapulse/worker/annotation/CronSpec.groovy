@@ -24,6 +24,8 @@ import spock.lang.Specification
 
 import javax.inject.Inject
 
+@SuppressWarnings('EmptyMethod')
+
 @MicronautTest
 class CronSpec extends Specification {
 

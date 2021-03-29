@@ -26,11 +26,12 @@ class JobsBindingProviderSpec extends Specification {
 
     void 'add bindings'() {
         when:
-            Map<String, ?> bindings = new JobsBindingProvider(manager).getBinding()
+            Map<String, ?> bindings = new JobsBindingProvider(manager).binding
         then:
             bindings.jobs instanceof JobManager
             bindings.testJob instanceof JobAccessor
 
             1 * manager.jobNames >> ['test-job']
     }
+
 }
