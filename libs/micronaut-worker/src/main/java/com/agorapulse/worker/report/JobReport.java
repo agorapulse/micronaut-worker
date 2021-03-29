@@ -66,7 +66,7 @@ public class JobReport {
     }
 
     // https://stackoverflow.com/a/40487511/227419
-    private static String humanReadableFormat(Duration duration) {
+    public static String humanReadableFormat(Duration duration) {
         if (duration == null) {
             return "";
         }

@@ -110,7 +110,8 @@ allprojects {
 
     license {
         exclude '**/*.json'
-        exclude '***.yml'
+        exclude '**/*.yml'
+        exclude '**/test/resources/**/*.'
     }
 }
 

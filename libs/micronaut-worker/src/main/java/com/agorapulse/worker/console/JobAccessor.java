@@ -17,15 +17,13 @@
  */
 package com.agorapulse.worker.console;
 
-import com.agorapulse.worker.Job;
-import com.agorapulse.worker.JobManager;
-import com.agorapulse.worker.JobStatus;
+import com.agorapulse.worker.*;
 import com.agorapulse.worker.report.JobReport;
-import com.fasterxml.jackson.annotation.JsonValue;
 
 import java.util.Collections;
+import java.util.Optional;
 
-public class JobAccessor {
+public class JobAccessor implements JobInfo {
 
     private final String jobName;
     private final JobManager jobManager;
@@ -43,18 +41,33 @@ public class JobAccessor {
         jobManager.enqueue(jobName, o);
     }
 
-    // groovy DSL sugar
-    public void call(Object object) {
-        enqueue(object);
-    }
-
+    @Override
     public String toString() {
         return JobReport.report(jobManager, Collections.singleton(jobName));
     }
 
-    @JsonValue
+    @Override
+    public String getName() {
+        return jobName;
+    }
+
+    @Override
+    public String getSource() {
+        return findJob().map(Job::getSource).orElse(null);
+    }
+
+    @Override
     public JobStatus getStatus() {
-        return jobManager.getJob(jobName).map(Job::getStatus).orElse(null);
+        return findJob().map(Job::getStatus).orElse(null);
+    }
+
+    @Override
+    public JobConfiguration getConfiguration() {
+        return findJob().map(Job::getConfiguration).orElse(null);
+    }
+
+    private Optional<Job> findJob() {
+        return jobManager.getJob(jobName);
     }
 
 }

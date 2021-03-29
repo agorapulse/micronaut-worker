@@ -18,6 +18,11 @@
 package com.agorapulse.worker.job;
 
 import com.agorapulse.worker.JobStatus;
+import com.agorapulse.worker.json.DurationSerializer;
+import com.agorapulse.worker.json.StacktraceSerializer;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -25,7 +30,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
-public final class DefaultJobStatus implements JobStatus {
+@JsonInclude
+public final class ConcurrentJobStatus implements JobStatus {
 
     private final AtomicInteger executionCount = new AtomicInteger(0);
 
@@ -36,7 +42,7 @@ public final class DefaultJobStatus implements JobStatus {
 
     private final String name;
 
-    public DefaultJobStatus(String name) {
+    public ConcurrentJobStatus(String name) {
         this.name = name;
     }
 
@@ -46,16 +52,19 @@ public final class DefaultJobStatus implements JobStatus {
     }
 
     @Override
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     public Instant getLastTriggered() {
         return lastTriggered.get();
     }
 
     @Override
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     public Instant getLastFinished() {
         return lastFinished.get();
     }
 
     @Override
+    @JsonSerialize(using = StacktraceSerializer.class)
     public Throwable getLastException() {
         return lastException.get();
     }
@@ -66,6 +75,7 @@ public final class DefaultJobStatus implements JobStatus {
     }
 
     @Override
+    @JsonSerialize(using = DurationSerializer.class)
     public Duration getLastDuration() {
         return lastDuration.get();
     }

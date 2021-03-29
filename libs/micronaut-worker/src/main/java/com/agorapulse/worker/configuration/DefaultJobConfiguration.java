@@ -18,6 +18,10 @@
 package com.agorapulse.worker.configuration;
 
 import com.agorapulse.worker.JobConfiguration;
+import com.agorapulse.worker.json.DurationSerializer;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import io.micronaut.context.annotation.ConfigurationProperties;
 import io.micronaut.context.annotation.EachProperty;
 import io.micronaut.context.annotation.Parameter;
@@ -34,6 +38,7 @@ import java.util.function.Consumer;
 @Requires(property = "jobs.enabled", notEquals = "false")
 public class DefaultJobConfiguration implements MutableJobConfiguration {
 
+    @JsonInclude
     public static class DefaultQueueConfiguration implements MutableQueueConfiguration {
 
         private String queueName;
@@ -76,6 +81,7 @@ public class DefaultJobConfiguration implements MutableJobConfiguration {
 
         @Nullable
         @Override
+        @JsonSerialize(using = DurationSerializer.class)
         public Duration getWaitingTime() {
             return waitingTime;
         }
@@ -191,6 +197,7 @@ public class DefaultJobConfiguration implements MutableJobConfiguration {
 
     @Override
     @Nullable
+    @JsonSerialize(using = DurationSerializer.class)
     public Duration getFixedDelay() {
         return fixedDelay;
     }
@@ -202,6 +209,7 @@ public class DefaultJobConfiguration implements MutableJobConfiguration {
 
     @Override
     @Nullable
+    @JsonSerialize(using = DurationSerializer.class)
     public Duration getInitialDelay() {
         return initialDelay;
     }
@@ -213,6 +221,7 @@ public class DefaultJobConfiguration implements MutableJobConfiguration {
 
     @Override
     @Nullable
+    @JsonSerialize(using = DurationSerializer.class)
     public Duration getFixedRate() {
         return fixedRate;
     }

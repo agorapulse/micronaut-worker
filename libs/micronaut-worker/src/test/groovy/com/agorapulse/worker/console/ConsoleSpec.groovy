@@ -18,7 +18,6 @@
 package com.agorapulse.worker.console
 
 import com.agorapulse.gru.Gru
-import com.agorapulse.worker.annotation.FixedDelay
 import com.agorapulse.worker.annotation.InitialDelay
 import io.micronaut.context.annotation.Requires
 import io.micronaut.test.annotation.MicronautTest
@@ -68,6 +67,19 @@ class ConsoleSpec extends Specification {
             }
     }
 
+    void 'render jobs'() {
+        expect:
+            gru.test {
+                post '/console/execute', {
+                    content('listJobs.groovy', 'text/groovy')
+                }
+                expect {
+                    json 'listJobsResponse.json'
+
+                }
+            }
+    }
+
     void 'display job'() {
         expect:
             gru.test {
@@ -75,7 +87,33 @@ class ConsoleSpec extends Specification {
                     content('oneJob.groovy', 'text/groovy')
                 }
                 expect {
-                    text 'listJobsResponse.txt'
+                    text 'oneJobResponse.txt'
+
+                }
+            }
+    }
+
+    void 'render job'() {
+        expect:
+            gru.test {
+                post '/console/execute', {
+                    content('oneJob.groovy', 'text/groovy')
+                }
+                expect {
+                    json 'oneJobResponse.json'
+
+                }
+            }
+    }
+
+    void 'render failing job'() {
+        expect:
+            gru.test {
+                post '/console/execute', {
+                    content('oneJobWithException.groovy', 'text/groovy')
+                }
+                expect {
+                    json 'oneJobWithException.json'
 
                 }
             }

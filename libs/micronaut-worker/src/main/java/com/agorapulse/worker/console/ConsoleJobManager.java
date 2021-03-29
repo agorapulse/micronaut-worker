@@ -2,7 +2,6 @@ package com.agorapulse.worker.console;
 
 import com.agorapulse.worker.Job;
 import com.agorapulse.worker.JobManager;
-import com.agorapulse.worker.JobStatus;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 import java.util.List;
@@ -44,8 +43,8 @@ public class ConsoleJobManager implements JobManager {
     }
 
     @JsonValue
-    public List<JobStatus> getJobStates() {
-        return getJobNames().stream().map(this::getJob).map(Optional::get).map(Job::getStatus).collect(Collectors.toList());
+    List<JobAccessor> getJobs() {
+        return getJobNames().stream().map(name -> new JobAccessor(name, this)).collect(Collectors.toList());
     }
 
 }

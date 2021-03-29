@@ -15,17 +15,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.agorapulse.worker;
 
-import com.agorapulse.worker.job.SimpleJob;
+import io.micronaut.core.naming.NameUtils;
 
-/**
- * Job is a {@link Runnable} with a name.
- */
-public interface Job extends Runnable, JobInfo {
+public interface JobInfo {
 
-    static Job create(JobConfiguration configuration, Runnable task) {
-        return new SimpleJob(configuration, task);
+    /**
+     * @return the source of the job, e.g. the class and method name
+     */
+    String getSource();
+
+    JobConfiguration getConfiguration();
+
+    JobStatus getStatus();
+
+
+    /**
+     * @return the name of the job
+     */
+    default String getName() {
+        return getConfiguration().getName();
     }
 
 }
