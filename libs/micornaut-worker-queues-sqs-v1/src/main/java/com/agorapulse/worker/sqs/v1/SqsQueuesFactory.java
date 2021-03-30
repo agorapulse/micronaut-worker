@@ -53,6 +53,7 @@ public class SqsQueuesFactory {
     ) {
         try {
             provider.getCredentials();
+            return new SqsQueues(service, mapper);
         } catch (SdkClientException e) {
             if (environment.getActiveNames().contains(Environment.CLOUD)) {
                 LOGGER.warn("AWS SDK is not authenticated correctly, Using local job queues", e);
@@ -61,7 +62,6 @@ public class SqsQueuesFactory {
             }
             return new LocalQueues(conversionService);
         }
-        return new SqsQueues(service, mapper);
     }
 
 }

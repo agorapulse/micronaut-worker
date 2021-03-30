@@ -21,5 +21,7 @@ dependencies {
 
     testImplementation project(':micronaut-worker-tck')
 
-    testImplementation(group: 'org.testcontainers', name: 'localstack', version: project.testcontainersVersion)
+    testImplementation group: 'org.testcontainers', name: 'localstack', version: project.testcontainersVersion
+    testImplementation group: 'net.bytebuddy', name: 'byte-buddy', version: project.byteBuddyVersion
+
 }
