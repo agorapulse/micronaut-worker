@@ -44,7 +44,7 @@ class CronSpec extends Specification {
         when:
             Job job = jobManager.getJob('cron-spec').get()
         then:
-            job.configuration.cron == '0 0 0/1 ? * * *'
+            job.configuration.cron == '0 0 0/1 ? * *'
     }
 
 }

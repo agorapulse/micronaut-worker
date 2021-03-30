@@ -107,7 +107,7 @@ class SqsQueuesUnitSpec extends Specification {
 
         then:
             1 * simpleQueueService.sendMessage(QUEUE_NAME, json) >> {
-                throw new AmazonSQSException("Concurrent access: Queue already exists")
+                throw new AmazonSQSException('Concurrent access: Queue already exists')
             }
 
             1 * simpleQueueService.sendMessage(QUEUE_NAME, json)
@@ -123,7 +123,7 @@ class SqsQueuesUnitSpec extends Specification {
         then:
             thrown AmazonSQSException
             1 * simpleQueueService.sendMessage(QUEUE_NAME, json) >> {
-                throw new AmazonSQSException("Something wrong with the queue")
+                throw new AmazonSQSException('Something wrong with the queue')
             }
     }
 
@@ -141,6 +141,6 @@ class SqsQueuesUnitSpec extends Specification {
             1 * objectMapper.writeValueAsString(_) >> {
                 mapper.readValue('not a string', Object)
             }
-
     }
+
 }

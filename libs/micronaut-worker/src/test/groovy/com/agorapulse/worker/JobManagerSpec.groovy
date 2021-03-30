@@ -28,6 +28,7 @@ import java.time.Duration
 class JobManagerSpec extends Specification {
 
     @Inject JobManager manager
+    @Inject ConsumerJob consumerJob
 
     void 'can register new jobs'() {
         given:
@@ -84,6 +85,15 @@ class JobManagerSpec extends Specification {
             manager.run('new-job')
         then:
             executed
+    }
+
+    void 'can enqueue'() {
+        when:
+            manager.enqueue('consumer-job', 'Hello')
+
+            Thread.sleep(200)
+        then:
+            consumerJob.messages.contains('Hello')
     }
 
 }

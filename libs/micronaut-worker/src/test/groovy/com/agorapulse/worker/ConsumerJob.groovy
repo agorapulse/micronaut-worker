@@ -15,28 +15,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.agorapulse.worker;
+package com.agorapulse.worker
 
-import com.agorapulse.worker.annotation.FixedRate;
+import com.agorapulse.worker.annotation.FixedRate
+import groovy.transform.CompileStatic
 
-import javax.inject.Singleton;
-import java.util.ArrayList;
-import java.util.List;
+import javax.inject.Singleton
 
 @Singleton
-public class ConsumerJob {
+@CompileStatic
+class ConsumerJob {
 
-    public static final String ENVIRONMENT = "consumer-job-test";
+    public static final String ENVIRONMENT = 'consumer-job-test'
 
-    private final List<String> messages = new ArrayList<>();
+    final List<String> messages = []
 
-    @FixedRate("100ms")
+    @FixedRate('100ms')
     void accept(String message) {
-        this.messages.add(message);
-    }
-
-    public List<String> getMessages() {
-        return messages;
+        this.messages.add(message)
     }
 
 }

@@ -35,12 +35,12 @@ class SqsQueuesFactorySpec extends Specification {
 
     SqsQueuesFactory factory = new SqsQueuesFactory()
 
-    void 'create sqs if there is no issue'() {
+    void 'return sqs if there is no issue'() {
         expect:
             factory.sqsQueues(provider, mapper, simpleQueueService, Optional.empty(), environment) instanceof SqsQueues
     }
 
-    void 'create local if there is issue'() {
+    void 'return local if there is issue'() {
         when:
             factory.sqsQueues(provider, mapper, simpleQueueService, Optional.empty(), environment) instanceof LocalQueues
 
