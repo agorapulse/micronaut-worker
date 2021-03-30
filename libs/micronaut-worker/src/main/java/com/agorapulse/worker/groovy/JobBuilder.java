@@ -18,16 +18,19 @@
 package com.agorapulse.worker.groovy;
 
 import com.agorapulse.worker.Job;
-import com.agorapulse.worker.JobConfiguration;
 import com.agorapulse.worker.configuration.DefaultJobConfiguration;
 import com.agorapulse.worker.configuration.MutableJobConfiguration;
+import groovy.lang.Closure;
+import groovy.lang.DelegatesTo;
+import groovy.transform.stc.ClosureParams;
+import groovy.transform.stc.SimpleType;
+import space.jasan.support.groovy.closure.ConsumerWithDelegate;
 
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotBlank;
 import java.time.Duration;
-import java.util.function.Consumer;
 
-public class JobBuilder implements MutableJobConfiguration {
+public class JobBuilder {
 
     private final DefaultJobConfiguration configuration;
     private Runnable task;
@@ -49,128 +52,63 @@ public class JobBuilder implements MutableJobConfiguration {
         return Job.create(configuration, task);
     }
 
-    @Override
-    public String getName() {
-        return configuration.getName();
-    }
 
-    @Override
-    public boolean isEnabled() {
-        return configuration.isEnabled();
-    }
-
-    @Override
-    public void setEnabled(boolean enabled) {
+    public void enabled(boolean enabled) {
         configuration.setEnabled(enabled);
     }
 
-    @Override
-    public int getConcurrency() {
-        return configuration.getConcurrency();
-    }
 
-    @Override
-    public void setConcurrency(int concurrency) {
+    public void concurrency(int concurrency) {
         configuration.setConcurrency(concurrency);
     }
 
-    @Override
-    public boolean isLeaderOnly() {
-        return configuration.isLeaderOnly();
-    }
 
-    @Override
-    public void setLeaderOnly(boolean leaderOnly) {
+    public void leaderOnly(boolean leaderOnly) {
         configuration.setLeaderOnly(leaderOnly);
     }
 
-    @Override
-    public boolean isFollowerOnly() {
-        return configuration.isFollowerOnly();
-    }
 
-    @Override
-    public void setFollowerOnly(boolean followerOnly) {
+    public void followerOnly(boolean followerOnly) {
         configuration.setFollowerOnly(followerOnly);
     }
 
-    @Override
-    @Nullable
-    public String getCron() {
-        return configuration.getCron();
-    }
 
-    @Override
-    public void setCron(@Nullable String cron) {
+    public void cron(@Nullable String cron) {
         configuration.setCron(cron);
     }
 
-    @Override
-    @Nullable
-    public Duration getFixedDelay() {
-        return configuration.getFixedDelay();
-    }
 
-    @Override
-    public void setFixedDelay(@Nullable Duration fixedDelay) {
+    public void fixedDelay(@Nullable Duration fixedDelay) {
         configuration.setFixedDelay(fixedDelay);
     }
 
-    @Override
-    @Nullable
-    public Duration getInitialDelay() {
-        return configuration.getInitialDelay();
-    }
 
-    @Override
-    public void setInitialDelay(@Nullable Duration initialDelay) {
+    public void initialDelay(@Nullable Duration initialDelay) {
         configuration.setInitialDelay(initialDelay);
     }
 
-    @Override
-    @Nullable
-    public Duration getFixedRate() {
-        return configuration.getFixedRate();
-    }
 
-    @Override
-    public void setFixedRate(@Nullable Duration fixedRate) {
+    public void fixedRate(@Nullable Duration fixedRate) {
         configuration.setFixedRate(fixedRate);
     }
 
-    @Override
-    @NotBlank
-    public String getScheduler() {
-        return configuration.getScheduler();
-    }
 
-    @Override
-    public void setScheduler(@NotBlank String scheduler) {
+    public void scheduler(@NotBlank String scheduler) {
         configuration.setScheduler(scheduler);
     }
 
-    @Override
-    public DefaultJobConfiguration.ConsumerQueueConfiguration getConsumer() {
-        return configuration.getConsumer();
+    public void consumer(
+        @DelegatesTo(value = MutableJobConfiguration.MutableQueueConfiguration.class, strategy = Closure.DELEGATE_FIRST)
+        @ClosureParams(value = SimpleType.class, options = "com.agorapulse.worker.configuration.MutableJobConfiguration.MutableQueueConfiguration")
+            Closure<?> consumer
+    ) {
+        configuration.withConsumer(ConsumerWithDelegate.create(consumer));
     }
-
-    @Override
-    public void withConsumer(Consumer<MutableQueueConfiguration> consumer) {
-        configuration.withConsumer(consumer);
-    }
-
-    @Override
-    public DefaultJobConfiguration.ProducerQueueConfiguration getProducer() {
-        return configuration.getProducer();
-    }
-
-    @Override
-    public void withProducer(Consumer<MutableQueueConfiguration> producer) {
-        configuration.withProducer(producer);
-    }
-
-    @Override
-    public JobConfiguration mergeWith(JobConfiguration overrides) {
-        return configuration.mergeWith(overrides);
+    public void producer(
+        @DelegatesTo(value = MutableJobConfiguration.MutableQueueConfiguration.class, strategy = Closure.DELEGATE_FIRST)
+        @ClosureParams(value = SimpleType.class, options = "com.agorapulse.worker.configuration.MutableJobConfiguration.MutableQueueConfiguration")
+            Closure<?> producer
+    ) {
+        configuration.withProducer(ConsumerWithDelegate.create(producer));
     }
 }

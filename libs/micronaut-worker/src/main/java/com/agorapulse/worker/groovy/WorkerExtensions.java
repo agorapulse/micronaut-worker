@@ -28,6 +28,7 @@ import groovy.transform.stc.SimpleType;
 import space.jasan.support.groovy.closure.ConsumerWithDelegate;
 
 import javax.annotation.Nullable;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import java.time.Duration;
 
@@ -36,45 +37,68 @@ public class WorkerExtensions {
     public static void enabled(MutableJobConfiguration self, boolean enabled) {
         self.setEnabled(enabled);
     }
+
     public static void concurrency(MutableJobConfiguration self, int concurrency) {
         self.setConcurrency(concurrency);
     }
+
     public static void leaderOnly(MutableJobConfiguration self, boolean leaderOnly) {
         self.setLeaderOnly(leaderOnly);
     }
+
     public static void followerOnly(MutableJobConfiguration self, boolean followerOnly) {
         self.setFollowerOnly(followerOnly);
     }
+
     public static void cron(MutableJobConfiguration self, @Nullable String cron) {
         self.setCron(cron);
     }
+
     public static void fixedDelay(MutableJobConfiguration self, @Nullable Duration fixedDelay) {
         self.setFixedDelay(fixedDelay);
     }
+
     public static void initialDelay(MutableJobConfiguration self, @Nullable Duration initialDelay) {
         self.setInitialDelay(initialDelay);
     }
+
     public static void fixedRate(MutableJobConfiguration self, @Nullable Duration fixedRate) {
         self.setFixedRate(fixedRate);
     }
+
     public static void scheduler(MutableJobConfiguration self, @NotBlank String scheduler) {
         self.setScheduler(scheduler);
     }
+
     public static void consumer(
         MutableJobConfiguration self,
         @DelegatesTo(value = MutableJobConfiguration.MutableQueueConfiguration.class, strategy = Closure.DELEGATE_FIRST)
         @ClosureParams(value = SimpleType.class, options = "com.agorapulse.worker.configuration.MutableJobConfiguration.MutableQueueConfiguration")
-        Closure<?> consumer
+            Closure<?> consumer
     ) {
         self.withConsumer(ConsumerWithDelegate.create(consumer));
     }
+
     public static void producer(
         MutableJobConfiguration self,
         @DelegatesTo(value = MutableJobConfiguration.MutableQueueConfiguration.class, strategy = Closure.DELEGATE_FIRST)
         @ClosureParams(value = SimpleType.class, options = "com.agorapulse.worker.configuration.MutableJobConfiguration.MutableQueueConfiguration")
-        Closure<?> producer
+            Closure<?> producer
     ) {
         self.withProducer(ConsumerWithDelegate.create(producer));
+    }
+
+    public static void queueName(MutableJobConfiguration.MutableQueueConfiguration self, String queueName) {
+        self.setQueueName(queueName);
+    }
+    public static void queueQualifier(MutableJobConfiguration.MutableQueueConfiguration self, String queueQualifier) {
+        self.setQueueQualifier(queueQualifier);
+    }
+    public static void maxMessages(MutableJobConfiguration.MutableQueueConfiguration self, @Min(1) int maxMessages) {
+        self.setMaxMessages(maxMessages);
+    }
+    public static void waitingTime(MutableJobConfiguration.MutableQueueConfiguration self, Duration waitingTime) {
+        self.setWaitingTime(waitingTime);
     }
 
     public static void call(JobAccessor accessor, Object payload) {

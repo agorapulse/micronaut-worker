@@ -29,7 +29,7 @@ import javax.inject.Inject
 @MicronautTest
 class CronSpec extends Specification {
 
-    @Cron('0 0 0/1 ? * * *')
+    @Cron('0 0 0/1 ? * *')
     void job() {
         // your code here
     }
