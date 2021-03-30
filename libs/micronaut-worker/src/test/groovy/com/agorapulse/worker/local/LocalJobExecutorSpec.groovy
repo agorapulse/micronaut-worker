@@ -17,7 +17,7 @@
  */
 package com.agorapulse.worker.local
 
-import com.agorapulse.worker.executor.AbstractJobExecutorSpec
+import com.agorapulse.worker.tck.executor.AbstractJobExecutorSpec
 import io.micronaut.context.ApplicationContext
 
 import java.util.concurrent.Executors

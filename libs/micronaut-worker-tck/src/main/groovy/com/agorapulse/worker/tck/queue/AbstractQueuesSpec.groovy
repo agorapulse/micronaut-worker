@@ -15,8 +15,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.agorapulse.worker.queue
+package com.agorapulse.worker.tck.queue
 
+import com.agorapulse.worker.queue.JobQueues
 import io.micronaut.context.ApplicationContext
 import spock.lang.AutoCleanup
 import spock.lang.Specification

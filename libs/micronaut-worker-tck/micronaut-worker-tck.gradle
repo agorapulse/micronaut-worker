@@ -15,19 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.agorapulse.worker.local
+dependencies {
+    api project(':micronaut-worker')
 
-import com.agorapulse.worker.tck.queue.AbstractQueuesSpec
-import io.micronaut.context.ApplicationContext
-
-class LocalQueuesSpec extends AbstractQueuesSpec {
-
-    @SuppressWarnings('GetterMethodCouldBeProperty')
-    Class<?> getExpectedImplementation() { return LocalQueues }
-
-    @Override
-    ApplicationContext buildContext(String[] envs) {
-        return ApplicationContext.build(envs).build()
+    implementation("org.spockframework:spock-core:$spockVersion") {
+        exclude group: "org.codehaus.groovy", module: "groovy-all"
     }
-
 }

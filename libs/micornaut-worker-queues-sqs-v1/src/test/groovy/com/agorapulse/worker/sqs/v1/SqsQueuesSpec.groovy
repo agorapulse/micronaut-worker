@@ -15,10 +15,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.agorapulse.worker.sqs
+package com.agorapulse.worker.sqs.v1
 
-import com.agorapulse.worker.queue.AbstractQueuesSpec
-import com.agorapulse.worker.sqs.v1.SqsQueues
+import com.agorapulse.worker.tck.queue.AbstractQueuesSpec
 import com.amazonaws.auth.AWSCredentialsProvider
 import com.amazonaws.services.sqs.AmazonSQS
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder

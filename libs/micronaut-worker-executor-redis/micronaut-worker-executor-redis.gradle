@@ -15,19 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.agorapulse.worker.local
+dependencies {
+    api project(':micronaut-worker')
 
-import com.agorapulse.worker.tck.queue.AbstractQueuesSpec
-import io.micronaut.context.ApplicationContext
+    api "io.lettuce:lettuce-core:$lettuceVersion"
 
-class LocalQueuesSpec extends AbstractQueuesSpec {
+    implementation 'io.micronaut.configuration:micronaut-redis-lettuce'
 
-    @SuppressWarnings('GetterMethodCouldBeProperty')
-    Class<?> getExpectedImplementation() { return LocalQueues }
-
-    @Override
-    ApplicationContext buildContext(String[] envs) {
-        return ApplicationContext.build(envs).build()
-    }
-
+    testImplementation project(':micronaut-worker-tck')
 }

@@ -102,7 +102,6 @@ config {
 
 allprojects {
     repositories {
-        jcenter()
         mavenCentral()
         maven { url  "https://dl.bintray.com/agorapulse/libs" }
         maven { url "https://repo.spring.io/release"  }
@@ -164,6 +163,30 @@ projects {
                 compileOnly platform("io.micronaut:micronaut-bom:$micronautVersion")
                 testCompile platform("io.micronaut:micronaut-bom:$micronautVersion")
                 testImplementation platform("io.micronaut:micronaut-bom:$micronautVersion")
+
+                annotationProcessor "io.micronaut:micronaut-inject-java"
+                annotationProcessor "io.micronaut:micronaut-validation"
+
+                implementation "io.micronaut:micronaut-core"
+                implementation "io.micronaut:micronaut-inject"
+                implementation "io.micronaut:micronaut-validation"
+                implementation "io.micronaut:micronaut-runtime"
+
+
+                compileOnly "io.micronaut:micronaut-inject-groovy"
+                compileOnly "com.agorapulse:remember:$rememberVersion"
+
+                testImplementation("org.spockframework:spock-core:$spockVersion") {
+                    exclude group: "org.codehaus.groovy", module: "groovy-all"
+                }
+
+                testImplementation 'com.agorapulse:micronaut-log4aws:1.1.5'
+                testImplementation "io.micronaut:micronaut-inject-groovy"
+                testImplementation "io.micronaut.test:micronaut-test-spock"
+
+                testImplementation(group: 'org.testcontainers', name: 'spock', version: project.testcontainersVersion) {
+                    exclude group: "org.codehaus.groovy", module: "groovy-all"
+                }
             }
 
             // useful for IntelliJ

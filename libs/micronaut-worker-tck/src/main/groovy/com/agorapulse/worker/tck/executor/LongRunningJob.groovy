@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.agorapulse.worker.executor
+package com.agorapulse.worker.tck.executor
 
 import com.agorapulse.worker.annotation.Concurrency
 import com.agorapulse.worker.annotation.Consecutive

@@ -15,19 +15,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.agorapulse.worker.local
+dependencies {
+    api project(':micronaut-worker')
+    api "com.agorapulse:micronaut-aws-sdk-sqs:$micronautAwsSdkVersion"
 
-import com.agorapulse.worker.tck.queue.AbstractQueuesSpec
-import io.micronaut.context.ApplicationContext
+    testImplementation project(':micronaut-worker-tck')
 
-class LocalQueuesSpec extends AbstractQueuesSpec {
-
-    @SuppressWarnings('GetterMethodCouldBeProperty')
-    Class<?> getExpectedImplementation() { return LocalQueues }
-
-    @Override
-    ApplicationContext buildContext(String[] envs) {
-        return ApplicationContext.build(envs).build()
-    }
-
+    testImplementation(group: 'org.testcontainers', name: 'localstack', version: project.testcontainersVersion)
 }

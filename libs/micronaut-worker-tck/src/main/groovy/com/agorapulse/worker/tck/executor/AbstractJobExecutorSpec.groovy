@@ -15,8 +15,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.agorapulse.worker.executor
+package com.agorapulse.worker.tck.executor
 
+import com.agorapulse.worker.executor.DistributedJobExecutor
 import io.micronaut.context.ApplicationContext
 import spock.lang.Specification
 
