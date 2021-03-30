@@ -111,7 +111,9 @@ allprojects {
     license {
         exclude '**/*.json'
         exclude '**/*.yml'
-        exclude '**/test/resources/**/*.*'
+        exclude '**/*.txt'
+        exclude '**/*.gdsl'
+        exclude '**/ConsoleSpec/*.groovy'
     }
 }
 

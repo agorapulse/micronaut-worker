@@ -19,52 +19,57 @@ package com.agorapulse.worker.local;
 
 import com.agorapulse.worker.executor.DistributedJobExecutor;
 import io.micronaut.retry.annotation.Fallback;
-import io.reactivex.Flowable;
 import io.reactivex.Maybe;
 import org.reactivestreams.Publisher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.inject.Named;
 import javax.inject.Singleton;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Fallback
 @Singleton
 public class LocalJobExecutor implements DistributedJobExecutor {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(LocalJobExecutor.class);
+
     private final ConcurrentMap<String, AtomicInteger> counts = new ConcurrentHashMap<>();
+    private final ExecutorService executorService;
+
+    public LocalJobExecutor(@Named("local-job-executor") ExecutorService executorService) {
+        this.executorService = executorService;
+    }
 
     @Override
     public <R> Publisher<R> executeOnlyOnLeader(String jobName, Callable<R> supplier) {
-        return Maybe.fromCallable(supplier).toFlowable();
+        return executeConcurrently(jobName, 1, supplier);
     }
 
     @Override
     public <R> Publisher<R> executeConcurrently(String jobName, int concurrency, Callable<R> supplier) {
-        int originalCount = counts.computeIfAbsent(jobName, s -> new AtomicInteger(0)).get();
-        if (originalCount >= concurrency) {
-            return Flowable.empty();
-        }
-
-        return Flowable.generate(e -> {
-            try {
-                counts.get(jobName).incrementAndGet();
-                R result = supplier.call();
-                if (result != null) {
-                    e.onNext(result);
-                }
+        return Maybe.fromFuture(executorService.submit(() -> {
+            int increasedCount = counts.computeIfAbsent(jobName, s -> new AtomicInteger(0)).incrementAndGet();
+            LOGGER.trace("Increased count for job {} limited to {}: {}", jobName, concurrency, increasedCount);
+            if (increasedCount > concurrency) {
                 counts.get(jobName).decrementAndGet();
-                e.onComplete();
-            } catch (Exception ex) {
-                e.onError(ex);
+                return null;
             }
-        });
+
+            R result = supplier.call();
+            int decreasedCount = counts.get(jobName).decrementAndGet();
+            LOGGER.trace("Decreased count for job {} limited to {}: {}", jobName, concurrency, decreasedCount);
+            return result;
+        })).toFlowable();
     }
 
     @Override
     public <R> Publisher<R> executeOnlyOnFollower(String jobName, Callable<R> supplier) {
-        return Maybe.fromCallable(supplier).toFlowable();
+        return Maybe.fromFuture(executorService.submit(supplier)).toFlowable();
     }
 
 }

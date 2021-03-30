@@ -20,20 +20,26 @@ package com.agorapulse.worker.local
 import com.agorapulse.worker.executor.AbstractJobExecutorSpec
 import io.micronaut.context.ApplicationContext
 
+import java.util.concurrent.Executors
+
 class LocalJobExecutorSpec extends AbstractJobExecutorSpec {
 
-    ApplicationContext context
+    LocalJobExecutor executor = new LocalJobExecutor(Executors.newFixedThreadPool(10))
 
+    @Override
     @SuppressWarnings('GetterMethodCouldBeProperty')
     Class<?> getRequiredExecutorType() { return LocalJobExecutor }
 
+    @Override
+    @SuppressWarnings('GetterMethodCouldBeProperty')
+    int getExpectedFollowersCount() { return 3 }
+
     protected ApplicationContext buildContext() {
-        if (context != null) {
-            return context
-        }
         ApplicationContext ctx = ApplicationContext
             .builder(CONCURRENT_JOB_TEST_ENVIRONMENT)
             .build()
+            // register the same executor service to emulate concurrency
+            .registerSingleton(LocalJobExecutor, executor)
 
         return ctx.start()
     }

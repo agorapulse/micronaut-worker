@@ -33,8 +33,8 @@ import javax.validation.constraints.NotBlank;
 import java.time.Duration;
 import java.util.function.Consumer;
 
-@EachProperty("jobs")
-@Requires(property = "jobs.enabled", notEquals = "false")
+@EachProperty("worker.jobs")
+@Requires(property = "worker.enabled", notEquals = "false")
 public class DefaultJobConfiguration implements MutableJobConfiguration {
 
     @JsonInclude

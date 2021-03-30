@@ -46,6 +46,9 @@ abstract class AbstractJobExecutorSpec extends Specification {
 
             List<LongRunningJob> jobs = [jobOne, jobTwo, jobThree]
         then:
+            // jobs are unique
+            jobs.unique().size() == 3
+
             // unlimited jobs are executed on every server
             jobs.count { it.unlimited.get() == 1 } == 3
 
@@ -56,7 +59,7 @@ abstract class AbstractJobExecutorSpec extends Specification {
             jobs.count { it.leader.get() == 1 } == 1
 
             // follower job is executed only on followers
-            jobs.count { it.follower.get() == 1  } == 2
+            jobs.count { it.follower.get() == 1  } == expectedFollowersCount
 
             //  consecutive job is only executed once on a random server
             jobs.count { it.consecutive.get() == 1 } == 1
@@ -69,6 +72,11 @@ abstract class AbstractJobExecutorSpec extends Specification {
 
     protected abstract ApplicationContext buildContext()
     protected abstract Class<?> getRequiredExecutorType()
+
+    // some implementation may not support followers, such as the local implementation
+    protected int getExpectedFollowersCount() {
+        return 2
+    }
 
     @SuppressWarnings([
         'CatchException',
