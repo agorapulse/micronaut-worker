@@ -17,15 +17,21 @@
  */
 package com.agorapulse.worker
 
+import com.agorapulse.worker.annotation.FixedRate
+import io.micronaut.context.annotation.Requires
 import io.micronaut.test.annotation.MicronautTest
 import spock.lang.Specification
 
 import javax.inject.Inject
+import javax.inject.Singleton
 import java.time.Duration
+import java.util.function.Consumer
 
+@MicronautTest(environments = MANAGER_SPEC_ENVIRONMENT)
 @SuppressWarnings('AbcMetric')
-@MicronautTest(environments = ConsumerJob.ENVIRONMENT)
 class JobManagerSpec extends Specification {
+
+    public static final String MANAGER_SPEC_ENVIRONMENT = 'manager-spec-environment'
 
     @Inject JobManager manager
     @Inject ConsumerJob consumerJob
@@ -88,12 +94,28 @@ class JobManagerSpec extends Specification {
     }
 
     void 'can enqueue'() {
+        expect:
+            'consumer-job' in manager.jobNames
         when:
-            manager.enqueue('consumer-job', 'Hello')
+            manager.enqueue(ConsumerJob, 'Hello')
 
             Thread.sleep(200)
         then:
             consumerJob.messages.contains('Hello')
+    }
+
+}
+
+@Singleton
+@Requires(env = JobManagerSpec.MANAGER_SPEC_ENVIRONMENT)
+class ConsumerJob implements Consumer<String> {
+
+    List<String> messages = []
+
+    @Override
+    @FixedRate('10ms')
+    void accept(String message) {
+        messages << message
     }
 
 }
