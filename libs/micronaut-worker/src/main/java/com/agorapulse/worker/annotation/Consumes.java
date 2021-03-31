@@ -39,4 +39,14 @@ public @interface Consumes {
      */
     String type() default "";
 
+    /**
+     * @return the maximum waiting time as duration string
+     */
+    String waitingTime() default "";
+
+    /**
+     * @return the maximum of messages consumed in a single run
+     */
+    int maxMessages() default 1;
+
 }

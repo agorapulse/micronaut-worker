@@ -20,6 +20,7 @@ package com.agorapulse.worker.annotation
 import com.agorapulse.worker.Job
 import com.agorapulse.worker.JobManager
 import io.micronaut.test.annotation.MicronautTest
+import spock.lang.Shared
 import spock.lang.Specification
 
 import javax.inject.Inject
@@ -30,12 +31,14 @@ import javax.inject.Inject
 ])
 
 @MicronautTest
-class CronSpec extends Specification {
+class PipeSpec extends Specification {
 
     // tag::job-method[]
-    @Cron('0 0 0/1 ? * *')
-    public void job() {
-        // your code here
+    @FixedRate("10ms")
+    @Consumes("AnyWords")
+    @Produces("UpperWords")
+    public String pipe(String message) {
+        return message.toUpperCase();
     }
     // end::job-method[]
 
@@ -44,7 +47,7 @@ class CronSpec extends Specification {
 
     void 'job is registered'() {
         expect:
-            'cron-spec' in jobManager.jobNames
+            'pipe-spec' in jobManager.jobNames
 
         when:
             Job job = jobManager.getJob('cron-spec').get()

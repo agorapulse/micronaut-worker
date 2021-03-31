@@ -77,7 +77,7 @@ public class DefaultJobManager implements JobManager {
 
                 beanContext.findBean(
                     JobQueues.class,
-                    consumer.getQueueQualifier() == null ? null : Qualifiers.byName(consumer.getQueueQualifier())
+                    consumer.getQueueType() == null ? null : Qualifiers.byName(consumer.getQueueType())
                 )
                 .orElseGet(() -> beanContext.getBean(JobQueues.class))
                 .sendMessage(consumer.getQueueName(), payload);

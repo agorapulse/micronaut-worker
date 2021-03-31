@@ -73,7 +73,7 @@ public class WorkerExtensions {
     public static void consumer(
         MutableJobConfiguration self,
         @DelegatesTo(value = MutableJobConfiguration.MutableQueueConfiguration.class, strategy = Closure.DELEGATE_FIRST)
-        @ClosureParams(value = SimpleType.class, options = "com.agorapulse.worker.configuration.MutableJobConfiguration.MutableQueueConfiguration")
+        @ClosureParams(value = SimpleType.class, options = "com.agorapulse.worker.configuration.MutableJobConfiguration.MutableConsumerQueueConfiguration")
             Closure<?> consumer
     ) {
         self.withConsumer(ConsumerWithDelegate.create(consumer));
@@ -91,13 +91,13 @@ public class WorkerExtensions {
     public static void queueName(MutableJobConfiguration.MutableQueueConfiguration self, String queueName) {
         self.setQueueName(queueName);
     }
-    public static void queueQualifier(MutableJobConfiguration.MutableQueueConfiguration self, String queueQualifier) {
-        self.setQueueQualifier(queueQualifier);
+    public static void queueType(MutableJobConfiguration.MutableQueueConfiguration self, String queueType) {
+        self.setQueueType(queueType);
     }
-    public static void maxMessages(MutableJobConfiguration.MutableQueueConfiguration self, @Min(1) int maxMessages) {
+    public static void maxMessages(MutableJobConfiguration.MutableConsumerQueueConfiguration self, @Min(1) int maxMessages) {
         self.setMaxMessages(maxMessages);
     }
-    public static void waitingTime(MutableJobConfiguration.MutableQueueConfiguration self, Duration waitingTime) {
+    public static void waitingTime(MutableJobConfiguration.MutableConsumerQueueConfiguration self, Duration waitingTime) {
         self.setWaitingTime(waitingTime);
     }
 

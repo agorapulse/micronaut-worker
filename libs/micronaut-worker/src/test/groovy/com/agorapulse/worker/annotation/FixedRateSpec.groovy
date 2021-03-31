@@ -25,15 +25,20 @@ import spock.lang.Specification
 import javax.inject.Inject
 import java.time.Duration
 
-@SuppressWarnings('EmptyMethod')
+@SuppressWarnings([
+    'EmptyMethod',
+    'GrUnnecessaryPublicModifier',
+])
 
 @MicronautTest
 class FixedRateSpec extends Specification {
 
+    // tag::job-method[]
     @FixedRate('10m')
-    void job() {
+    public void job() {
         // your code here
     }
+    // end::job-method[]
 
     @Inject
     JobManager jobManager

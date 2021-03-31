@@ -60,7 +60,17 @@ public interface JobConfiguration {
          * @return the name of the preferred queue implementation
          */
         @Nullable
-        String getQueueQualifier();
+        String getQueueType();
+
+        /**
+         * Merges the values from overrides into this configuration.
+         *
+         * @param overrides the configuration overrides
+         */
+        void mergeWith(QueueConfiguration overrides);
+    }
+
+    interface ConsumerQueueConfiguration extends QueueConfiguration {
 
         /**
          * @return the number of messages which are fetched from the queue in a single poll, defaults to one
@@ -79,7 +89,8 @@ public interface JobConfiguration {
          *
          * @param overrides the configuration overrides
          */
-        void mergeWith(QueueConfiguration overrides);
+        void mergeWith(ConsumerQueueConfiguration overrides);
+
     }
 
     /**
@@ -144,7 +155,7 @@ public interface JobConfiguration {
      * @return the consumer configuration
      */
     @NotNull
-    QueueConfiguration getConsumer();
+    ConsumerQueueConfiguration getConsumer();
 
     /**
      * @return the producer configuration

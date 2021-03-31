@@ -22,6 +22,7 @@ import com.agorapulse.worker.JobManager;
 import com.agorapulse.worker.JobScheduler;
 import com.agorapulse.worker.annotation.*;
 import com.agorapulse.worker.configuration.DefaultJobConfiguration;
+import com.agorapulse.worker.configuration.MutableJobConfiguration;
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.context.BeanContext;
 import io.micronaut.context.annotation.Requires;
@@ -39,6 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Singleton;
+import java.lang.annotation.Annotation;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
@@ -54,7 +56,7 @@ import java.util.Optional;
  * @since 1.0
  */
 @Singleton
-@Requires(property = "jobs.enabled", notEquals = "false")
+@Requires(property = "worker.enabled", notEquals = "false")
 public class MethodJobProcessor implements ExecutableMethodProcessor<Job> {
 
     private static final Logger LOG = LoggerFactory.getLogger(MethodJobProcessor.class);
@@ -140,7 +142,7 @@ public class MethodJobProcessor implements ExecutableMethodProcessor<Job> {
     private JobConfiguration getJobConfiguration(BeanDefinition<?> beanDefinition, ExecutableMethod<?, ?> method) {
         String jobName = getJobName(beanDefinition, method);
 
-        JobConfiguration configurationOverrides = beanContext.findBean(DefaultJobConfiguration.class, Qualifiers.byName(jobName))
+        JobConfiguration configurationOverrides = beanContext.findBean(JobConfiguration.class, Qualifiers.byName(jobName))
             .orElseGet(() -> new DefaultJobConfiguration(jobName));
 
         DefaultJobConfiguration configuration = new DefaultJobConfiguration(jobName);
@@ -157,29 +159,8 @@ public class MethodJobProcessor implements ExecutableMethodProcessor<Job> {
 
         method.findAnnotation(Concurrency.class).flatMap(a -> a.getValue(Integer.class)).ifPresent(configuration::setConcurrency);
 
-        Optional<AnnotationValue<Consumes>> consumesAnnotation = method.findAnnotation(Consumes.class);
-        if (consumesAnnotation.isPresent()) {
-            AnnotationValue<Consumes> annotationValue = consumesAnnotation.get();
-            configuration.getConsumer().setQueueName(annotationValue.getRequiredValue(String.class));
-
-            annotationValue.stringValue("type").ifPresent(type -> {
-                if (StringUtils.isNotEmpty(type)) {
-                    configuration.getConsumer().setQueueQualifier(type);
-                }
-            });
-        }
-
-        Optional<AnnotationValue<Produces>> producesAnnotation = method.findAnnotation(Produces.class);
-        if (producesAnnotation.isPresent()) {
-            AnnotationValue<Produces> annotationValue = producesAnnotation.get();
-            configuration.getProducer().setQueueName(annotationValue.getRequiredValue(String.class));
-
-            annotationValue.stringValue("type").ifPresent(type -> {
-                if (StringUtils.isNotEmpty(type)) {
-                    configuration.getProducer().setQueueQualifier(type);
-                }
-            });
-        }
+        configureConsumerQueue(jobName, method.findAnnotation(Consumes.class), configuration.getConsumer());
+        configureQueue(method.findAnnotation(Produces.class), configuration.getProducer());
 
         configuration.mergeWith(configurationOverrides);
 
@@ -192,6 +173,39 @@ public class MethodJobProcessor implements ExecutableMethodProcessor<Job> {
         }
 
         return configuration;
+    }
+
+    private <A extends Annotation> void configureQueue(Optional<AnnotationValue<A>> consumesAnnotation, MutableJobConfiguration.MutableQueueConfiguration queueConfiguration) {
+        if (consumesAnnotation.isPresent()) {
+            AnnotationValue<A> annotationValue = consumesAnnotation.get();
+            queueConfiguration.setQueueName(annotationValue.getRequiredValue(String.class));
+
+            annotationValue.stringValue("type").ifPresent(type -> {
+                if (StringUtils.isNotEmpty(type)) {
+                    queueConfiguration.setQueueType(type);
+                }
+            });
+        }
+    }
+
+    private void configureConsumerQueue(String jobName, Optional<AnnotationValue<Consumes>> consumesAnnotation, MutableJobConfiguration.MutableConsumerQueueConfiguration queueConfiguration) {
+        if (consumesAnnotation.isPresent()) {
+            configureQueue(consumesAnnotation, queueConfiguration);
+
+            AnnotationValue<Consumes> annotationValue = consumesAnnotation.get();
+
+            annotationValue.stringValue("waitingTime").ifPresent(waitingTime -> {
+                if (StringUtils.isNotEmpty(waitingTime)) {
+                    queueConfiguration.setWaitingTime(convertDuration(jobName, waitingTime, "waiting time"));
+                }
+            });
+
+            annotationValue.intValue("maxMessages").ifPresent(maxMessages -> {
+                if (maxMessages > 1) {
+                    queueConfiguration.setMaxMessages(maxMessages);
+                }
+            });
+        }
     }
 
     private String extractQueueNameFromMethod(ExecutableMethod<?, ?> method) {

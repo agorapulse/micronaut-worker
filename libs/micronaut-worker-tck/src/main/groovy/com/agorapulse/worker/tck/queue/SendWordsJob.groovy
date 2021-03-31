@@ -17,7 +17,8 @@
  */
 package com.agorapulse.worker.tck.queue
 
-import com.agorapulse.worker.annotation.Job
+import com.agorapulse.worker.annotation.FixedRate
+import com.agorapulse.worker.annotation.InitialDelay
 import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Requires
 import io.reactivex.Flowable
@@ -31,14 +32,18 @@ class SendWordsJob {
 
     List<String> words = []
 
-    @Job(initialDelay = '50ms')
-    Flowable<String> hello() {
-        return Flowable.just('Hello', 'World')
+    // tag::simple-producer-method[]
+    @InitialDelay("50ms")
+    public Flowable<String> hello() {
+        return Flowable.just("Hello", "World");
     }
+    // end::simple-producer-method[]
 
-    @Job(fixedRate = '100ms', initialDelay = '100ms')
-    void listen(String word) {
-        words.add(word)
+    // tag::simple-consumer-method[]
+    @FixedRate("100ms") @InitialDelay("100ms")
+    public void listen(String word) {
+        words.add(word);
     }
+    // end::simple-consumer-method[]
 
 }

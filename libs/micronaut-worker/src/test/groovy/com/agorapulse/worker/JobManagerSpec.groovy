@@ -49,14 +49,14 @@ class JobManagerSpec extends Specification {
 
                 consumer {
                     queueName 'NewQueue'
-                    queueQualifier 'local'
+                    queueType 'local'
                     waitingTime Duration.ofMillis(90)
                     maxMessages 10
                 }
 
                 producer {
                     queueName 'AnotherQueue'
-                    queueQualifier 'redis'
+                    queueType 'redis'
                     waitingTime Duration.ofMillis(80)
                     maxMessages 20
                 }
@@ -79,11 +79,11 @@ class JobManagerSpec extends Specification {
             job.configuration.initialDelay == Duration.ofMinutes(1)
             job.configuration.consumer
             job.configuration.consumer.queueName == 'NewQueue'
-            job.configuration.consumer.queueQualifier == 'local'
+            job.configuration.consumer.queueType == 'local'
             job.configuration.consumer.waitingTime == Duration.ofMillis(90)
             job.configuration.consumer.maxMessages == 10
             job.configuration.producer.queueName == 'AnotherQueue'
-            job.configuration.producer.queueQualifier == 'redis'
+            job.configuration.producer.queueType == 'redis'
             job.configuration.producer.waitingTime == Duration.ofMillis(80)
             job.configuration.producer.maxMessages == 20
 

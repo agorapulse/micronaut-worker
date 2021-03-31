@@ -21,10 +21,8 @@ import com.agorapulse.worker.JobConfiguration;
 import com.agorapulse.worker.json.DurationSerializer;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import io.micronaut.context.annotation.ConfigurationProperties;
-import io.micronaut.context.annotation.EachProperty;
-import io.micronaut.context.annotation.Parameter;
-import io.micronaut.context.annotation.Requires;
+import io.micronaut.context.annotation.*;
+import io.micronaut.core.util.StringUtils;
 import io.micronaut.scheduling.TaskExecutors;
 
 import javax.annotation.Nullable;
@@ -41,9 +39,7 @@ public class DefaultJobConfiguration implements MutableJobConfiguration {
     public static class DefaultQueueConfiguration implements MutableQueueConfiguration {
 
         private String queueName;
-        private String queueQualifier;
-        private int maxMessages = 1;
-        private Duration waitingTime = Duration.ZERO;
+        private String queueType;
 
         @Nullable
         @Override
@@ -58,14 +54,32 @@ public class DefaultJobConfiguration implements MutableJobConfiguration {
 
         @Nullable
         @Override
-        public String getQueueQualifier() {
-            return queueQualifier;
+        public String getQueueType() {
+            return queueType;
         }
 
         @Override
-        public void setQueueQualifier(String queueQualifier) {
-            this.queueQualifier = queueQualifier;
+        public void setQueueType(String queueType) {
+            this.queueType = queueType;
         }
+
+        @Override
+        public void mergeWith(QueueConfiguration overrides) {
+            if (StringUtils.isNotEmpty(overrides.getQueueName())) {
+                this.queueName = overrides.getQueueName();
+            }
+
+            if (StringUtils.isNotEmpty(overrides.getQueueType())) {
+                this.queueType = overrides.getQueueType();
+            }
+        }
+    }
+
+    @JsonInclude
+    public static class DefaultConsumerQueueConfiguration extends DefaultQueueConfiguration implements MutableConsumerQueueConfiguration {
+
+        private int maxMessages = 1;
+        private Duration waitingTime = Duration.ZERO;
 
         @Min(1)
         @Override
@@ -91,14 +105,8 @@ public class DefaultJobConfiguration implements MutableJobConfiguration {
         }
 
         @Override
-        public void mergeWith(QueueConfiguration overrides) {
-            if (overrides.getQueueName() != null) {
-                this.queueName = overrides.getQueueName();
-            }
-
-            if (overrides.getQueueQualifier() != null) {
-                this.queueQualifier = overrides.getQueueQualifier();
-            }
+        public void mergeWith(ConsumerQueueConfiguration overrides) {
+            super.mergeWith(overrides);
 
             if (overrides.getMaxMessages() > 1 && overrides.getMaxMessages() != this.maxMessages) {
                 this.maxMessages = overrides.getMaxMessages();
@@ -109,13 +117,6 @@ public class DefaultJobConfiguration implements MutableJobConfiguration {
             }
         }
     }
-
-    @ConfigurationProperties("consumer")
-    public static class ConsumerQueueConfiguration extends DefaultQueueConfiguration { }
-
-    @ConfigurationProperties("producer")
-    public static class ProducerQueueConfiguration extends DefaultQueueConfiguration { }
-
 
     private final String name;
 
@@ -131,8 +132,11 @@ public class DefaultJobConfiguration implements MutableJobConfiguration {
     @Nullable private Duration fixedRate;
     @NotBlank private String scheduler = TaskExecutors.SCHEDULED;
 
-    private final ConsumerQueueConfiguration consumer = new ConsumerQueueConfiguration();
-    private final ProducerQueueConfiguration producer = new ProducerQueueConfiguration();
+    @ConfigurationBuilder(configurationPrefix = "consumer")
+    private final DefaultConsumerQueueConfiguration consumer = new DefaultConsumerQueueConfiguration();
+
+    @ConfigurationBuilder(configurationPrefix = "producer")
+    private final DefaultQueueConfiguration producer = new DefaultQueueConfiguration();
 
     public DefaultJobConfiguration(@Parameter String name) {
         this.name = name;
@@ -242,7 +246,7 @@ public class DefaultJobConfiguration implements MutableJobConfiguration {
     }
 
     @Override
-    public ConsumerQueueConfiguration getConsumer() {
+    public DefaultConsumerQueueConfiguration getConsumer() {
         return consumer;
     }
 
@@ -252,7 +256,7 @@ public class DefaultJobConfiguration implements MutableJobConfiguration {
     }
 
     @Override
-    public ProducerQueueConfiguration getProducer() {
+    public DefaultQueueConfiguration getProducer() {
         return producer;
     }
 
@@ -281,7 +285,7 @@ public class DefaultJobConfiguration implements MutableJobConfiguration {
             this.leaderOnly = false;
         }
 
-        if (overrides.getCron() != null) {
+        if (StringUtils.isNotEmpty(overrides.getCron())) {
             this.cron = overrides.getCron();
             this.initialDelay = null;
             this.fixedDelay = null;

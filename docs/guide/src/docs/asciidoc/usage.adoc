@@ -2,4 +2,180 @@
 [[_usage]]
 = Usage
 
-Lorem ipsum dolor sit amet
+== Scheduling
+
+The basic usage of this library is to provide easy way to run scheduled tasks in a distributed environment.
+
+=== Cron Jobs
+
+To create a scheduled CRON job use `@Cron` annotation containing the CRON definition string on a bean method.
+
+[source,java]
+.Cron Job
+----
+include::{root-dir}/libs/micronaut-worker/src/test/groovy/com/agorapulse/worker/annotation/CronSpec.groovy[tag=job-method,indent=0]
+----
+
+=== Fixed Delay Jobs
+
+To create a fixed delay job use `@FixedDelay` annotation containing the duration string on a bean method.
+
+[source,java]
+.Fixed Delay Job
+----
+include::{root-dir}/libs/micronaut-worker/src/test/groovy/com/agorapulse/worker/annotation/FixedDelaySpec.groovy[tag=job-method,indent=0]
+----
+
+=== Fixed Rate Jobs
+
+To create a fixed delay job use `@FixedRate` annotation containing the duration string on a bean method.
+
+[source,java]
+.Fixed Rate Job
+----
+include::{root-dir}/libs/micronaut-worker/src/test/groovy/com/agorapulse/worker/annotation/FixedRateSpec.groovy[tag=job-method,indent=0]
+----
+
+=== Initial Delay Jobs
+
+To create a job with an initial delay use `@InitialDelay` annotation containing the duration string on a bean method.
+This annotation can be combined with `@FixedRate` and `@FixedDelay` annotations.
+
+[source,java]
+.Initial Delay Job
+----
+include::{root-dir}/libs/micronaut-worker/src/test/groovy/com/agorapulse/worker/annotation/InitialDelaySpec.groovy[tag=job-method,indent=0]
+----
+
+== Concurrency Management
+
+You can limit the number of parallel executions using the `@Concurrency` annotation. `@Consecutive` annotation
+is an alias to `@Concurrency(1)` and disables parallel execution completely.
+
+[source,java]
+.Fixed Rate Job Running at Most Five Parallel Tasks
+----
+@Concurrency(5)
+include::{root-dir}/libs/micronaut-worker/src/test/groovy/com/agorapulse/worker/annotation/FixedRateSpec.groovy[tag=job-method,indent=0]
+----
+
+== Distributed Jobs
+
+=== Leaders and Followers Jobs
+
+Micronaut Worker library can help you to run jobs in a distributed environments. You can choose to
+run the code only on the leader server or only on the followers.
+
+[source,java]
+.Leader Only Job
+----
+@LeaderOnly
+include::{root-dir}/libs/micronaut-worker/src/test/groovy/com/agorapulse/worker/annotation/CronSpec.groovy[tag=job-method,indent=0]
+----
+
+[source,java]
+.Follower Only Job
+----
+@FollowerOnly
+include::{root-dir}/libs/micronaut-worker/src/test/groovy/com/agorapulse/worker/annotation/FixedRateSpec.groovy[tag=job-method,indent=0]
+----
+
+=== Jobs using Queue
+
+In the distributed environment, the tasks usually process messages using queues. In Micronaut Worker,
+you have three type of queue related jobs - producers, consumers and pipes depending on a number of
+arguments they have and the return value.
+
+The name of the queue can be customised using `@Consumes` and `@Produces`
+annotations, otherwise the name is derived from the simple name of the class with any `Job`, `Consumer`, `Producer`
+suffixes (in this order recursively). If the `micronaut.application.name` property is set then the
+extracted name is prefixed with the application name followed by an underscore. For example,
+`MyOwnConsumerJob` with `micronaut.application.name` set to `myapp` will produce the following
+default queue name `myapp_MyOwn`.
+
+==== Producer
+
+Producer jobs returns a value, usually a `Publisher`, collection of objects or any other object.
+Producer jobs are always run only on the leader server.
+
+[source,java]
+.Producer Job
+----
+include::{root-dir}/libs/micronaut-worker-tck/src/main/groovy/com/agorapulse/worker/tck/queue/SendWordsJob.groovy[tag=simple-producer-method,indent=0]
+----
+
+==== Consumer
+
+Consumer jobs takes a single parameter. They are usually a `@FixedRate` jobs waiting for a message from a queue.
+The messages can be sent into the queue from external systems, a producer job or using `JobManager#enqueue` method.
+
+[source,java]
+.Consumer Job
+----
+include::{root-dir}/libs/micronaut-worker-tck/src/main/groovy/com/agorapulse/worker/tck/queue/SendWordsJob.groovy[tag=simple-consumer-method,indent=0]
+----
+
+
+==== Pipe
+
+Pipe jobs are combination of producer and consumer. They usually must use `@Consumes` and `@Produces`
+to specify the source, and the destination name of the queue.
+
+
+== Configuration
+
+=== General Settings
+
+You can disable all jobs by setting `worker.enabled` property to `false`:
+
+[source,yaml]
+.Disabling All Jobs
+----
+include::{root-dir}/libs/micronaut-worker/src/test/resources/application-disabled.yml[]
+----
+
+=== Job Configuration
+
+Literally everything you can configure using the annotations, you can configure externally.
+The name of the job for classes having just a single job method the name of the class hyphenated, e.g. `sample-job`
+for a class `SampleJob`. If the class contains more than one job methods then jobs are created
+for each method and the name contains both the simple class name and the name of the method, e.g.
+`sample-job-method-one` for `SampleJob#methodOne`. You can override the default name by using
+`@Job("another-name")`. The custom name should already been hyphenated.
+
+You can individually disable specific jobs:
+
+[source,yaml]
+.Disabling Single Job
+----
+include::{root-dir}/libs/micronaut-worker/src/test/resources/application-disabled-individual.yml[]
+----
+
+You can even change the type of the job:
+
+[source,yaml]
+.Switch to Cron Job
+----
+include::{root-dir}/libs/micronaut-worker/src/test/resources/application-cron.yml[]
+----
+
+WARNING: You can use only one of `cron`, `fixed-delay` and `fixed-rate` settings. If more than one
+is used then the first of `cron`, `fixed-delay` or `fixed-rate` is selected in this particular order. You can use`initial-delay` either individually or with `fixed-delay` or `fixed-rate` settings.
+
+You can change the concurrency level and leader/follower execution:
+
+[source,yaml]
+.Concurrency Selection
+----
+include::{root-dir}/libs/micronaut-worker/src/test/resources/application-concurrency.yml[]
+----
+
+You can configure the consumer and producer queues for distributed jobs.
+
+[source,yaml]
+.Queues Customisation
+----
+include::{root-dir}/libs/micronaut-worker/src/test/resources/application-queues.yml[]
+----
+
+== Console Integration

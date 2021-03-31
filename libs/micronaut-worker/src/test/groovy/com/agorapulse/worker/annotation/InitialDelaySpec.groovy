@@ -25,25 +25,30 @@ import spock.lang.Specification
 import javax.inject.Inject
 import java.time.Duration
 
-@SuppressWarnings('EmptyMethod')
+@SuppressWarnings([
+    'EmptyMethod',
+    'GrUnnecessaryPublicModifier',
+])
 
 @MicronautTest
 class InitialDelaySpec extends Specification {
 
+    // tag::job-method[]
     @InitialDelay('10m')
-    void initialDelay() {
+    public void initialDelay() {
         // your code here
     }
 
     @InitialDelay('10m') @FixedRate('5m')
-    void fixedRate() {
+    public void fixedRate() {
         // your code here
     }
 
     @InitialDelay('10m') @FixedDelay('15m')
-    void fixedDelay() {
+    public void fixedDelay() {
         // your code here
     }
+    // end::job-method[]
 
     @Inject
     JobManager jobManager

@@ -1,0 +1,4 @@
+worker:
+  jobs:
+    sample-job:
+      enabled: false

@@ -31,7 +31,7 @@ class JobConfigurationSpec extends Specification {
             JobConfiguration second = new DefaultJobConfiguration('first-job')
             second.consumer.queueName = 'prod_FirstQueue'
             second.consumer.waitingTime = Duration.ofMinutes(1)
-            second.consumer.queueQualifier = 'sqs'
+            second.consumer.queueType = 'sqs'
             second.producer.maxMessages = 5
             second.cron = '0 0 0/2 ? * * *'
             second.scheduler = 'other'
@@ -42,7 +42,7 @@ class JobConfigurationSpec extends Specification {
             first.consumer.maxMessages == 5
             first.consumer.queueName == 'prod_FirstQueue'
             first.consumer.waitingTime == Duration.ofMinutes(1)
-            first.consumer.queueQualifier == 'sqs'
+            first.consumer.queueType == 'sqs'
             first.producer.queueName == 'test_SecondQueue'
             first.producer.maxMessages == 5
             first.cron == '0 0 0/2 ? * * *'

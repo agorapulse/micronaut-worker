@@ -30,8 +30,10 @@ public interface MutableJobConfiguration extends JobConfiguration {
     interface MutableQueueConfiguration extends JobConfiguration.QueueConfiguration {
         void setQueueName(String queueName);
 
-        void setQueueQualifier(String queueQualifier);
+        void setQueueType(String queueType);
+    }
 
+    interface MutableConsumerQueueConfiguration extends MutableQueueConfiguration, JobConfiguration.ConsumerQueueConfiguration {
         void setMaxMessages(@Min(1) int maxMessages);
 
         void setWaitingTime(Duration waitingTime);

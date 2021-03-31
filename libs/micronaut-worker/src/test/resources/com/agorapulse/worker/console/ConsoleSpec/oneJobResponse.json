@@ -10,13 +10,13 @@
             "scheduler": "scheduled",
             "consumer": {
                 "queueName": "Sample",
-                "queueQualifier": null,
+                "queueType": null,
                 "maxMessages": 1,
                 "waitingTime": "0s"
             },
             "producer": {
                 "queueName": "Sample",
-                "queueQualifier": null,
+                "queueType": null,
                 "maxMessages": 1,
                 "waitingTime": "0s"
             }

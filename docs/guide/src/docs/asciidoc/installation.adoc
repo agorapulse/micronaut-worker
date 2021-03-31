@@ -1,0 +1,28 @@
+
+[[_installation_]]
+= Installation
+
+Micronaut Worker is available in the Maven Central
+
+.Gradle Installation
+[source,subs='verbatim,attributes']
+----
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'com.agorapulse:micronaut-worker:{project-version}'
+
+    // to enable AWS SQS queues integration
+    implementation 'com.agorapulse:micronaut-worker-queues-sqs-v1:{project-version}'
+
+    // to enable Redis leader/follower capabilites
+    implementation 'com.agorapulse:micronaut-worker-executor-redis:{project-version}'
+    // you also need Redis configuration on the classpath depending on your Microaut version
+    // for Micornaut 1.x
+    implementation 'io.micronaut.configuration:micronaut-redis-lettuce'
+    // for Micronaut 2.x
+    implementation 'io.micronaut.redis:micronaut-redis-lettuce'
+}
+----

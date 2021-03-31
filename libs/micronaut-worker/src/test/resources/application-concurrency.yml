@@ -1,0 +1,5 @@
+worker:
+  jobs:
+    sample-job:
+      follower-only: true
+      concurrency: 10

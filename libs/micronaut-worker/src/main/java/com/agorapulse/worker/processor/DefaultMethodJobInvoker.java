@@ -87,15 +87,15 @@ public class DefaultMethodJobInvoker implements MethodJobInvoker {
         ));
 
         if (method.getArguments().length == 0) {
-            handleResult(configuration, method, executor.apply(() -> method.invoke(bean)));
+            handleResult(configuration, executor.apply(() -> method.invoke(bean)));
         } else if (method.getArguments().length == 1) {
-            JobConfiguration.QueueConfiguration queueConfiguration = configuration.getConsumer();
-            queues(queueConfiguration.getQueueQualifier()).readMessages(
+            JobConfiguration.ConsumerQueueConfiguration queueConfiguration = configuration.getConsumer();
+            queues(queueConfiguration.getQueueType()).readMessages(
                 queueConfiguration.getQueueName(),
                 queueConfiguration.getMaxMessages() < 1 ? 1 : queueConfiguration.getMaxMessages(),
                 Optional.ofNullable(queueConfiguration.getWaitingTime()).orElse(Duration.ZERO),
                 method.getArguments()[0],
-                message -> handleResult(configuration, method, executor.apply(() -> method.invoke(bean, message)))
+                message -> handleResult(configuration, executor.apply(() -> method.invoke(bean, message)))
             );
         } else {
             LOGGER.error("Too many arguments for " + method + "! The job method wasn't executed!");
@@ -119,7 +119,7 @@ public class DefaultMethodJobInvoker implements MethodJobInvoker {
         return s -> Maybe.fromCallable(s).toFlowable();
     }
 
-    protected void handleResult(JobConfiguration configuration, ExecutableMethod<?, ?> method, Publisher<Object> resultPublisher) {
+    protected void handleResult(JobConfiguration configuration, Publisher<Object> resultPublisher) {
         Object result = Flowable.fromPublisher(resultPublisher).blockingFirst(null);
 
         applicationEventPublisher.publishEvent(new JobExecutionResultEvent(
@@ -133,7 +133,7 @@ public class DefaultMethodJobInvoker implements MethodJobInvoker {
 
         String queueName = configuration.getProducer().getQueueName();
 
-        JobQueues sender = queues(configuration.getProducer().getQueueQualifier());
+        JobQueues sender = queues(configuration.getProducer().getQueueType());
 
         if (result instanceof Publisher) {
             Flowable<?> publisher = Flowable.fromPublisher((Publisher<?>) result);
