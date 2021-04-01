@@ -83,8 +83,8 @@ include::{root-dir}/libs/micronaut-worker/src/test/groovy/com/agorapulse/worker/
 === Jobs using Queue
 
 In the distributed environment, the tasks usually process messages using queues. In Micronaut Worker,
-you have three type of queue related jobs - producers, consumers and pipes depending on a number of
-arguments they have and the return value.
+you have three type of queue related jobs - producers, consumers and pipes - depending on a number of
+arguments they have and their return value.
 
 The name of the queue can be customised using `@Consumes` and `@Produces`
 annotations, otherwise the name is derived from the simple name of the class with any `Job`, `Consumer`, `Producer`
@@ -118,9 +118,22 @@ include::{root-dir}/libs/micronaut-worker-tck/src/main/groovy/com/agorapulse/wor
 
 ==== Pipe
 
-Pipe jobs are combination of producer and consumer. They usually must use `@Consumes` and `@Produces`
+Pipe jobs are combination of producer and consumer. They usually use `@Consumes` and `@Produces`
 to specify the source, and the destination name of the queue.
 
+[source,java]
+.Pipe Job
+----
+include::{root-dir}/libs/micronaut-worker/src/test/groovy/com/agorapulse/worker/annotation/PipeSpec.groovy[tag=job-method,indent=0]
+----
+
+As with consumer job, you can use `JobManager#enqueue` to send messages to the job.
+
+[source,java]
+.Send Message to Job
+----
+include::{root-dir}/libs/micronaut-worker/src/test/groovy/com/agorapulse/worker/annotation/PipeSpec.groovy[tag=enqueue,indent=0]
+----
 
 == Configuration
 
@@ -137,7 +150,7 @@ include::{root-dir}/libs/micronaut-worker/src/test/resources/application-disable
 === Job Configuration
 
 Literally everything you can configure using the annotations, you can configure externally.
-The name of the job for classes having just a single job method the name of the class hyphenated, e.g. `sample-job`
+The name of the job for classes having just a single job method is the name of the class hyphenated, e.g. `sample-job`
 for a class `SampleJob`. If the class contains more than one job methods then jobs are created
 for each method and the name contains both the simple class name and the name of the method, e.g.
 `sample-job-method-one` for `SampleJob#methodOne`. You can override the default name by using

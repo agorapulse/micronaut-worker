@@ -17,10 +17,8 @@
  */
 package com.agorapulse.worker.annotation
 
-import com.agorapulse.worker.Job
 import com.agorapulse.worker.JobManager
 import io.micronaut.test.annotation.MicronautTest
-import spock.lang.Shared
 import spock.lang.Specification
 
 import javax.inject.Inject
@@ -33,7 +31,10 @@ import javax.inject.Inject
 @MicronautTest
 class PipeSpec extends Specification {
 
+    private static List<String> messages = []
+
     // tag::job-method[]
+    @Job("my-pipe")
     @FixedRate("10ms")
     @Consumes("AnyWords")
     @Produces("UpperWords")
@@ -42,17 +43,29 @@ class PipeSpec extends Specification {
     }
     // end::job-method[]
 
+    @FixedRate('10ms')
+    @Consumes("UpperWords")
+    void listenToUpper(String upper) {
+        messages.add(upper)
+    }
+
     @Inject
     JobManager jobManager
 
     void 'job is registered'() {
         expect:
-            'pipe-spec' in jobManager.jobNames
+            'my-pipe' in jobManager.jobNames
 
         when:
-            Job job = jobManager.getJob('cron-spec').get()
+            Thread.sleep(100)
+
+            // tag::enqueue[]
+            jobManager.enqueue("my-pipe", "hello");
+            // end::enqueue[]
+
+            Thread.sleep(100)
         then:
-            job.configuration.cron == '0 0 0/1 ? * *'
+            'HELLO' in messages
     }
 
 }
