@@ -72,7 +72,7 @@ public class WorkerExtensions {
 
     public static void consumer(
         MutableJobConfiguration self,
-        @DelegatesTo(value = MutableJobConfiguration.MutableQueueConfiguration.class, strategy = Closure.DELEGATE_FIRST)
+        @DelegatesTo(value = MutableJobConfiguration.MutableConsumerQueueConfiguration.class, strategy = Closure.DELEGATE_FIRST)
         @ClosureParams(value = SimpleType.class, options = "com.agorapulse.worker.configuration.MutableJobConfiguration.MutableConsumerQueueConfiguration")
             Closure<?> consumer
     ) {

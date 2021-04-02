@@ -16,9 +16,7 @@
             },
             "producer": {
                 "queueName": null,
-                "queueType": null,
-                "maxMessages": 1,
-                "waitingTime": "0s"
+                "queueType": null
             }
         },
         "status": {

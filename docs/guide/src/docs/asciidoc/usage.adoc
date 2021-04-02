@@ -154,7 +154,7 @@ The name of the job for classes having just a single job method is the name of t
 for a class `SampleJob`. If the class contains more than one job methods then jobs are created
 for each method and the name contains both the simple class name and the name of the method, e.g.
 `sample-job-method-one` for `SampleJob#methodOne`. You can override the default name by using
-`@Job("another-name")`. The custom name should already been hyphenated.
+`@Named("another-name")`. The custom name should already been hyphenated.
 
 You can individually disable specific jobs:
 

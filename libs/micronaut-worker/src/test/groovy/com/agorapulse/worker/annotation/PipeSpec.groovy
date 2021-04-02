@@ -22,10 +22,15 @@ import io.micronaut.test.annotation.MicronautTest
 import spock.lang.Specification
 
 import javax.inject.Inject
+import javax.inject.Named
 
 @SuppressWarnings([
     'EmptyMethod',
     'GrUnnecessaryPublicModifier',
+    'UnnecessaryPublicModifier',
+    'UnnecessarySemicolon',
+    'UnnecessaryGString',
+    'PrivateFieldCouldBeFinal',
 ])
 
 @MicronautTest
@@ -34,8 +39,8 @@ class PipeSpec extends Specification {
     private static List<String> messages = []
 
     // tag::job-method[]
-    @Job("my-pipe")
-    @FixedRate("10ms")
+    @Named("my-pipe")
+    @FixedRate("50ms")
     @Consumes("AnyWords")
     @Produces("UpperWords")
     public String pipe(String message) {
@@ -43,7 +48,7 @@ class PipeSpec extends Specification {
     }
     // end::job-method[]
 
-    @FixedRate('10ms')
+    @FixedRate('50ms')
     @Consumes("UpperWords")
     void listenToUpper(String upper) {
         messages.add(upper)
@@ -63,7 +68,11 @@ class PipeSpec extends Specification {
             jobManager.enqueue("my-pipe", "hello");
             // end::enqueue[]
 
-            Thread.sleep(100)
+            int counter = 0
+            while (!('HELLO' in messages) || counter > 100) {
+                Thread.sleep(10)
+                counter++
+            }
         then:
             'HELLO' in messages
     }

@@ -25,6 +25,14 @@ import io.reactivex.Flowable
 
 import javax.inject.Singleton
 
+@SuppressWarnings([
+    'EmptyMethod',
+    'GrUnnecessaryPublicModifier',
+    'UnnecessaryPublicModifier',
+    'UnnecessarySemicolon',
+    'UnnecessaryGString',
+])
+
 @Singleton
 @CompileStatic
 @Requires(env = AbstractQueuesSpec.QUEUE_SPEC_ENV_NAME)

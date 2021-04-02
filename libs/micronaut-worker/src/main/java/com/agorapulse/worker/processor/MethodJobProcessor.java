@@ -39,6 +39,7 @@ import io.micronaut.scheduling.TaskExceptionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Named;
 import javax.inject.Singleton;
 import java.lang.annotation.Annotation;
 import java.time.Duration;
@@ -130,13 +131,13 @@ public class MethodJobProcessor implements ExecutableMethodProcessor<Job> {
     }
 
     private String getJobName(BeanDefinition<?> beanDefinition, ExecutableMethod<?, ?> method) {
-        return NameUtils.hyphenate(method.stringValue(Job.class).orElseGet(() -> {
+        return NameUtils.hyphenate(method.stringValue(Job.class).orElseGet(() -> method.stringValue(Named.class).orElseGet(() -> {
             // there are more then one job definition
             if (beanDefinition.getExecutableMethods().size() > 1) {
                 return method.getDeclaringType().getSimpleName() + "-" + method.getMethodName();
             }
             return method.getDeclaringType().getSimpleName();
-        }));
+        })));
     }
 
     private JobConfiguration getJobConfiguration(BeanDefinition<?> beanDefinition, ExecutableMethod<?, ?> method) {

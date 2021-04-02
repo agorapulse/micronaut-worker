@@ -32,7 +32,6 @@ class JobConfigurationSpec extends Specification {
             second.consumer.queueName = 'prod_FirstQueue'
             second.consumer.waitingTime = Duration.ofMinutes(1)
             second.consumer.queueType = 'sqs'
-            second.producer.maxMessages = 5
             second.cron = '0 0 0/2 ? * * *'
             second.scheduler = 'other'
             second.concurrency = 5
@@ -44,7 +43,6 @@ class JobConfigurationSpec extends Specification {
             first.consumer.waitingTime == Duration.ofMinutes(1)
             first.consumer.queueType == 'sqs'
             first.producer.queueName == 'test_SecondQueue'
-            first.producer.maxMessages == 5
             first.cron == '0 0 0/2 ? * * *'
             first.leaderOnly
             first.scheduler == 'other'
@@ -120,7 +118,7 @@ class JobConfigurationSpec extends Specification {
         @DelegatesTo(value = DefaultJobConfiguration, strategy = Closure.DELEGATE_FIRST) Closure<?> adjust = {
             consumer.maxMessages = 5
             consumer.queueName = 'test_FirstQueue'
-            producer.waitingTime = Duration.ofSeconds(40)
+            consumer.waitingTime = Duration.ofSeconds(40)
             producer.queueName = 'test_SecondQueue'
             cron = '0 0 0/1 ? * * *'
             concurrency = 1

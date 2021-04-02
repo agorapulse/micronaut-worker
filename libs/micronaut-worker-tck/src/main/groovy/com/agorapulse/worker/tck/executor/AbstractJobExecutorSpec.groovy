@@ -19,6 +19,7 @@ package com.agorapulse.worker.tck.executor
 
 import com.agorapulse.worker.executor.DistributedJobExecutor
 import io.micronaut.context.ApplicationContext
+import spock.lang.Retry
 import spock.lang.Specification
 
 abstract class AbstractJobExecutorSpec extends Specification {
@@ -29,6 +30,7 @@ abstract class AbstractJobExecutorSpec extends Specification {
     public static final long LONG_RUNNING_JOB_DURATION = 500
     public static final long SLEEP_BEFORE_CHECKING = 2000
 
+    @Retry(count = 10)
     void 'jobs executed appropriate times on three servers'() {
         given:
             ApplicationContext one = buildContext()

@@ -57,8 +57,6 @@ class JobManagerSpec extends Specification {
                 producer {
                     queueName 'AnotherQueue'
                     queueType 'redis'
-                    waitingTime Duration.ofMillis(80)
-                    maxMessages 20
                 }
 
                 task {
@@ -84,8 +82,6 @@ class JobManagerSpec extends Specification {
             job.configuration.consumer.maxMessages == 10
             job.configuration.producer.queueName == 'AnotherQueue'
             job.configuration.producer.queueType == 'redis'
-            job.configuration.producer.waitingTime == Duration.ofMillis(80)
-            job.configuration.producer.maxMessages == 20
 
         when:
             manager.run('new-job')

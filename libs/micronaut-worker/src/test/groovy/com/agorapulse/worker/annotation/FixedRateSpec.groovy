@@ -28,6 +28,7 @@ import java.time.Duration
 @SuppressWarnings([
     'EmptyMethod',
     'GrUnnecessaryPublicModifier',
+    'UnnecessaryPublicModifier',
 ])
 
 @MicronautTest

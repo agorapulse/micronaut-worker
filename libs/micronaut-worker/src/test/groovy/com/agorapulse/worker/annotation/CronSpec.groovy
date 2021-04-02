@@ -27,6 +27,7 @@ import javax.inject.Inject
 @SuppressWarnings([
     'EmptyMethod',
     'GrUnnecessaryPublicModifier',
+    'UnnecessaryPublicModifier',
 ])
 
 @MicronautTest

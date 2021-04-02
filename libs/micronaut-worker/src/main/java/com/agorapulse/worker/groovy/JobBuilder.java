@@ -98,8 +98,8 @@ public class JobBuilder {
     }
 
     public void consumer(
-        @DelegatesTo(value = MutableJobConfiguration.MutableQueueConfiguration.class, strategy = Closure.DELEGATE_FIRST)
-        @ClosureParams(value = SimpleType.class, options = "com.agorapulse.worker.configuration.MutableJobConfiguration.MutableQueueConfiguration")
+        @DelegatesTo(value = MutableJobConfiguration.MutableConsumerQueueConfiguration.class, strategy = Closure.DELEGATE_FIRST)
+        @ClosureParams(value = SimpleType.class, options = "com.agorapulse.worker.configuration.MutableJobConfiguration.MutableConsumerQueueConfiguration")
             Closure<?> consumer
     ) {
         configuration.withConsumer(ConsumerWithDelegate.create(consumer));
