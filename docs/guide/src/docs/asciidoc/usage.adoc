@@ -191,4 +191,81 @@ You can configure the consumer and producer queues for distributed jobs.
 include::{root-dir}/libs/micronaut-worker/src/test/resources/application-queues.yml[]
 ----
 
+== Events
+
+There are currently three events being fired:
+
+  * `JobExecutionStartedEvent` - this event is fired before executing the job
+  * `JobExecutionFinishedEvent` - this event is fired after the execution is finished
+  * `JobExecutionResultEvent` - this event is fired after the execution of producer or pipe job is finished
+
+WARNING: The `JobExecutionResultEvent` contains the reference to the `result` of the execution and any modifications of the `result` may cause unexpected behavior.
+
+The basic example (already present in the codebase) is simple logging:
+
+[source,java]
+.Logging Job Excution using Events
+----
+include::{root-dir}/libs/micronaut-worker/src/main/java/com/agorapulse/worker/event/JobEventsLogger.java[lines=18..-1,options="nowrap"]
+----
+
+TIP: If https://github.com/agorapulse/micronaut-snitch[Micronaut Snitch] is present on the classpath and configured with the name of the job then the `snitch` method is called automatically after successful execution.
+
 == Console Integration
+
+Micronaut Worker does not provide any management endpoint for security reasons, but it integrates with
+https://agorapulse.github.io/micronaut-console[Micronaut Console] to monitor the jobs and event to trigger them manually.
+
+There is an instance of `JobManager` aliased as `jobs` added into the script bindings. There is a variable added for
+every job as well. The name is a lower-camel-case version on the job name such as `sampleJob` for the `sample-job` job.
+
+[source]
+.Additional Binding into Micoronaut Console
+----
+include::{root-dir}/libs/micronaut-worker/src/test/resources/com/agorapulse/worker/console/ConsoleSpec/variables.txt[]
+----
+
+TIP: The job variables are instances of `JobAccessor` which also provides methods `run()` and `enqueue(message)` to let you easily trigger the jobs from the console.
+
+A very simple script with just variable `jobs` will actually print the status of the current job execution. Depending
+on which console's endpoint you choose, you get either text or a JSON summary.
+
+[source,groovy]
+.Job Manager Script
+----
+include::{root-dir}/libs/micronaut-worker/src/test/resources/com/agorapulse/worker/console/ConsoleSpec/listJobs.groovy[]
+----
+
+[source,options="nowrap"]
+.Job Manager Script - Text Result
+----
+include::{root-dir}/libs/micronaut-worker/src/test/resources/com/agorapulse/worker/console/ConsoleSpec/listJobsResponse.txt[]
+----
+
+
+[source]
+.Job Manager Script - JSON Result
+----
+include::{root-dir}/libs/micronaut-worker/src/test/resources/com/agorapulse/worker/console/ConsoleSpec/listJobsResponse.json[]
+----
+
+Returning a job variable from the script will render details for just a single job.
+
+[source,groovy]
+.Job Detail Script
+----
+include::{root-dir}/libs/micronaut-worker/src/test/resources/com/agorapulse/worker/console/ConsoleSpec/oneJob.groovy[]
+----
+
+[source,options="nowrap"]
+.Job Detail Script - Text Result
+----
+include::{root-dir}/libs/micronaut-worker/src/test/resources/com/agorapulse/worker/console/ConsoleSpec/oneJobResponse.txt[]
+----
+
+
+[source]
+.Job Detail Script - JSON Result
+----
+include::{root-dir}/libs/micronaut-worker/src/test/resources/com/agorapulse/worker/console/ConsoleSpec/oneJobResponse.json[]
+----
