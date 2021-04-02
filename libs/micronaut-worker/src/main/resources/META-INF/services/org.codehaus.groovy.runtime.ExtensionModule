@@ -1,0 +1,4 @@
+moduleName = micronaut-worker
+moduleVersion = @VERSION@
+extensionClasses = com.agorapulse.worker.groovy.WorkerExtensions
+staticExtensionClasses = com.agorapulse.worker.groovy.WorkerStaticExtensions

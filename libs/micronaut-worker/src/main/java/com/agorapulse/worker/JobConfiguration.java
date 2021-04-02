@@ -17,16 +17,28 @@
  */
 package com.agorapulse.worker;
 
+import com.agorapulse.worker.configuration.DefaultJobConfiguration;
+import com.agorapulse.worker.configuration.MutableJobConfiguration;
+
 import javax.annotation.Nullable;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.Duration;
+import java.util.function.Consumer;
 
 /**
  * Job configuration.
  */
 public interface JobConfiguration {
+
+    static JobConfiguration create(String name, Consumer<MutableJobConfiguration> configuration) {
+        // using merge prevents misconfiguration
+        DefaultJobConfiguration first = new DefaultJobConfiguration(name);
+        DefaultJobConfiguration second = new DefaultJobConfiguration(name);
+        configuration.accept(second);
+        return first.mergeWith(second);
+    }
 
     interface QueueConfiguration {
 
@@ -39,6 +51,26 @@ public interface JobConfiguration {
          */
         @Nullable
         String getQueueName();
+
+        /**
+         * Returns the name of the preferred queue implementation or <code>null</code> if the default should be used.
+         *
+         * If there is no queue implementation of given name present the default one will be used.
+         *
+         * @return the name of the preferred queue implementation
+         */
+        @Nullable
+        String getQueueType();
+
+        /**
+         * Merges the values from overrides into this configuration.
+         *
+         * @param overrides the configuration overrides
+         */
+        void mergeWith(QueueConfiguration overrides);
+    }
+
+    interface ConsumerQueueConfiguration extends QueueConfiguration {
 
         /**
          * @return the number of messages which are fetched from the queue in a single poll, defaults to one
@@ -57,7 +89,8 @@ public interface JobConfiguration {
          *
          * @param overrides the configuration overrides
          */
-        void mergeWith(QueueConfiguration overrides);
+        void mergeWith(ConsumerQueueConfiguration overrides);
+
     }
 
     /**
@@ -122,7 +155,7 @@ public interface JobConfiguration {
      * @return the consumer configuration
      */
     @NotNull
-    QueueConfiguration getConsumer();
+    ConsumerQueueConfiguration getConsumer();
 
     /**
      * @return the producer configuration
@@ -135,5 +168,14 @@ public interface JobConfiguration {
      * @return self with the values overridden from the other configuration object
      */
     JobConfiguration mergeWith(JobConfiguration overrides);
+
+    /**
+     * Creates new {@link Job} with current configuration and
+     * @param task the task definition
+     * @return new job with a copy of this configuration
+     */
+    default Job run(Runnable task) {
+        return Job.create(new DefaultJobConfiguration(getName()).mergeWith(this), task);
+    }
 
 }

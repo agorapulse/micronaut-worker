@@ -1,0 +1,33 @@
+{
+    "result": {
+        "configuration": {
+            "name": "failing-job",
+            "enabled": true,
+            "concurrency": 0,
+            "leaderOnly": false,
+            "followerOnly": false,
+            "initialDelay": "10m",
+            "scheduler": "scheduled",
+            "consumer": {
+                "queueName": null,
+                "queueType": null,
+                "maxMessages": 1,
+                "waitingTime": "0s"
+            },
+            "producer": {
+                "queueName": null,
+                "queueType": null
+            }
+        },
+        "status": {
+            "executionCount": 0,
+            "lastTriggered": "${json-unit.matches:isoDateNow}",
+            "lastFinished": "${json-unit.matches:isoDateNow}",
+            "lastDuration": "${json-unit.regex}^0\\.\\d+s$",
+            "lastException": "${json-unit.any-string}",
+            "name": "failing-job"
+        },
+        "source": "${json-unit.regex}.*SimpleJob.*",
+        "name": "failing-job"
+    }
+}

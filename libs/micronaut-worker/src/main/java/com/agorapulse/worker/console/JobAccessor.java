@@ -17,14 +17,13 @@
  */
 package com.agorapulse.worker.console;
 
-import com.agorapulse.worker.JobManager;
+import com.agorapulse.worker.*;
 import com.agorapulse.worker.report.JobReport;
 
 import java.util.Collections;
-import java.util.concurrent.Callable;
-import java.util.function.Consumer;
+import java.util.Optional;
 
-public class JobAccessor implements Callable<Void>, Consumer<Object> {
+public class JobAccessor implements JobInfo {
 
     private final String jobName;
     private final JobManager jobManager;
@@ -34,25 +33,41 @@ public class JobAccessor implements Callable<Void>, Consumer<Object> {
         this.jobManager = jobManager;
     }
 
-    // groovy DSL sugar
-    @Override
-    public Void call() {
+    public void run() {
         jobManager.run(jobName);
-        return null;
     }
 
-    @Override
-    public void accept(Object o) {
+    public void enqueue(Object o) {
         jobManager.enqueue(jobName, o);
     }
 
-    // groovy DSL sugar
-    public void call(Object object) {
-        accept(object);
-    }
-
+    @Override
     public String toString() {
         return JobReport.report(jobManager, Collections.singleton(jobName));
+    }
+
+    @Override
+    public String getName() {
+        return jobName;
+    }
+
+    @Override
+    public String getSource() {
+        return findJob().map(Job::getSource).orElse(null);
+    }
+
+    @Override
+    public JobStatus getStatus() {
+        return findJob().map(Job::getStatus).orElse(null);
+    }
+
+    @Override
+    public JobConfiguration getConfiguration() {
+        return findJob().map(Job::getConfiguration).orElse(null);
+    }
+
+    private Optional<Job> findJob() {
+        return jobManager.getJob(jobName);
     }
 
 }

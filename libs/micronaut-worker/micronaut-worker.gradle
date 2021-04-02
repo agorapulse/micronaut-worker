@@ -16,38 +16,14 @@
  * limitations under the License.
  */
 dependencies {
-    annotationProcessor "io.micronaut:micronaut-inject-java"
-    annotationProcessor "io.micronaut:micronaut-validation"
+    api "space.jasan:groovy-closure-support:$closureSupportVersion"
 
-    implementation "io.micronaut:micronaut-core"
-    implementation "io.micronaut:micronaut-inject"
-    implementation "io.micronaut:micronaut-validation"
-    implementation "io.micronaut:micronaut-runtime"
-
-    compileOnly "com.agorapulse:micronaut-aws-sdk-sqs:$micronautAwsSdkVersion"
     compileOnly "com.agorapulse:micronaut-snitch:$micronautSnitchVersion"
     compileOnly  "com.agorapulse:micronaut-console:$micronautConsoleVersion"
 
-    compileOnly 'io.micronaut.configuration:micronaut-redis-lettuce'
+    testImplementation project(':micronaut-worker-tck')
 
-    compileOnly "io.micronaut:micronaut-inject-groovy"
-    compileOnly "com.agorapulse:remember:$rememberVersion"
-
-    testImplementation("org.spockframework:spock-core:$spockVersion") {
-        exclude group: "org.codehaus.groovy", module: "groovy-all"
-    }
-
-    testImplementation 'com.agorapulse:micronaut-log4aws:1.1.5'
-    testImplementation "io.micronaut:micronaut-inject-groovy"
-    testImplementation "io.micronaut.test:micronaut-test-spock"
-
-    testImplementation 'io.micronaut.configuration:micronaut-redis-lettuce'
-    testImplementation "com.agorapulse:micronaut-aws-sdk-sqs:$micronautAwsSdkVersion"
     testImplementation "com.agorapulse:micronaut-console:$micronautConsoleVersion"
-
-    testImplementation(group: 'org.testcontainers', name: 'localstack', version: project.testcontainersVersion)
-    testImplementation(group: 'org.testcontainers', name: 'spock', version: project.testcontainersVersion) {
-        exclude group: "org.codehaus.groovy", module: "groovy-all"
-    }
-    // add project's dependencies
+    testImplementation "io.micronaut:micronaut-http-server-netty"
+    testImplementation "com.agorapulse:gru-micronaut:$gruVersion"
 }

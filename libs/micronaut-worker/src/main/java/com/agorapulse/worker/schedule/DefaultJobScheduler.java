@@ -74,6 +74,9 @@ public class DefaultJobScheduler implements JobScheduler, Closeable {
         Duration initialDelay = configuration.getInitialDelay();
 
         if (StringUtils.isNotEmpty(configuration.getCron())) {
+            if (LOG.isWarnEnabled() && initialDelay != null && !initialDelay.isZero()) {
+                LOG.warn("Ignoring initial delay {} of cron job {} [{}] for {}", initialDelay, configuration.getName(), configuration.getCron(), job.getSource());
+            }
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Scheduling cron job {} [{}] for {}", configuration.getName(), configuration.getCron(), job.getSource());
             }

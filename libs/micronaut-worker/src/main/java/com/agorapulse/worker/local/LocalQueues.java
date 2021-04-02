@@ -22,6 +22,7 @@ import io.micronaut.core.convert.ConversionService;
 import io.micronaut.core.type.Argument;
 import io.micronaut.retry.annotation.Fallback;
 
+import javax.inject.Named;
 import javax.inject.Singleton;
 import java.time.Duration;
 import java.util.Optional;
@@ -32,6 +33,7 @@ import java.util.function.Consumer;
 
 @Fallback
 @Singleton
+@Named("local")
 public class LocalQueues implements JobQueues {
 
     private final ConcurrentMap<String, ConcurrentLinkedDeque<Object>> queues = new ConcurrentHashMap<>();

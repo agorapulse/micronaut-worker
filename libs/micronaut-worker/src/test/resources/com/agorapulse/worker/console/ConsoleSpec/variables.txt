@@ -1,0 +1,5 @@
+Available Variables:
+
+    ctx: io.micronaut.context.DefaultApplicationContext
+    jobs: com.agorapulse.worker.console.ConsoleJobManager
+    sampleJob: com.agorapulse.worker.console.JobAccessor

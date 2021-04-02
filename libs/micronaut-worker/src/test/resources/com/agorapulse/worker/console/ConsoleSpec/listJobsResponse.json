@@ -1,0 +1,35 @@
+{
+    "result": [
+        {
+            "configuration": {
+                "name": "sample-job",
+                "enabled": true,
+                "concurrency": 0,
+                "leaderOnly": false,
+                "followerOnly": false,
+                "initialDelay": "10m",
+                "scheduler": "scheduled",
+                "consumer": {
+                    "queueName": "Sample",
+                    "queueType": null,
+                    "maxMessages": 1,
+                    "waitingTime": "0s"
+                },
+                "producer": {
+                    "queueName": "Sample",
+                    "queueType": null
+                }
+            },
+            "status": {
+                "executionCount": 0,
+                "lastTriggered": null,
+                "lastFinished": null,
+                "lastDuration": null,
+                "lastException": null,
+                "name": "sample-job"
+            },
+            "source": "method com.agorapulse.worker.console.SampleJob#run",
+            "name": "sample-job"
+        }
+    ]
+}

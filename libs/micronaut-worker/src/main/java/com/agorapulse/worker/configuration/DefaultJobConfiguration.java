@@ -18,26 +18,28 @@
 package com.agorapulse.worker.configuration;
 
 import com.agorapulse.worker.JobConfiguration;
-import io.micronaut.context.annotation.ConfigurationProperties;
-import io.micronaut.context.annotation.EachProperty;
-import io.micronaut.context.annotation.Parameter;
-import io.micronaut.context.annotation.Requires;
+import com.agorapulse.worker.json.DurationSerializer;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import io.micronaut.context.annotation.*;
+import io.micronaut.core.util.StringUtils;
 import io.micronaut.scheduling.TaskExecutors;
 
 import javax.annotation.Nullable;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import java.time.Duration;
+import java.util.function.Consumer;
 
-@EachProperty("jobs")
-@Requires(property = "jobs.enabled", notEquals = "false")
-public class DefaultJobConfiguration implements JobConfiguration {
+@EachProperty("worker.jobs")
+@Requires(property = "worker.enabled", notEquals = "false")
+public class DefaultJobConfiguration implements MutableJobConfiguration {
 
-    public static class DefaultQueueConfiguration implements QueueConfiguration {
+    @JsonInclude
+    public static class DefaultQueueConfiguration implements MutableQueueConfiguration {
 
         private String queueName;
-        private int maxMessages = 1;
-        private Duration waitingTime = Duration.ZERO;
+        private String queueType;
 
         @Nullable
         @Override
@@ -45,9 +47,39 @@ public class DefaultJobConfiguration implements JobConfiguration {
             return queueName;
         }
 
+        @Override
         public void setQueueName(String queueName) {
             this.queueName = queueName;
         }
+
+        @Nullable
+        @Override
+        public String getQueueType() {
+            return queueType;
+        }
+
+        @Override
+        public void setQueueType(String queueType) {
+            this.queueType = queueType;
+        }
+
+        @Override
+        public void mergeWith(QueueConfiguration overrides) {
+            if (StringUtils.isNotEmpty(overrides.getQueueName())) {
+                this.queueName = overrides.getQueueName();
+            }
+
+            if (StringUtils.isNotEmpty(overrides.getQueueType())) {
+                this.queueType = overrides.getQueueType();
+            }
+        }
+    }
+
+    @JsonInclude
+    public static class DefaultConsumerQueueConfiguration extends DefaultQueueConfiguration implements MutableConsumerQueueConfiguration {
+
+        private int maxMessages = 1;
+        private Duration waitingTime = Duration.ZERO;
 
         @Min(1)
         @Override
@@ -55,42 +87,36 @@ public class DefaultJobConfiguration implements JobConfiguration {
             return maxMessages;
         }
 
-        public void setMaxMessages(@Min(1)int maxMessages) {
+        @Override
+        public void setMaxMessages(@Min(1) int maxMessages) {
             this.maxMessages = maxMessages;
         }
 
         @Nullable
         @Override
+        @JsonSerialize(using = DurationSerializer.class)
         public Duration getWaitingTime() {
             return waitingTime;
         }
 
+        @Override
         public void setWaitingTime(Duration waitingTime) {
             this.waitingTime = waitingTime;
         }
 
         @Override
-        public void mergeWith(QueueConfiguration overrides) {
-            if (overrides.getQueueName() != null) {
-                this.queueName = overrides.getQueueName();
-            }
+        public void mergeWith(ConsumerQueueConfiguration overrides) {
+            super.mergeWith(overrides);
 
-            if (overrides.getMaxMessages() != this.maxMessages) {
+            if (overrides.getMaxMessages() > 1 && overrides.getMaxMessages() != this.maxMessages) {
                 this.maxMessages = overrides.getMaxMessages();
             }
 
-            if (overrides.getWaitingTime() != null) {
+            if (overrides.getWaitingTime() != null && !overrides.getWaitingTime().isZero() && overrides.getWaitingTime() != this.waitingTime) {
                 this.waitingTime = overrides.getWaitingTime();
             }
         }
     }
-
-    @ConfigurationProperties("consumer")
-    public static class ConsumerQueueConfiguration extends DefaultQueueConfiguration { }
-
-    @ConfigurationProperties("producer")
-    public static class ProducerQueueConfiguration extends DefaultQueueConfiguration { }
-
 
     private final String name;
 
@@ -106,8 +132,11 @@ public class DefaultJobConfiguration implements JobConfiguration {
     @Nullable private Duration fixedRate;
     @NotBlank private String scheduler = TaskExecutors.SCHEDULED;
 
-    private ConsumerQueueConfiguration consumer = new ConsumerQueueConfiguration();
-    private ProducerQueueConfiguration producer = new ProducerQueueConfiguration();
+    @ConfigurationBuilder(configurationPrefix = "consumer")
+    private final DefaultConsumerQueueConfiguration consumer = new DefaultConsumerQueueConfiguration();
+
+    @ConfigurationBuilder(configurationPrefix = "producer")
+    private final DefaultQueueConfiguration producer = new DefaultQueueConfiguration();
 
     public DefaultJobConfiguration(@Parameter String name) {
         this.name = name;
@@ -123,6 +152,7 @@ public class DefaultJobConfiguration implements JobConfiguration {
         return enabled;
     }
 
+    @Override
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
@@ -132,6 +162,7 @@ public class DefaultJobConfiguration implements JobConfiguration {
         return concurrency;
     }
 
+    @Override
     public void setConcurrency(int concurrency) {
         this.concurrency = concurrency;
     }
@@ -141,6 +172,7 @@ public class DefaultJobConfiguration implements JobConfiguration {
         return leaderOnly;
     }
 
+    @Override
     public void setLeaderOnly(boolean leaderOnly) {
         this.leaderOnly = leaderOnly;
     }
@@ -150,6 +182,7 @@ public class DefaultJobConfiguration implements JobConfiguration {
         return followerOnly;
     }
 
+    @Override
     public void setFollowerOnly(boolean followerOnly) {
         this.followerOnly = followerOnly;
     }
@@ -160,36 +193,43 @@ public class DefaultJobConfiguration implements JobConfiguration {
         return cron;
     }
 
+    @Override
     public void setCron(@Nullable String cron) {
         this.cron = cron;
     }
 
     @Override
     @Nullable
+    @JsonSerialize(using = DurationSerializer.class)
     public Duration getFixedDelay() {
         return fixedDelay;
     }
 
+    @Override
     public void setFixedDelay(@Nullable Duration fixedDelay) {
         this.fixedDelay = fixedDelay;
     }
 
     @Override
     @Nullable
+    @JsonSerialize(using = DurationSerializer.class)
     public Duration getInitialDelay() {
         return initialDelay;
     }
 
+    @Override
     public void setInitialDelay(@Nullable Duration initialDelay) {
         this.initialDelay = initialDelay;
     }
 
     @Override
     @Nullable
+    @JsonSerialize(using = DurationSerializer.class)
     public Duration getFixedRate() {
         return fixedRate;
     }
 
+    @Override
     public void setFixedRate(@Nullable Duration fixedRate) {
         this.fixedRate = fixedRate;
     }
@@ -200,26 +240,29 @@ public class DefaultJobConfiguration implements JobConfiguration {
         return scheduler;
     }
 
+    @Override
     public void setScheduler(@NotBlank String scheduler) {
         this.scheduler = scheduler;
     }
 
     @Override
-    public ConsumerQueueConfiguration getConsumer() {
+    public DefaultConsumerQueueConfiguration getConsumer() {
         return consumer;
     }
 
-    public void setConsumer(ConsumerQueueConfiguration consumer) {
-        this.consumer = consumer;
+    @Override
+    public void withConsumer(Consumer<MutableQueueConfiguration> consumer) {
+        consumer.accept(this.consumer);
     }
 
     @Override
-    public ProducerQueueConfiguration getProducer() {
+    public DefaultQueueConfiguration getProducer() {
         return producer;
     }
 
-    public void setProducer(ProducerQueueConfiguration producer) {
-        this.producer = producer;
+    @Override
+    public void withProducer(Consumer<MutableQueueConfiguration> producer) {
+        producer.accept(this.producer);
     }
 
     @Override
@@ -234,34 +277,40 @@ public class DefaultJobConfiguration implements JobConfiguration {
 
         if (overrides.isLeaderOnly()) {
             this.leaderOnly = overrides.isLeaderOnly();
+            this.followerOnly = false;
         }
 
         if (overrides.isFollowerOnly()) {
             this.followerOnly = overrides.isFollowerOnly();
+            this.leaderOnly = false;
         }
 
-        if (overrides.getCron() != null) {
+        if (StringUtils.isNotEmpty(overrides.getCron())) {
             this.cron = overrides.getCron();
+            this.initialDelay = null;
+            this.fixedDelay = null;
+            this.fixedRate = null;
         }
 
         if (overrides.getFixedDelay() != null) {
+            this.cron = null;
+            this.fixedRate = null;
             this.fixedDelay = overrides.getFixedDelay();
-
-        }
-
-        if (overrides.getInitialDelay() != null) {
-            this.initialDelay = overrides.getInitialDelay();
-
         }
 
         if (overrides.getFixedRate() != null) {
+            this.cron = null;
+            this.fixedDelay = null;
             this.fixedRate = overrides.getFixedRate();
+        }
 
+        if (overrides.getInitialDelay() != null) {
+            this.cron = null;
+            this.initialDelay = overrides.getInitialDelay();
         }
 
         if (overrides.getScheduler() != null && !overrides.getScheduler().equals(TaskExecutors.SCHEDULED)) {
             this.scheduler = overrides.getScheduler();
-
         }
 
         consumer.mergeWith(overrides.getConsumer());

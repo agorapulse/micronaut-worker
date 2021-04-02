@@ -18,10 +18,12 @@
 package com.agorapulse.worker.manager;
 
 import com.agorapulse.worker.Job;
+import com.agorapulse.worker.JobConfiguration;
 import com.agorapulse.worker.JobManager;
 import com.agorapulse.worker.queue.JobQueues;
 import com.agorapulse.worker.report.JobReport;
 import io.micronaut.context.BeanContext;
+import io.micronaut.inject.qualifiers.Qualifiers;
 
 import javax.inject.Singleton;
 import java.util.List;
@@ -70,8 +72,16 @@ public class DefaultJobManager implements JobManager {
 
     @Override
     public void enqueue(String jobName, Object payload) {
-        getJob(jobName).ifPresent(job ->
-                beanContext.getBean(JobQueues.class, job.getJobQueueQualifier()).sendMessage(job.getConfiguration().getConsumer().getQueueName(), payload)
+        getJob(jobName).ifPresent(job -> {
+                JobConfiguration.QueueConfiguration consumer = job.getConfiguration().getConsumer();
+
+                beanContext.findBean(
+                    JobQueues.class,
+                    consumer.getQueueType() == null ? null : Qualifiers.byName(consumer.getQueueType())
+                )
+                .orElseGet(() -> beanContext.getBean(JobQueues.class))
+                .sendMessage(consumer.getQueueName(), payload);
+            }
         );
     }
 }

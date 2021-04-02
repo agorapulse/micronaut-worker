@@ -1,0 +1,11 @@
+worker:
+  jobs:
+    sample-job:
+      consumer:
+        queue-name: OtherQueue
+        queue-type: local
+        max-messages: 100
+        waiting-time: 100ms
+      producer:
+        queue-name: Firehose
+        queue-type: local

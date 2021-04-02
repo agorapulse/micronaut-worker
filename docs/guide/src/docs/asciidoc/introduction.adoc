@@ -2,4 +2,16 @@
 [[_introduction]]
 = Introduction
 
-Lorem ipsum dolor sit amet
+Micronaut Worker is a library for advanced scheduling and work distribution in Micronaut. Compared to
+`@Scheduled` annotation provided by Micronaut itself it adds following capabilities
+
+ * Custom annotations for particular use cases - `@Cron`, `@FixedDelay`, `@FixedRate` and `@InitialDelay`
+ * Runtime configuration via `worker.jobs` properties
+ * Distributed processing support with optional queues and leader election
+ * Job execution events `JobExecutionStartedEvent`, `JobExecutionFinishedEvent` and `JobExecutionResultEvent`
+ * Builtin support for https://github.com/agorapulse/micronaut-snitch[Micronaut Snitch]
+ * Builtin support for https://agorapulse.github.io/micronaut-console[Micronaut Console]
+
+In the opposite of `@Scheduled` annotation, Micronaut Worker annotations are not repeatable but
+they can be combined in meaningful way, e.g. method annotated with `@FixedRate('10m') @InitialDelay('1m')` executes every
+ten minutes, but it will wait one minute before the first execution.

@@ -19,25 +19,18 @@ package com.agorapulse.worker.job;
 
 import com.agorapulse.worker.Job;
 import com.agorapulse.worker.JobConfiguration;
+import com.agorapulse.worker.JobStatus;
 
-import java.time.Duration;
-import java.time.Instant;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 public abstract class AbstractJob implements Job {
 
-    private final AtomicInteger executionCount = new AtomicInteger(0);
-
     private final JobConfiguration configuration;
-
-    private final AtomicReference<Instant> lastTriggered = new AtomicReference<>();
-    private final AtomicReference<Instant> lastFinished = new AtomicReference<>();
-    private final AtomicReference<Duration> lastDuration = new AtomicReference<>();
-    private final AtomicReference<Throwable> lastException = new AtomicReference<>();
+    private final ConcurrentJobStatus status;
 
     protected AbstractJob(JobConfiguration configuration) {
         this.configuration = configuration;
+        this.status = new ConcurrentJobStatus(configuration.getName());
     }
 
     @Override
@@ -46,51 +39,16 @@ public abstract class AbstractJob implements Job {
     }
 
     @Override
-    public final Instant getLastTriggered() {
-        return lastTriggered.get();
-    }
-
-    @Override
-    public final Instant getLastFinished() {
-        return lastFinished.get();
-    }
-
-    @Override
-    public final Throwable getLastException() {
-        return lastException.get();
-    }
-
-    @Override
-    public final int getCurrentExecutionCount() {
-        return executionCount.get();
-    }
-
-    @Override
-    public final Duration getLastDuration() {
-        return lastDuration.get();
+    public JobStatus getStatus() {
+        return status;
     }
 
     @Override
     public final void run() {
-        Instant start = Instant.now();
-        executionCount.incrementAndGet();
-        lastTriggered.set(start);
-
-        try {
-            doRun();
-        } finally {
-            executionCount.decrementAndGet();
-            Instant finish = Instant.now();
-            lastFinished.set(finish);
-            lastDuration.set(Duration.between(start, finish));
+        if (configuration.isEnabled()) {
+            status.run(this::doRun);
         }
-
     }
 
-    protected abstract void doRun();
-
-    protected void setLastException(Throwable th) {
-        lastException.set(th);
-    }
-
+    protected abstract void doRun(Consumer<Throwable> onError);
 }

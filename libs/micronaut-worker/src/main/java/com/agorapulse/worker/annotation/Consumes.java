@@ -34,4 +34,19 @@ public @interface Consumes {
      */
     String value();
 
+    /**
+     * @return the preferred type of the queue implementation, such as sqs or redis
+     */
+    String type() default "";
+
+    /**
+     * @return the maximum waiting time as duration string
+     */
+    String waitingTime() default "";
+
+    /**
+     * @return the maximum of messages consumed in a single run
+     */
+    int maxMessages() default 1;
+
 }

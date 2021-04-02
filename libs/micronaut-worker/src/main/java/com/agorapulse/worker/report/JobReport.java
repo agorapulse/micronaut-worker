@@ -18,6 +18,7 @@
 package com.agorapulse.worker.report;
 
 import com.agorapulse.worker.JobManager;
+import com.agorapulse.worker.JobStatus;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -46,17 +47,18 @@ public class JobReport {
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .forEach(j -> {
+                    JobStatus status = j.getStatus();
                     out.println(String.format(
                             TABLE,
                             j.getName(),
-                            j.getCurrentExecutionCount(),
-                            j.getLastTriggered(),
-                            j.getLastFinished(),
-                            humanReadableFormat(j.getLastDuration())
+                            status.getExecutionCount(),
+                            status.getLastTriggered(),
+                            status.getLastFinished(),
+                            humanReadableFormat(status.getLastDuration())
                     ));
-                    if (j.getLastException() != null) {
+                    if (status.getLastException() != null) {
                         out.println(String.format(BORDER, '-').replace(' ', '-'));
-                        j.getLastException().printStackTrace(out);
+                        status.getLastException().printStackTrace(out);
                     }
                     out.println(String.format(BORDER, '=').replace(' ', '='));
                 });
@@ -64,7 +66,7 @@ public class JobReport {
     }
 
     // https://stackoverflow.com/a/40487511/227419
-    private static String humanReadableFormat(Duration duration) {
+    public static String humanReadableFormat(Duration duration) {
         if (duration == null) {
             return "";
         }

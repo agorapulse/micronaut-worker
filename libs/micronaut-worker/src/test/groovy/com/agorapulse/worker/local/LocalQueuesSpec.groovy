@@ -17,7 +17,7 @@
  */
 package com.agorapulse.worker.local
 
-import com.agorapulse.worker.queue.AbstractQueuesSpec
+import com.agorapulse.worker.tck.queue.AbstractQueuesSpec
 import io.micronaut.context.ApplicationContext
 
 class LocalQueuesSpec extends AbstractQueuesSpec {
