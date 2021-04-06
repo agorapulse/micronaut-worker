@@ -1,0 +1,15 @@
+com.agorapulse.worker
+com.agorapulse.worker.annotation
+com.agorapulse.worker.configuration
+com.agorapulse.worker.event
+com.agorapulse.worker.executor
+com.agorapulse.worker.groovy
+com.agorapulse.worker.job
+com.agorapulse.worker.json
+com.agorapulse.worker.local
+com.agorapulse.worker.processor
+com.agorapulse.worker.queue
+com.agorapulse.worker.redis
+com.agorapulse.worker.sqs.v1
+com.agorapulse.worker.tck.executor
+com.agorapulse.worker.tck.queue

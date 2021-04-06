@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Asciidoctor 2.0.10">
+<meta name="author" content="Vladimir Orany">
+<title>Micronaut Worker</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
+<link rel="stylesheet" href="./asciidoctor.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+.hidden {
+    display: none;
+}
+
+.switch {
+    border-width: 1px 1px 0 1px;
+    border-style: solid;
+    border-color: #7a2518;
+    display: inline-block;
+}
+
+.switch--item {
+    padding: 10px;
+    background-color: #ffffff;
+    color: #7a2518;
+    display: inline-block;
+    cursor: pointer;
+}
+
+.switch--item.selected {
+    background-color: #7a2519;
+    color: #ffffff;
+}
+
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/zepto/1.2.0/zepto.min.js"></script>
+<script type="text/javascript">
+function addBlockSwitches() {
+    $('.primary').each(function() {
+        primary = $(this);
+        createSwitchItem(primary, createBlockSwitch(primary)).item.addClass("selected");
+        primary.children('.title').remove();
+    });
+    $('.secondary').each(function(idx, node) {
+        secondary = $(node);
+        primary = findPrimary(secondary);
+        switchItem = createSwitchItem(secondary, primary.children('.switch'));
+        switchItem.content.addClass('hidden');
+        findPrimary(secondary).append(switchItem.content);
+        secondary.remove();
+    });
+}
+
+function createBlockSwitch(primary) {
+    blockSwitch = $('<div class="switch"></div>');
+    primary.prepend(blockSwitch);
+    return blockSwitch;
+}
+
+function findPrimary(secondary) {
+    candidate = secondary.prev();
+    while (!candidate.is('.primary')) {
+        candidate = candidate.prev();
+    }
+    return candidate;
+}
+
+function createSwitchItem(block, blockSwitch) {
+    blockName = block.children('.title').text();
+    content = block.children('.content').first().append(block.next('.colist'));
+    item = $('<div class="switch--item">' + blockName + '</div>');
+    item.on('click', '', content, function(e) {
+        $(this).addClass('selected');
+        $(this).siblings().removeClass('selected');
+        e.data.siblings('.content').addClass('hidden');
+        e.data.removeClass('hidden');
+    });
+    blockSwitch.append(item);
+    return {'item': item, 'content': content};
+}
+
+$(addBlockSwitches);
+
+</script>
+
+</head>
+<body class="book toc2 toc-left">
+<div id="header">
+<h1>Micronaut Worker</h1>
+<div class="details">
+<span id="author" class="author">Vladimir Orany</span><br>
+<span id="revnumber">version 1.0.0</span>
+</div>
+<div id="toc" class="toc2">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#_introduction">1. Introduction</a></li>
+<li><a href="#_installation_">2. Installation</a></li>
+<li><a href="#_usage">3. Usage</a>
+<ul class="sectlevel2">
+<li><a href="#_scheduling">3.1. Scheduling</a>
+<ul class="sectlevel3">
+<li><a href="#_cron_jobs">3.1.1. Cron Jobs</a></li>
+<li><a href="#_fixed_delay_jobs">3.1.2. Fixed Delay Jobs</a></li>
+<li><a href="#_fixed_rate_jobs">3.1.3. Fixed Rate Jobs</a></li>
+<li><a href="#_initial_delay_jobs">3.1.4. Initial Delay Jobs</a></li>
+</ul>
+</li>
+<li><a href="#_concurrency_management">3.2. Concurrency Management</a></li>
+<li><a href="#_distributed_jobs">3.3. Distributed Jobs</a>
+<ul class="sectlevel3">
+<li><a href="#_leaders_and_followers_jobs">3.3.1. Leaders and Followers Jobs</a></li>
+<li><a href="#_jobs_using_queue">3.3.2. Jobs using Queue</a>
+<ul class="sectlevel4">
+<li><a href="#_producer">Producer</a></li>
+<li><a href="#_consumer">Consumer</a></li>
+<li><a href="#_pipe">Pipe</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#_configuration">3.4. Configuration</a>
+<ul class="sectlevel3">
+<li><a href="#_general_settings">3.4.1. General Settings</a></li>
+<li><a href="#_job_configuration">3.4.2. Job Configuration</a></li>
+</ul>
+</li>
+<li><a href="#_events">3.5. Events</a></li>
+<li><a href="#_console_integration">3.6. Console Integration</a></li>
+</ul>
+</li>
+<li><a href="#_links">4. Links</a></li>
+</ul>
+</div>
+</div>
+<div id="content">
+<div class="sect1">
+<h2 id="_introduction"><a class="anchor" href="#_introduction"></a>1. Introduction</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Micronaut Worker is a library for advanced scheduling and work distribution in Micronaut. Compared to
+<code>@Scheduled</code> annotation provided by Micronaut itself it adds following capabilities</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Custom annotations for particular use cases - <code>@Cron</code>, <code>@FixedDelay</code>, <code>@FixedRate</code> and <code>@InitialDelay</code></p>
+</li>
+<li>
+<p>Runtime configuration via <code>worker.jobs</code> properties</p>
+</li>
+<li>
+<p>Distributed processing support with optional queues and leader election</p>
+</li>
+<li>
+<p>Job execution events <code>JobExecutionStartedEvent</code>, <code>JobExecutionFinishedEvent</code> and <code>JobExecutionResultEvent</code></p>
+</li>
+<li>
+<p>Builtin support for <a href="https://github.com/agorapulse/micronaut-snitch">Micronaut Snitch</a></p>
+</li>
+<li>
+<p>Builtin support for <a href="https://agorapulse.github.io/micronaut-console">Micronaut Console</a></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>In the opposite of <code>@Scheduled</code> annotation, Micronaut Worker annotations are not repeatable but
+they can be combined in meaningful way, e.g. method annotated with <code>@FixedRate('10m') @InitialDelay('1m')</code> executes every
+ten minutes, but it will wait one minute before the first execution.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_installation_"><a class="anchor" href="#_installation_"></a>2. Installation</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Micronaut Worker is available in the Maven Central</p>
+</div>
+<div class="listingblock">
+<div class="title">Gradle Installation</div>
+<div class="content">
+<pre class="prettyprint highlight"><code>repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'com.agorapulse:micronaut-worker:1.0.0'
+
+    // to enable AWS SQS queues integration
+    implementation 'com.agorapulse:micronaut-worker-queues-sqs-v1:1.0.0'
+
+    // to enable Redis leader/follower capabilites
+    implementation 'com.agorapulse:micronaut-worker-executor-redis:1.0.0'
+    // you also need Redis configuration on the classpath depending on your Microaut version
+    // for Micornaut 1.x
+    implementation 'io.micronaut.configuration:micronaut-redis-lettuce'
+    // for Micronaut 2.x
+    implementation 'io.micronaut.redis:micronaut-redis-lettuce'
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_usage"><a class="anchor" href="#_usage"></a>3. Usage</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_scheduling"><a class="anchor" href="#_scheduling"></a>3.1. Scheduling</h3>
+<div class="paragraph">
+<p>The basic usage of this library is to provide easy way to run scheduled tasks in a distributed environment.</p>
+</div>
+<div class="sect3">
+<h4 id="_cron_jobs"><a class="anchor" href="#_cron_jobs"></a>3.1.1. Cron Jobs</h4>
+<div class="paragraph">
+<p>To create a scheduled CRON job use <code>@Cron</code> annotation containing the CRON definition string on a bean method.</p>
+</div>
+<div class="listingblock">
+<div class="title">Cron Job</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="java">@Cron('0 0 0/1 ? * *')
+public void job() {
+    // your code here
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_fixed_delay_jobs"><a class="anchor" href="#_fixed_delay_jobs"></a>3.1.2. Fixed Delay Jobs</h4>
+<div class="paragraph">
+<p>To create a fixed delay job use <code>@FixedDelay</code> annotation containing the duration string on a bean method.</p>
+</div>
+<div class="listingblock">
+<div class="title">Fixed Delay Job</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="java">@FixedDelay('10m')
+public void job() {
+    // your code here
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_fixed_rate_jobs"><a class="anchor" href="#_fixed_rate_jobs"></a>3.1.3. Fixed Rate Jobs</h4>
+<div class="paragraph">
+<p>To create a fixed delay job use <code>@FixedRate</code> annotation containing the duration string on a bean method.</p>
+</div>
+<div class="listingblock">
+<div class="title">Fixed Rate Job</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="java">@FixedRate('10m')
+public void job() {
+    // your code here
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_initial_delay_jobs"><a class="anchor" href="#_initial_delay_jobs"></a>3.1.4. Initial Delay Jobs</h4>
+<div class="paragraph">
+<p>To create a job with an initial delay use <code>@InitialDelay</code> annotation containing the duration string on a bean method.
+This annotation can be combined with <code>@FixedRate</code> and <code>@FixedDelay</code> annotations.</p>
+</div>
+<div class="listingblock">
+<div class="title">Initial Delay Job</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="java">@InitialDelay('10m')
+public void initialDelay() {
+    // your code here
+}
+
+@InitialDelay('10m') @FixedRate('5m')
+public void fixedRate() {
+    // your code here
+}
+
+@InitialDelay('10m') @FixedDelay('15m')
+public void fixedDelay() {
+    // your code here
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_concurrency_management"><a class="anchor" href="#_concurrency_management"></a>3.2. Concurrency Management</h3>
+<div class="paragraph">
+<p>You can limit the number of parallel executions using the <code>@Concurrency</code> annotation. <code>@Consecutive</code> annotation
+is an alias to <code>@Concurrency(1)</code> and disables parallel execution completely.</p>
+</div>
+<div class="listingblock">
+<div class="title">Fixed Rate Job Running at Most Five Parallel Tasks</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="java">@Concurrency(5)
+@FixedRate('10m')
+public void job() {
+    // your code here
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_distributed_jobs"><a class="anchor" href="#_distributed_jobs"></a>3.3. Distributed Jobs</h3>
+<div class="sect3">
+<h4 id="_leaders_and_followers_jobs"><a class="anchor" href="#_leaders_and_followers_jobs"></a>3.3.1. Leaders and Followers Jobs</h4>
+<div class="paragraph">
+<p>Micronaut Worker library can help you to run jobs in a distributed environments. You can choose to
+run the code only on the leader server or only on the followers.</p>
+</div>
+<div class="listingblock">
+<div class="title">Leader Only Job</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="java">@LeaderOnly
+@Cron('0 0 0/1 ? * *')
+public void job() {
+    // your code here
+}</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Follower Only Job</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="java">@FollowerOnly
+@FixedRate('10m')
+public void job() {
+    // your code here
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_jobs_using_queue"><a class="anchor" href="#_jobs_using_queue"></a>3.3.2. Jobs using Queue</h4>
+<div class="paragraph">
+<p>In the distributed environment, the tasks usually process messages using queues. In Micronaut Worker,
+you have three type of queue related jobs - producers, consumers and pipes - depending on a number of
+arguments they have and their return value.</p>
+</div>
+<div class="paragraph">
+<p>The name of the queue can be customised using <code>@Consumes</code> and <code>@Produces</code>
+annotations, otherwise the name is derived from the simple name of the class with any <code>Job</code>, <code>Consumer</code>, <code>Producer</code>
+suffixes (in this order recursively). If the <code>micronaut.application.name</code> property is set then the
+extracted name is prefixed with the application name followed by an underscore. For example,
+<code>MyOwnConsumerJob</code> with <code>micronaut.application.name</code> set to <code>myapp</code> will produce the following
+default queue name <code>myapp_MyOwn</code>.</p>
+</div>
+<div class="sect4">
+<h5 id="_producer"><a class="anchor" href="#_producer"></a>Producer</h5>
+<div class="paragraph">
+<p>Producer jobs returns a value, usually a <code>Publisher</code>, collection of objects or any other object.
+Producer jobs are always run only on the leader server.</p>
+</div>
+<div class="listingblock">
+<div class="title">Producer Job</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="java">@InitialDelay("50ms")
+public Flowable&lt;String&gt; hello() {
+    return Flowable.just("Hello", "World");
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_consumer"><a class="anchor" href="#_consumer"></a>Consumer</h5>
+<div class="paragraph">
+<p>Consumer jobs takes a single parameter. They are usually a <code>@FixedRate</code> jobs waiting for a message from a queue.
+The messages can be sent into the queue from external systems, a producer job or using <code>JobManager#enqueue</code> method.</p>
+</div>
+<div class="listingblock">
+<div class="title">Consumer Job</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="java">@FixedRate("100ms") @InitialDelay("100ms")
+public void listen(String word) {
+    words.add(word);
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_pipe"><a class="anchor" href="#_pipe"></a>Pipe</h5>
+<div class="paragraph">
+<p>Pipe jobs are combination of producer and consumer. They usually use <code>@Consumes</code> and <code>@Produces</code>
+to specify the source, and the destination name of the queue.</p>
+</div>
+<div class="listingblock">
+<div class="title">Pipe Job</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="java">@Named("my-pipe")
+@FixedRate("50ms")
+@Consumes("AnyWords")
+@Produces("UpperWords")
+public String pipe(String message) {
+    return message.toUpperCase();
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>As with consumer job, you can use <code>JobManager#enqueue</code> to send messages to the job.</p>
+</div>
+<div class="listingblock">
+<div class="title">Send Message to Job</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="java">jobManager.enqueue("my-pipe", "hello");</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_configuration"><a class="anchor" href="#_configuration"></a>3.4. Configuration</h3>
+<div class="sect3">
+<h4 id="_general_settings"><a class="anchor" href="#_general_settings"></a>3.4.1. General Settings</h4>
+<div class="paragraph">
+<p>You can disable all jobs by setting <code>worker.enabled</code> property to <code>false</code>:</p>
+</div>
+<div class="listingblock">
+<div class="title">Disabling All Jobs</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="yaml">worker:
+  enabled: false</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_job_configuration"><a class="anchor" href="#_job_configuration"></a>3.4.2. Job Configuration</h4>
+<div class="paragraph">
+<p>Literally everything you can configure using the annotations, you can configure externally.
+The name of the job for classes having just a single job method is the name of the class hyphenated, e.g. <code>sample-job</code>
+for a class <code>SampleJob</code>. If the class contains more than one job methods then jobs are created
+for each method and the name contains both the simple class name and the name of the method, e.g.
+<code>sample-job-method-one</code> for <code>SampleJob#methodOne</code>. You can override the default name by using
+<code>@Named("another-name")</code>. The custom name should already been hyphenated.</p>
+</div>
+<div class="paragraph">
+<p>You can individually disable specific jobs:</p>
+</div>
+<div class="listingblock">
+<div class="title">Disabling Single Job</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="yaml">worker:
+  jobs:
+    sample-job:
+      enabled: false</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You can even change the type of the job:</p>
+</div>
+<div class="listingblock">
+<div class="title">Switch to Cron Job</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="yaml">worker:
+  jobs:
+    sample-job:
+      cron: '0 0 0/1 ? * *'</code></pre>
+</div>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+You can use only one of <code>cron</code>, <code>fixed-delay</code> and <code>fixed-rate</code> settings. If more than one
+is used then the first of <code>cron</code>, <code>fixed-delay</code> or <code>fixed-rate</code> is selected in this particular order. You can use`initial-delay` either individually or with <code>fixed-delay</code> or <code>fixed-rate</code> settings.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>You can change the concurrency level and leader/follower execution:</p>
+</div>
+<div class="listingblock">
+<div class="title">Concurrency Selection</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="yaml">worker:
+  jobs:
+    sample-job:
+      follower-only: true
+      concurrency: 10</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You can configure the consumer and producer queues for distributed jobs.</p>
+</div>
+<div class="listingblock">
+<div class="title">Queues Customisation</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="yaml">worker:
+  jobs:
+    sample-job:
+      consumer:
+        queue-name: OtherQueue
+        queue-type: local
+        max-messages: 100
+        waiting-time: 100ms
+      producer:
+        queue-name: Firehose
+        queue-type: local</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_events"><a class="anchor" href="#_events"></a>3.5. Events</h3>
+<div class="paragraph">
+<p>There are currently three events being fired:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>JobExecutionStartedEvent</code> - this event is fired before executing the job</p>
+</li>
+<li>
+<p><code>JobExecutionFinishedEvent</code> - this event is fired after the execution is finished</p>
+</li>
+<li>
+<p><code>JobExecutionResultEvent</code> - this event is fired after the execution of producer or pipe job is finished</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+The <code>JobExecutionResultEvent</code> contains the reference to the <code>result</code> of the execution and any modifications of the <code>result</code> may cause unexpected behavior.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>The basic example (already present in the codebase) is simple logging:</p>
+</div>
+<div class="listingblock">
+<div class="title">Logging Job Excution using Events</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="java">package com.agorapulse.worker.event;
+
+import com.agorapulse.worker.Job;
+import io.micronaut.runtime.event.annotation.EventListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.inject.Singleton;
+
+@Singleton
+public class JobEventsLogger {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Job.class);
+
+    @EventListener
+    void onJobExecutionStarted(JobExecutionStartedEvent event) {
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("Starting job {}", event.getName());
+        }
+    }
+
+    @EventListener
+    void onJobExecutionResult(JobExecutionResultEvent event) {
+        if (LOGGER.isInfoEnabled()) {
+            Object result = event.getResult();
+            if (result != null) {
+                LOGGER.info("Job {} emitted result {}", event.getName(), result);
+            } else if (LOGGER.isTraceEnabled()){
+                LOGGER.trace("No results emitted from job {}", event.getName());
+            }
+        }
+    }
+
+    @EventListener
+    void onJobExecutionFinished(JobExecutionFinishedEvent event) {
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("Finished executing job {} (some results can still be generated asynchronously later)", event.getName());
+        }
+    }
+
+}</code></pre>
+</div>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+If <a href="https://github.com/agorapulse/micronaut-snitch">Micronaut Snitch</a> is present on the classpath and configured with the name of the job then the <code>snitch</code> method is called automatically after successful execution.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_console_integration"><a class="anchor" href="#_console_integration"></a>3.6. Console Integration</h3>
+<div class="paragraph">
+<p>Micronaut Worker does not provide any management endpoint for security reasons, but it integrates with
+<a href="https://agorapulse.github.io/micronaut-console">Micronaut Console</a> to monitor the jobs and event to trigger them manually.</p>
+</div>
+<div class="paragraph">
+<p>There is an instance of <code>JobManager</code> aliased as <code>jobs</code> added into the script bindings. There is a variable added for
+every job as well. The name is a lower-camel-case version on the job name such as <code>sampleJob</code> for the <code>sample-job</code> job.</p>
+</div>
+<div class="listingblock">
+<div class="title">Additional Binding into Micoronaut Console</div>
+<div class="content">
+<pre class="prettyprint highlight"><code>Available Variables:
+
+    ctx: io.micronaut.context.DefaultApplicationContext
+    jobs: com.agorapulse.worker.console.ConsoleJobManager
+    sampleJob: com.agorapulse.worker.console.JobAccessor</code></pre>
+</div>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+The job variables are instances of <code>JobAccessor</code> which also provides methods <code>run()</code> and <code>enqueue(message)</code> to let you easily trigger the jobs from the console.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>A very simple script with just variable <code>jobs</code> will actually print the status of the current job execution. Depending
+on which console&#8217;s endpoint you choose, you get either text or a JSON summary.</p>
+</div>
+<div class="listingblock">
+<div class="title">Job Manager Script</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="groovy">jobs</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Job Manager Script - Text Result</div>
+<div class="content">
+<pre class="prettyprint highlight nowrap"><code>|==============================================================================================================================================|
+| Name                                               | Running  | Last Triggered            | Last Finished             | Took                 |
+|==============================================================================================================================================|
+| sample-job                                         | 0        | null                      | null                      |                      |
+|==============================================================================================================================================|</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Job Manager Script - JSON Result</div>
+<div class="content">
+<pre class="prettyprint highlight"><code>{
+    "result": [
+        {
+            "configuration": {
+                "name": "sample-job",
+                "enabled": true,
+                "concurrency": 0,
+                "leaderOnly": false,
+                "followerOnly": false,
+                "initialDelay": "10m",
+                "scheduler": "scheduled",
+                "consumer": {
+                    "queueName": "Sample",
+                    "queueType": null,
+                    "maxMessages": 1,
+                    "waitingTime": "0s"
+                },
+                "producer": {
+                    "queueName": "Sample",
+                    "queueType": null
+                }
+            },
+            "status": {
+                "executionCount": 0,
+                "lastTriggered": null,
+                "lastFinished": null,
+                "lastDuration": null,
+                "lastException": null,
+                "name": "sample-job"
+            },
+            "source": "method com.agorapulse.worker.console.SampleJob#run",
+            "name": "sample-job"
+        }
+    ]
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Returning a job variable from the script will render details for just a single job.</p>
+</div>
+<div class="listingblock">
+<div class="title">Job Detail Script</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="groovy">sampleJob</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Job Detail Script - Text Result</div>
+<div class="content">
+<pre class="prettyprint highlight nowrap"><code>|==============================================================================================================================================|
+| Name                                               | Running  | Last Triggered            | Last Finished             | Took                 |
+|==============================================================================================================================================|
+| sample-job                                         | 0        | null                      | null                      |                      |
+|==============================================================================================================================================|</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Job Detail Script - JSON Result</div>
+<div class="content">
+<pre class="prettyprint highlight"><code>{
+    "result": {
+        "configuration": {
+            "name": "sample-job",
+            "enabled": true,
+            "concurrency": 0,
+            "leaderOnly": false,
+            "followerOnly": false,
+            "initialDelay": "10m",
+            "scheduler": "scheduled",
+            "consumer": {
+                "queueName": "Sample",
+                "queueType": null,
+                "maxMessages": 1,
+                "waitingTime": "0s"
+            },
+            "producer": {
+                "queueName": "Sample",
+                "queueType": null
+            }
+        },
+        "status": {
+            "executionCount": 0,
+            "lastTriggered": null,
+            "lastFinished": null,
+            "lastDuration": null,
+            "lastException": null,
+            "name": "sample-job"
+        },
+        "source": "method com.agorapulse.worker.console.SampleJob#run",
+        "name": "sample-job"
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_links"><a class="anchor" href="#_links"></a>4. Links</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><a href="api/index.html" target="_blank" rel="noopener">Javadoc</a></p>
+</div>
+<div class="paragraph">
+<p><a href="api-html/index.html" target="_blank" rel="noopener">Source</a></p>
+</div>
+</div>
+</div>
+</div>
+<div id="footer">
+<div id="footer-text">
+Version 1.0.0<br>
+Last updated 2021-04-06 08:36:44 UTC
+</div>
+</div>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/run_prettify.min.js"></script>
+</body>
+</html>
