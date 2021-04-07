@@ -98,6 +98,14 @@ config {
         }
     }
 
+    docs {
+        javadoc {
+            autoLinks {
+                enabled = false
+            }
+        }
+    }
+
 }
 
 allprojects {
