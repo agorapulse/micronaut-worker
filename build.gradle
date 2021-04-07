@@ -25,8 +25,6 @@ plugins {
 if (!project.hasProperty('sonatypeUsername'))   ext.sonatypeUsername    = '**UNDEFINED**'
 if (!project.hasProperty('sonatypePassword'))   ext.sonatypePassword    = '**UNDEFINED**'
 if (!project.hasProperty('signingKeyId'))       ext.signingKeyId        = '**UNDEFINED**'
-if (!project.hasProperty('signingSecretKey'))   ext.signingSecretKey    = '**UNDEFINED**'
-if (!project.hasProperty('signingPassword'))    ext.signingPassword     = '**UNDEFINED**'
 
 config {
     release = (rootProject.findProperty('release') ?: false).toBoolean()
@@ -132,6 +130,10 @@ projects {
                 bintray {
                     name = subproject.name
                 }
+            }
+
+            signing {
+                useGpgCmd()
             }
 
             // location independent tests (useful for stable CI builds)
