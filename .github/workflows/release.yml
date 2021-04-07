@@ -18,9 +18,14 @@ jobs:
     - name: Semantic Version
       id: version
       uses: ncipollo/semantic-version-action@v1
+    - id: install-secret-key
+      name: Install gpg secret key
+      run: |
+        cat <(echo -e "${{ secrets.OSSRH_GPG_SECRET_KEY }}") | gpg --batch --import
+        gpg --list-secret-keys --keyid-format LONG
     - uses: eskatos/gradle-command-action@v1
       with:
-        arguments: gitPublishPush bintrayUpload -PbintrayUsername=${{ secrets.BINTRAY_USER }} -PbintrayApiKey=${{ secrets.BINTRAY_KEY }} -Pversion=${{ steps.version.outputs.tag }} -Prelease=true -Dorg.ajoberstar.grgit.auth.username=${{ secrets.AGORAPULSE_BOT_PERSONAL_TOKEN }} --stacktrace
+        arguments: gitPublishPush publish -PsonatypeUsername=${{ secrets.SONATYPE_USERNAME }} -PsonatypePassword=${{ secrets.SONATYPE_PASSWORD }} -Pversion=${{ steps.version.outputs.tag }} -Prelease=true -Dorg.ajoberstar.grgit.auth.username=${{ secrets.AGORAPULSE_BOT_PERSONAL_TOKEN }} -Psigning.keyId=45943A74 -Psigning.password=${{ secrets.OSSRH_GPG_SECRET_KEY_PASSWORD }} -Psigning.secretKeyRingFile=~/.gnupg/secring.gpg --stacktrace
   ping:
     name: Notify Upstream Repositories
     runs-on: ubuntu-latest

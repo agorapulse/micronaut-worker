@@ -17,14 +17,16 @@
  */
 plugins {
     id 'org.kordamp.gradle.groovy-project'
-    id 'org.kordamp.gradle.bintray'
     id 'org.kordamp.gradle.checkstyle'
     id 'org.kordamp.gradle.codenarc'
     id 'org.kordamp.gradle.coveralls'
 }
 
-if (!project.hasProperty('bintrayUsername')) ext.bintrayUsername = '**UNDEFINED**'
-if (!project.hasProperty('bintrayApiKey'))   ext.bintrayApiKey   = '**UNDEFINED**'
+if (!project.hasProperty('sonatypeUsername'))   ext.sonatypeUsername    = '**UNDEFINED**'
+if (!project.hasProperty('sonatypePassword'))   ext.sonatypePassword    = '**UNDEFINED**'
+if (!project.hasProperty('signingKeyId'))       ext.signingKeyId        = '**UNDEFINED**'
+if (!project.hasProperty('signingSecretKey'))   ext.signingSecretKey    = '**UNDEFINED**'
+if (!project.hasProperty('signingPassword'))    ext.signingPassword     = '**UNDEFINED**'
 
 config {
     release = (rootProject.findProperty('release') ?: false).toBoolean()
@@ -50,8 +52,12 @@ config {
 
         repositories {
             repository {
-                name = 'localRelease'
-                url  = "" + project.rootProject.buildDir + "/repos/local/release"
+                name = 'mavenRelease'
+                url  = 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
+                credentials {
+                    username = sonatypeUsername
+                    password = sonatypePassword
+                }
             }
             repository {
                 name = 'localSnapshot'
@@ -69,21 +75,9 @@ config {
     }
 
     publishing {
-        signing             = false
-        releasesRepository  = 'localRelease'
+        signing = true
+        releasesRepository  = 'mavenRelease'
         snapshotsRepository = 'localSnapshot'
-    }
-
-    bintray {
-        credentials {
-            username = bintrayUsername
-            password = bintrayApiKey
-        }
-        // TODO: replace
-        userOrg    = 'agorapulse'
-        repo       = 'libs'
-        name       = 'micronaut-worker'
-        publish    = true
     }
 
     quality {
@@ -111,8 +105,6 @@ config {
 allprojects {
     repositories {
         mavenCentral()
-        maven { url  "https://dl.bintray.com/agorapulse/libs" }
-        maven { url "https://repo.spring.io/release"  }
     }
 
     license {
