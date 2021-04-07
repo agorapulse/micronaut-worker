@@ -26,7 +26,6 @@ jobs:
     - name: Export GPG key
       run: |
         export GPG_TTY=$(tty)
-        mkdir ~/.gnupg
         gpg --keyring secring.gpg --pinentry-mode loopback --export-secret-keys -a 45943A74 > /tmp/secring.gpg
     - uses: eskatos/gradle-command-action@v1
       with:
