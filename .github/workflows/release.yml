@@ -26,10 +26,10 @@ jobs:
     - name: Export GPG key
       run: |
         export GPG_TTY=$(tty)
-        gpg --keyring secring.gpg --export-secret-keys -a 45943A74 > ~/tmp/secring.gpg
+        gpg --keyring secring.gpg --export-secret-keys -a 45943A74 > /tmp/secring.gpg
     - uses: eskatos/gradle-command-action@v1
       with:
-        arguments: publish gitPublishPush -PsonatypeUsername=${{ secrets.SONATYPE_USERNAME }} -PsonatypePassword=${{ secrets.SONATYPE_PASSWORD }} -Pversion=${{ steps.version.outputs.tag }} -Prelease=true -Dorg.ajoberstar.grgit.auth.username=${{ secrets.AGORAPULSE_BOT_PERSONAL_TOKEN }} -Psigning.keyId=45943A74 -Psigning.password=${{ secrets.OSSRH_GPG_SECRET_KEY_PASSWORD }} -Psigning.secretKeyRingFile=~/tmp/secring.gpg --stacktrace
+        arguments: publish gitPublishPush -PsonatypeUsername=${{ secrets.SONATYPE_USERNAME }} -PsonatypePassword=${{ secrets.SONATYPE_PASSWORD }} -Pversion=${{ steps.version.outputs.tag }} -Prelease=true -Dorg.ajoberstar.grgit.auth.username=${{ secrets.AGORAPULSE_BOT_PERSONAL_TOKEN }} -Psigning.keyId=45943A74 -Psigning.password=${{ secrets.OSSRH_GPG_SECRET_KEY_PASSWORD }} -Psigning.secretKeyRingFile=/tmp/secring.gpg --stacktrace
   ping:
     name: Notify Upstream Repositories
     runs-on: ubuntu-latest
