@@ -105,6 +105,8 @@ config {
 allprojects {
     repositories {
         mavenCentral()
+        // TODO remove once the dependencies are migrated
+        jcenter()
     }
 
     license {
