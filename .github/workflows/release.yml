@@ -21,7 +21,8 @@ jobs:
     - id: install-secret-key
       name: Install gpg secret key
       run: |
-        echo -e "${{ secrets.OSSRH_GPG_SECRET_KEY }}" > /tmp/secring.gpg
+        echo "${{ secrets.OSSRH_GPG_SECRET_KEY }}" > /tmp/secring.gpg
+        cat /tmp/secring.gpg
     - uses: eskatos/gradle-command-action@v1
       with:
         arguments: publish gitPublishPush -PsonatypeUsername=${{ secrets.SONATYPE_USERNAME }} -PsonatypePassword=${{ secrets.SONATYPE_PASSWORD }} -Pversion=${{ steps.version.outputs.tag }} -Prelease=true -Dorg.ajoberstar.grgit.auth.username=${{ secrets.AGORAPULSE_BOT_PERSONAL_TOKEN }} -Psigning.keyId=45943A74 -Psigning.password=${{ secrets.OSSRH_GPG_SECRET_KEY_PASSWORD }} -Psigning.secretKeyRingFile=/tmp/secring.gpg --stacktrace
