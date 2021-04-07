@@ -126,22 +126,22 @@ var activeTableTab = "activeTableTab";
 </tr>
 <tr id="i0" class="altColor">
 <td class="colFirst"><code>default &lt;T&gt;&nbsp;void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/agorapulse/worker/JobManager.html#enqueue-java.lang.Class-T-">enqueue</a></span>(<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Class.html?is-external=true" title="class or interface in java.lang">Class</a>&lt;? extends <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Consumer.html?is-external=true" title="class or interface in java.util.function">Consumer</a>&lt;? extends T&gt;&gt;&nbsp;jobClass,
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/agorapulse/worker/JobManager.html#enqueue-java.lang.Class-T-">enqueue</a></span>(java.lang.Class&lt;? extends java.util.function.Consumer&lt;? extends T&gt;&gt;&nbsp;jobClass,
        T&nbsp;message)</code>&nbsp;</td>
 </tr>
 <tr id="i1" class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/agorapulse/worker/JobManager.html#enqueue-java.lang.String-java.lang.Object-">enqueue</a></span>(<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;jobName,
-       <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang">Object</a>&nbsp;message)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/agorapulse/worker/JobManager.html#enqueue-java.lang.String-java.lang.Object-">enqueue</a></span>(java.lang.String&nbsp;jobName,
+       java.lang.Object&nbsp;message)</code>
 <div class="block">Sends a message to the job queue to be consumed during one of the next executions.</div>
 </td>
 </tr>
 <tr id="i2" class="altColor">
-<td class="colFirst"><code><a href="https://docs.oracle.com/javase/8/docs/api/java/util/Optional.html?is-external=true" title="class or interface in java.util">Optional</a>&lt;<a href="../../../com/agorapulse/worker/Job.html" title="interface in com.agorapulse.worker">Job</a>&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/agorapulse/worker/JobManager.html#getJob-java.lang.String-">getJob</a></span>(<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;name)</code>&nbsp;</td>
+<td class="colFirst"><code>java.util.Optional&lt;<a href="../../../com/agorapulse/worker/Job.html" title="interface in com.agorapulse.worker">Job</a>&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/agorapulse/worker/JobManager.html#getJob-java.lang.String-">getJob</a></span>(java.lang.String&nbsp;name)</code>&nbsp;</td>
 </tr>
 <tr id="i3" class="rowColor">
-<td class="colFirst"><code><a href="https://docs.oracle.com/javase/8/docs/api/java/util/Set.html?is-external=true" title="class or interface in java.util">Set</a>&lt;<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&gt;</code></td>
+<td class="colFirst"><code>java.util.Set&lt;java.lang.String&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/agorapulse/worker/JobManager.html#getJobNames--">getJobNames</a></span>()</code>&nbsp;</td>
 </tr>
 <tr id="i4" class="altColor">
@@ -152,11 +152,11 @@ var activeTableTab = "activeTableTab";
 </tr>
 <tr id="i5" class="rowColor">
 <td class="colFirst"><code>default void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/agorapulse/worker/JobManager.html#run-java.lang.Class-">run</a></span>(<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Class.html?is-external=true" title="class or interface in java.lang">Class</a>&lt;?&gt;&nbsp;jobClass)</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/agorapulse/worker/JobManager.html#run-java.lang.Class-">run</a></span>(java.lang.Class&lt;?&gt;&nbsp;jobClass)</code>&nbsp;</td>
 </tr>
 <tr id="i6" class="altColor">
 <td class="colFirst"><code>default void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/agorapulse/worker/JobManager.html#run-java.lang.String-">run</a></span>(<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;jobName)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/agorapulse/worker/JobManager.html#run-java.lang.String-">run</a></span>(java.lang.String&nbsp;jobName)</code>
 <div class="block">Execute the job synchronously.</div>
 </td>
 </tr>
@@ -195,7 +195,7 @@ var activeTableTab = "activeTableTab";
 <ul class="blockList">
 <li class="blockList">
 <h4>getJob</h4>
-<pre><a href="https://docs.oracle.com/javase/8/docs/api/java/util/Optional.html?is-external=true" title="class or interface in java.util">Optional</a>&lt;<a href="../../../com/agorapulse/worker/Job.html" title="interface in com.agorapulse.worker">Job</a>&gt;&nbsp;getJob(<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;name)</pre>
+<pre>java.util.Optional&lt;<a href="../../../com/agorapulse/worker/Job.html" title="interface in com.agorapulse.worker">Job</a>&gt;&nbsp;getJob(java.lang.String&nbsp;name)</pre>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>name</code> - the name of the job</dd>
@@ -210,7 +210,7 @@ var activeTableTab = "activeTableTab";
 <ul class="blockList">
 <li class="blockList">
 <h4>getJobNames</h4>
-<pre><a href="https://docs.oracle.com/javase/8/docs/api/java/util/Set.html?is-external=true" title="class or interface in java.util">Set</a>&lt;<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&gt;&nbsp;getJobNames()</pre>
+<pre>java.util.Set&lt;java.lang.String&gt;&nbsp;getJobNames()</pre>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>the set of all jobs' names</dd>
@@ -223,7 +223,7 @@ var activeTableTab = "activeTableTab";
 <ul class="blockList">
 <li class="blockList">
 <h4>run</h4>
-<pre>default&nbsp;void&nbsp;run(<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;jobName)</pre>
+<pre>default&nbsp;void&nbsp;run(java.lang.String&nbsp;jobName)</pre>
 <div class="block">Execute the job synchronously.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -237,8 +237,8 @@ var activeTableTab = "activeTableTab";
 <ul class="blockList">
 <li class="blockList">
 <h4>enqueue</h4>
-<pre>void&nbsp;enqueue(<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;jobName,
-             <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang">Object</a>&nbsp;message)</pre>
+<pre>void&nbsp;enqueue(java.lang.String&nbsp;jobName,
+             java.lang.Object&nbsp;message)</pre>
 <div class="block">Sends a message to the job queue to be consumed during one of the next executions.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -253,7 +253,7 @@ var activeTableTab = "activeTableTab";
 <ul class="blockList">
 <li class="blockList">
 <h4>run</h4>
-<pre>default&nbsp;void&nbsp;run(<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Class.html?is-external=true" title="class or interface in java.lang">Class</a>&lt;?&gt;&nbsp;jobClass)</pre>
+<pre>default&nbsp;void&nbsp;run(java.lang.Class&lt;?&gt;&nbsp;jobClass)</pre>
 </li>
 </ul>
 <a name="enqueue-java.lang.Class-java.lang.Object-">
@@ -264,7 +264,7 @@ var activeTableTab = "activeTableTab";
 <ul class="blockListLast">
 <li class="blockList">
 <h4>enqueue</h4>
-<pre>default&nbsp;&lt;T&gt;&nbsp;void&nbsp;enqueue(<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Class.html?is-external=true" title="class or interface in java.lang">Class</a>&lt;? extends <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Consumer.html?is-external=true" title="class or interface in java.util.function">Consumer</a>&lt;? extends T&gt;&gt;&nbsp;jobClass,
+<pre>default&nbsp;&lt;T&gt;&nbsp;void&nbsp;enqueue(java.lang.Class&lt;? extends java.util.function.Consumer&lt;? extends T&gt;&gt;&nbsp;jobClass,
                          T&nbsp;message)</pre>
 </li>
 </ul>

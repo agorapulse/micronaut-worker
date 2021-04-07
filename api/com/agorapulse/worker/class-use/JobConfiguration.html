@@ -124,8 +124,8 @@
 <tbody>
 <tr class="altColor">
 <td class="colFirst"><code>static <a href="../../../../com/agorapulse/worker/JobConfiguration.html" title="interface in com.agorapulse.worker">JobConfiguration</a></code></td>
-<td class="colLast"><span class="typeNameLabel">JobConfiguration.</span><code><span class="memberNameLink"><a href="../../../../com/agorapulse/worker/JobConfiguration.html#create-java.lang.String-java.util.function.Consumer-">create</a></span>(<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;name,
-      <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Consumer.html?is-external=true" title="class or interface in java.util.function">Consumer</a>&lt;<a href="../../../../com/agorapulse/worker/configuration/MutableJobConfiguration.html" title="interface in com.agorapulse.worker.configuration">MutableJobConfiguration</a>&gt;&nbsp;configuration)</code>&nbsp;</td>
+<td class="colLast"><span class="typeNameLabel">JobConfiguration.</span><code><span class="memberNameLink"><a href="../../../../com/agorapulse/worker/JobConfiguration.html#create-java.lang.String-java.util.function.Consumer-">create</a></span>(java.lang.String&nbsp;name,
+      java.util.function.Consumer&lt;<a href="../../../../com/agorapulse/worker/configuration/MutableJobConfiguration.html" title="interface in com.agorapulse.worker.configuration">MutableJobConfiguration</a>&gt;&nbsp;configuration)</code>&nbsp;</td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code><a href="../../../../com/agorapulse/worker/JobConfiguration.html" title="interface in com.agorapulse.worker">JobConfiguration</a></code></td>
@@ -147,7 +147,7 @@
 <tr class="altColor">
 <td class="colFirst"><code>static <a href="../../../../com/agorapulse/worker/Job.html" title="interface in com.agorapulse.worker">Job</a></code></td>
 <td class="colLast"><span class="typeNameLabel">Job.</span><code><span class="memberNameLink"><a href="../../../../com/agorapulse/worker/Job.html#create-com.agorapulse.worker.JobConfiguration-java.lang.Runnable-">create</a></span>(<a href="../../../../com/agorapulse/worker/JobConfiguration.html" title="interface in com.agorapulse.worker">JobConfiguration</a>&nbsp;configuration,
-      <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Runnable.html?is-external=true" title="class or interface in java.lang">Runnable</a>&nbsp;task)</code>&nbsp;</td>
+      java.lang.Runnable&nbsp;task)</code>&nbsp;</td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code><a href="../../../../com/agorapulse/worker/JobConfiguration.html" title="interface in com.agorapulse.worker">JobConfiguration</a></code></td>
@@ -245,7 +245,7 @@
 <tr class="altColor">
 <td class="colFirst"><code>static <a href="../../../../com/agorapulse/worker/JobConfiguration.html" title="interface in com.agorapulse.worker">JobConfiguration</a></code></td>
 <td class="colLast"><span class="typeNameLabel">WorkerStaticExtensions.</span><code><span class="memberNameLink"><a href="../../../../com/agorapulse/worker/groovy/WorkerStaticExtensions.html#build-com.agorapulse.worker.JobConfiguration-java.lang.String-groovy.lang.Closure-">build</a></span>(<a href="../../../../com/agorapulse/worker/JobConfiguration.html" title="interface in com.agorapulse.worker">JobConfiguration</a>&nbsp;unused,
-     <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;name,
+     java.lang.String&nbsp;name,
      groovy.lang.Closure&lt;?&gt;&nbsp;configuration)</code>&nbsp;</td>
 </tr>
 </tbody>
@@ -260,7 +260,7 @@
 <tr class="altColor">
 <td class="colFirst"><code>static <a href="../../../../com/agorapulse/worker/JobConfiguration.html" title="interface in com.agorapulse.worker">JobConfiguration</a></code></td>
 <td class="colLast"><span class="typeNameLabel">WorkerStaticExtensions.</span><code><span class="memberNameLink"><a href="../../../../com/agorapulse/worker/groovy/WorkerStaticExtensions.html#build-com.agorapulse.worker.JobConfiguration-java.lang.String-groovy.lang.Closure-">build</a></span>(<a href="../../../../com/agorapulse/worker/JobConfiguration.html" title="interface in com.agorapulse.worker">JobConfiguration</a>&nbsp;unused,
-     <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;name,
+     java.lang.String&nbsp;name,
      groovy.lang.Closure&lt;?&gt;&nbsp;configuration)</code>&nbsp;</td>
 </tr>
 </tbody>
@@ -294,7 +294,7 @@
 </tr>
 <tr class="rowColor">
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../com/agorapulse/worker/job/SimpleJob.html#SimpleJob-com.agorapulse.worker.JobConfiguration-java.lang.Runnable-">SimpleJob</a></span>(<a href="../../../../com/agorapulse/worker/JobConfiguration.html" title="interface in com.agorapulse.worker">JobConfiguration</a>&nbsp;configuration,
-         <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Runnable.html?is-external=true" title="class or interface in java.lang">Runnable</a>&nbsp;task)</code>&nbsp;</td>
+         java.lang.Runnable&nbsp;task)</code>&nbsp;</td>
 </tr>
 </tbody>
 </table>
@@ -313,7 +313,7 @@
 <tr class="altColor">
 <td class="colFirst"><code>protected void</code></td>
 <td class="colLast"><span class="typeNameLabel">DefaultMethodJobInvoker.</span><code><span class="memberNameLink"><a href="../../../../com/agorapulse/worker/processor/DefaultMethodJobInvoker.html#handleResult-com.agorapulse.worker.JobConfiguration-org.reactivestreams.Publisher-">handleResult</a></span>(<a href="../../../../com/agorapulse/worker/JobConfiguration.html" title="interface in com.agorapulse.worker">JobConfiguration</a>&nbsp;configuration,
-            org.reactivestreams.Publisher&lt;<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang">Object</a>&gt;&nbsp;resultPublisher)</code>&nbsp;</td>
+            org.reactivestreams.Publisher&lt;java.lang.Object&gt;&nbsp;resultPublisher)</code>&nbsp;</td>
 </tr>
 </tbody>
 </table>

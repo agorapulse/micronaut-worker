@@ -97,7 +97,7 @@ var activeTableTab = "activeTableTab";
 </div>
 <div class="contentContainer">
 <ul class="inheritance">
-<li><a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang">java.lang.Object</a></li>
+<li>java.lang.Object</li>
 <li>
 <ul class="inheritance">
 <li>com.agorapulse.worker.local.LocalJobExecutor</li>
@@ -116,7 +116,7 @@ var activeTableTab = "activeTableTab";
 <pre>@Fallback
  @Singleton
 public class <span class="typeNameLabel">LocalJobExecutor</span>
-extends <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang">Object</a>
+extends java.lang.Object
 implements <a href="../../../../com/agorapulse/worker/executor/DistributedJobExecutor.html" title="interface in com.agorapulse.worker.executor">DistributedJobExecutor</a></pre>
 </li>
 </ul>
@@ -136,7 +136,7 @@ implements <a href="../../../../com/agorapulse/worker/executor/DistributedJobExe
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../../com/agorapulse/worker/local/LocalJobExecutor.html#LocalJobExecutor-java.util.concurrent.ExecutorService-">LocalJobExecutor</a></span>(<a href="https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ExecutorService.html?is-external=true" title="class or interface in java.util.concurrent">ExecutorService</a>&nbsp;executorService)</code>&nbsp;</td>
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../../com/agorapulse/worker/local/LocalJobExecutor.html#LocalJobExecutor-java.util.concurrent.ExecutorService-">LocalJobExecutor</a></span>(java.util.concurrent.ExecutorService&nbsp;executorService)</code>&nbsp;</td>
 </tr>
 </table>
 </li>
@@ -155,23 +155,23 @@ implements <a href="../../../../com/agorapulse/worker/executor/DistributedJobExe
 </tr>
 <tr id="i0" class="altColor">
 <td class="colFirst"><code>&lt;R&gt;&nbsp;org.reactivestreams.Publisher&lt;R&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../com/agorapulse/worker/local/LocalJobExecutor.html#executeConcurrently-java.lang.String-int-java.util.concurrent.Callable-">executeConcurrently</a></span>(<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;jobName,
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../com/agorapulse/worker/local/LocalJobExecutor.html#executeConcurrently-java.lang.String-int-java.util.concurrent.Callable-">executeConcurrently</a></span>(java.lang.String&nbsp;jobName,
                    int&nbsp;concurrency,
-                   <a href="https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/Callable.html?is-external=true" title="class or interface in java.util.concurrent">Callable</a>&lt;R&gt;&nbsp;supplier)</code>
+                   java.util.concurrent.Callable&lt;R&gt;&nbsp;supplier)</code>
 <div class="block">Executes the tasks only if it's not already running.</div>
 </td>
 </tr>
 <tr id="i1" class="rowColor">
 <td class="colFirst"><code>&lt;R&gt;&nbsp;org.reactivestreams.Publisher&lt;R&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../com/agorapulse/worker/local/LocalJobExecutor.html#executeOnlyOnFollower-java.lang.String-java.util.concurrent.Callable-">executeOnlyOnFollower</a></span>(<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;jobName,
-                     <a href="https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/Callable.html?is-external=true" title="class or interface in java.util.concurrent">Callable</a>&lt;R&gt;&nbsp;supplier)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../com/agorapulse/worker/local/LocalJobExecutor.html#executeOnlyOnFollower-java.lang.String-java.util.concurrent.Callable-">executeOnlyOnFollower</a></span>(java.lang.String&nbsp;jobName,
+                     java.util.concurrent.Callable&lt;R&gt;&nbsp;supplier)</code>
 <div class="block">Executes the tasks only on the follower server.</div>
 </td>
 </tr>
 <tr id="i2" class="altColor">
 <td class="colFirst"><code>&lt;R&gt;&nbsp;org.reactivestreams.Publisher&lt;R&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../com/agorapulse/worker/local/LocalJobExecutor.html#executeOnlyOnLeader-java.lang.String-java.util.concurrent.Callable-">executeOnlyOnLeader</a></span>(<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;jobName,
-                   <a href="https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/Callable.html?is-external=true" title="class or interface in java.util.concurrent">Callable</a>&lt;R&gt;&nbsp;supplier)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../com/agorapulse/worker/local/LocalJobExecutor.html#executeOnlyOnLeader-java.lang.String-java.util.concurrent.Callable-">executeOnlyOnLeader</a></span>(java.lang.String&nbsp;jobName,
+                   java.util.concurrent.Callable&lt;R&gt;&nbsp;supplier)</code>
 <div class="block">Executes the tasks only on the leader server.</div>
 </td>
 </tr>
@@ -180,8 +180,8 @@ implements <a href="../../../../com/agorapulse/worker/executor/DistributedJobExe
 <li class="blockList"><a name="methods.inherited.from.class.java.lang.Object">
 <!--   -->
 </a>
-<h3>Methods inherited from class&nbsp;java.lang.<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang">Object</a></h3>
-<code><a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Object.html?is-external=true#clone--" title="class or interface in java.lang">clone</a>, <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Object.html?is-external=true#equals-java.lang.Object-" title="class or interface in java.lang">equals</a>, <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Object.html?is-external=true#finalize--" title="class or interface in java.lang">finalize</a>, <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Object.html?is-external=true#getClass--" title="class or interface in java.lang">getClass</a>, <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Object.html?is-external=true#hashCode--" title="class or interface in java.lang">hashCode</a>, <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Object.html?is-external=true#notify--" title="class or interface in java.lang">notify</a>, <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Object.html?is-external=true#notifyAll--" title="class or interface in java.lang">notifyAll</a>, <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Object.html?is-external=true#toString--" title="class or interface in java.lang">toString</a>, <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Object.html?is-external=true#wait--" title="class or interface in java.lang">wait</a>, <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Object.html?is-external=true#wait-long-" title="class or interface in java.lang">wait</a>, <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Object.html?is-external=true#wait-long-int-" title="class or interface in java.lang">wait</a></code></li>
+<h3>Methods inherited from class&nbsp;java.lang.Object</h3>
+<code>clone, equals, finalize, getClass, hashCode, notify, notifyAll, toString, wait, wait, wait</code></li>
 </ul>
 </li>
 </ul>
@@ -204,7 +204,7 @@ implements <a href="../../../../com/agorapulse/worker/executor/DistributedJobExe
 <li class="blockList">
 <h4>LocalJobExecutor</h4>
 <pre>public&nbsp;LocalJobExecutor(@Named(value="local-job-executor")
-                        <a href="https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ExecutorService.html?is-external=true" title="class or interface in java.util.concurrent">ExecutorService</a>&nbsp;executorService)</pre>
+                        java.util.concurrent.ExecutorService&nbsp;executorService)</pre>
 </li>
 </ul>
 </li>
@@ -221,8 +221,8 @@ implements <a href="../../../../com/agorapulse/worker/executor/DistributedJobExe
 <ul class="blockList">
 <li class="blockList">
 <h4>executeOnlyOnLeader</h4>
-<pre>public&nbsp;&lt;R&gt;&nbsp;org.reactivestreams.Publisher&lt;R&gt;&nbsp;executeOnlyOnLeader(<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;jobName,
-                                                                <a href="https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/Callable.html?is-external=true" title="class or interface in java.util.concurrent">Callable</a>&lt;R&gt;&nbsp;supplier)</pre>
+<pre>public&nbsp;&lt;R&gt;&nbsp;org.reactivestreams.Publisher&lt;R&gt;&nbsp;executeOnlyOnLeader(java.lang.String&nbsp;jobName,
+                                                                java.util.concurrent.Callable&lt;R&gt;&nbsp;supplier)</pre>
 <div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../../../../com/agorapulse/worker/executor/DistributedJobExecutor.html#executeOnlyOnLeader-java.lang.String-java.util.concurrent.Callable-">DistributedJobExecutor</a></code></span></div>
 <div class="block">Executes the tasks only on the leader server.</div>
 <dl>
@@ -244,9 +244,9 @@ implements <a href="../../../../com/agorapulse/worker/executor/DistributedJobExe
 <ul class="blockList">
 <li class="blockList">
 <h4>executeConcurrently</h4>
-<pre>public&nbsp;&lt;R&gt;&nbsp;org.reactivestreams.Publisher&lt;R&gt;&nbsp;executeConcurrently(<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;jobName,
+<pre>public&nbsp;&lt;R&gt;&nbsp;org.reactivestreams.Publisher&lt;R&gt;&nbsp;executeConcurrently(java.lang.String&nbsp;jobName,
                                                                 int&nbsp;concurrency,
-                                                                <a href="https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/Callable.html?is-external=true" title="class or interface in java.util.concurrent">Callable</a>&lt;R&gt;&nbsp;supplier)</pre>
+                                                                java.util.concurrent.Callable&lt;R&gt;&nbsp;supplier)</pre>
 <div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../../../../com/agorapulse/worker/executor/DistributedJobExecutor.html#executeConcurrently-java.lang.String-int-java.util.concurrent.Callable-">DistributedJobExecutor</a></code></span></div>
 <div class="block">Executes the tasks only if it's not already running.</div>
 <dl>
@@ -269,8 +269,8 @@ implements <a href="../../../../com/agorapulse/worker/executor/DistributedJobExe
 <ul class="blockListLast">
 <li class="blockList">
 <h4>executeOnlyOnFollower</h4>
-<pre>public&nbsp;&lt;R&gt;&nbsp;org.reactivestreams.Publisher&lt;R&gt;&nbsp;executeOnlyOnFollower(<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;jobName,
-                                                                  <a href="https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/Callable.html?is-external=true" title="class or interface in java.util.concurrent">Callable</a>&lt;R&gt;&nbsp;supplier)</pre>
+<pre>public&nbsp;&lt;R&gt;&nbsp;org.reactivestreams.Publisher&lt;R&gt;&nbsp;executeOnlyOnFollower(java.lang.String&nbsp;jobName,
+                                                                  java.util.concurrent.Callable&lt;R&gt;&nbsp;supplier)</pre>
 <div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../../../../com/agorapulse/worker/executor/DistributedJobExecutor.html#executeOnlyOnFollower-java.lang.String-java.util.concurrent.Callable-">DistributedJobExecutor</a></code></span></div>
 <div class="block">Executes the tasks only on the follower server.</div>
 <dl>

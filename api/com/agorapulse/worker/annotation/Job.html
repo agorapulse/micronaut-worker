@@ -93,9 +93,9 @@
 <li class="blockList">
 <hr>
 <br>
-<pre><a href="https://docs.oracle.com/javase/8/docs/api/java/lang/annotation/Documented.html?is-external=true" title="class or interface in java.lang.annotation">@Documented</a>
- <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/annotation/Retention.html?is-external=true" title="class or interface in java.lang.annotation">@Retention</a>(<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/annotation/Retention.html?is-external=true#value--" title="class or interface in java.lang.annotation">value</a>=<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/annotation/RetentionPolicy.html?is-external=true#RUNTIME" title="class or interface in java.lang.annotation">RUNTIME</a>)
- <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/annotation/Target.html?is-external=true" title="class or interface in java.lang.annotation">@Target</a>(<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/annotation/Target.html?is-external=true#value--" title="class or interface in java.lang.annotation">value</a>={<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/annotation/ElementType.html?is-external=true#METHOD" title="class or interface in java.lang.annotation">METHOD</a>,<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/annotation/ElementType.html?is-external=true#ANNOTATION_TYPE" title="class or interface in java.lang.annotation">ANNOTATION_TYPE</a>})
+<pre>@Documented
+ @Retention(value=RUNTIME)
+ @Target(value={METHOD,ANNOTATION_TYPE})
  @Executable(processOnStartup=true)
  @Parallel
 public @interface <span class="memberNameLabel">Job</span></pre>
@@ -119,34 +119,34 @@ public @interface <span class="memberNameLabel">Job</span></pre>
 <th class="colLast" scope="col">Optional Element and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colFirst"><code><a href="https://docs.oracle.com/javase/8/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a></code></td>
+<td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../com/agorapulse/worker/annotation/Job.html#cron--">cron</a></span></code>&nbsp;</td>
 </tr>
 <tr class="rowColor">
-<td class="colFirst"><code><a href="https://docs.oracle.com/javase/8/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a></code></td>
+<td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../com/agorapulse/worker/annotation/Job.html#fixedDelay--">fixedDelay</a></span></code>
-<div class="block">A String representation of the <a href="https://docs.oracle.com/javase/8/docs/api/java/time/Duration.html?is-external=true" title="class or interface in java.time"><code>Duration</code></a> between the time of the last execution and the
+<div class="block">A String representation of the <code>Duration</code> between the time of the last execution and the
  beginning of the next.</div>
 </td>
 </tr>
 <tr class="altColor">
-<td class="colFirst"><code><a href="https://docs.oracle.com/javase/8/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a></code></td>
+<td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../com/agorapulse/worker/annotation/Job.html#fixedRate--">fixedRate</a></span></code>
-<div class="block">A String representation of the <a href="https://docs.oracle.com/javase/8/docs/api/java/time/Duration.html?is-external=true" title="class or interface in java.time"><code>Duration</code></a> between executions.</div>
+<div class="block">A String representation of the <code>Duration</code> between executions.</div>
 </td>
 </tr>
 <tr class="rowColor">
-<td class="colFirst"><code><a href="https://docs.oracle.com/javase/8/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a></code></td>
+<td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../com/agorapulse/worker/annotation/Job.html#initialDelay--">initialDelay</a></span></code>
-<div class="block">A String representation of the <a href="https://docs.oracle.com/javase/8/docs/api/java/time/Duration.html?is-external=true" title="class or interface in java.time"><code>Duration</code></a> before starting executions.</div>
+<div class="block">A String representation of the <code>Duration</code> before starting executions.</div>
 </td>
 </tr>
 <tr class="altColor">
-<td class="colFirst"><code><a href="https://docs.oracle.com/javase/8/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a></code></td>
+<td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../com/agorapulse/worker/annotation/Job.html#scheduler--">scheduler</a></span></code>&nbsp;</td>
 </tr>
 <tr class="rowColor">
-<td class="colFirst"><code><a href="https://docs.oracle.com/javase/8/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a></code></td>
+<td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../com/agorapulse/worker/annotation/Job.html#value--">value</a></span></code>
 <div class="block">Allows to override the default name of the job which is <code>JobClassName</code> if there is only one executable
  method (e.g.</div>
@@ -173,7 +173,7 @@ public @interface <span class="memberNameLabel">Job</span></pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>value</h4>
-<pre>public abstract&nbsp;<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;value</pre>
+<pre>public abstract&nbsp;java.lang.String&nbsp;value</pre>
 <div class="block">Allows to override the default name of the job which is <code>JobClassName</code> if there is only one executable
  method (e.g. job definition) in the class or <code>JobClassName-methodName</code> if there is more then one executable method in the class.
 
@@ -197,7 +197,7 @@ public @interface <span class="memberNameLabel">Job</span></pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>cron</h4>
-<pre>public abstract&nbsp;<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;cron</pre>
+<pre>public abstract&nbsp;java.lang.String&nbsp;cron</pre>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>The CRON expression</dd>
@@ -217,8 +217,8 @@ public @interface <span class="memberNameLabel">Job</span></pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>fixedDelay</h4>
-<pre>public abstract&nbsp;<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;fixedDelay</pre>
-<div class="block">A String representation of the <a href="https://docs.oracle.com/javase/8/docs/api/java/time/Duration.html?is-external=true" title="class or interface in java.time"><code>Duration</code></a> between the time of the last execution and the
+<pre>public abstract&nbsp;java.lang.String&nbsp;fixedDelay</pre>
+<div class="block">A String representation of the <code>Duration</code> between the time of the last execution and the
  beginning of the next. For example 10m == 10 minutes</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -239,8 +239,8 @@ public @interface <span class="memberNameLabel">Job</span></pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>initialDelay</h4>
-<pre>public abstract&nbsp;<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;initialDelay</pre>
-<div class="block">A String representation of the <a href="https://docs.oracle.com/javase/8/docs/api/java/time/Duration.html?is-external=true" title="class or interface in java.time"><code>Duration</code></a> before starting executions. For example
+<pre>public abstract&nbsp;java.lang.String&nbsp;initialDelay</pre>
+<div class="block">A String representation of the <code>Duration</code> before starting executions. For example
  10m == 10 minutes</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -261,8 +261,8 @@ public @interface <span class="memberNameLabel">Job</span></pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>fixedRate</h4>
-<pre>public abstract&nbsp;<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;fixedRate</pre>
-<div class="block">A String representation of the <a href="https://docs.oracle.com/javase/8/docs/api/java/time/Duration.html?is-external=true" title="class or interface in java.time"><code>Duration</code></a> between executions. For example 10m == 10 minutes</div>
+<pre>public abstract&nbsp;java.lang.String&nbsp;fixedRate</pre>
+<div class="block">A String representation of the <code>Duration</code> between executions. For example 10m == 10 minutes</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>The fixed rate</dd>
@@ -282,11 +282,11 @@ public @interface <span class="memberNameLabel">Job</span></pre>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>scheduler</h4>
-<pre>public abstract&nbsp;<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;scheduler</pre>
+<pre>public abstract&nbsp;java.lang.String&nbsp;scheduler</pre>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>The name of a <code>Named</code> bean that is a
- <a href="https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ScheduledExecutorService.html?is-external=true" title="class or interface in java.util.concurrent"><code>ScheduledExecutorService</code></a> to use to schedule the task</dd>
+ <code>ScheduledExecutorService</code> to use to schedule the task</dd>
 </dl>
 <dl>
 <dt>Default:</dt>
