@@ -20,10 +20,15 @@ plugins {
     id 'org.kordamp.gradle.checkstyle'
     id 'org.kordamp.gradle.codenarc'
     id 'org.kordamp.gradle.coveralls'
+    id 'io.github.gradle-nexus.publish-plugin'
 }
 
-if (!project.hasProperty('sonatypeUsername'))   ext.sonatypeUsername    = '**UNDEFINED**'
-if (!project.hasProperty('sonatypePassword'))   ext.sonatypePassword    = '**UNDEFINED**'
+if (!project.hasProperty('ossrhUsername'))      ext.ossrhUsername       = System.getenv('SONATYPE_USERNAME') ?: '**UNDEFINED**'
+if (!project.hasProperty('ossrhPassword'))      ext.ossrhPassword       = System.getenv('SONATYPE_PASSWORD') ?: '**UNDEFINED**'
+if (!project.hasProperty('signingKeyId'))       ext.signingKeyId        = System.getenv('SIGNING_KEY_ID') ?: '**UNDEFINED**'
+if (!project.hasProperty('signingPassword'))    ext.signingPassword     = System.getenv('SIGNING_PASSWORD') ?: '**UNDEFINED**'
+if (!project.hasProperty('signingSecretKey'))   ext.signingSecretKey    = System.getenv('SIGNING_SECRET_KEY_PATH') ? rootProject.file(System.getenv('SIGNING_SECRET_KEY_PATH')).text : '**UNDEFINED**'
+
 
 config {
     release = (rootProject.findProperty('release') ?: false).toBoolean()
@@ -34,9 +39,9 @@ config {
         description = 'Micronaut Worker'
 
         links {
-            website      = "https://github.com/" + slug
-            issueTracker = "https://github.com/" + slug + "/issues"
-            scm          = "https://github.com/" + slug + ".git"
+            website      = 'https://github.com/' + slug
+            issueTracker = 'https://github.com/' + slug + '/issues'
+            scm          = 'https://github.com/' + slug + '.git'
         }
 
         people {
@@ -49,16 +54,12 @@ config {
 
         repositories {
             repository {
-                name = 'mavenRelease'
-                url  = 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
-                credentials {
-                    username = sonatypeUsername
-                    password = sonatypePassword
-                }
+                name = 'localReleases'
+                url  = '' + project.rootProject.buildDir + '/repos/local/releases'
             }
             repository {
                 name = 'localSnapshot'
-                url  = "" + project.rootProject.buildDir + "/repos/local/snapshot"
+                url  = '' + project.rootProject.buildDir + '/repos/local/snapshot'
             }
         }
     }
@@ -72,8 +73,13 @@ config {
     }
 
     publishing {
-        signing = true
-        releasesRepository  = 'mavenRelease'
+        signing {
+            enabled =  true
+            keyId = signingKeyId
+            secretKey = signingSecretKey
+            password = signingPassword
+        }
+        releasesRepository  = 'localReleases'
         snapshotsRepository = 'localSnapshot'
     }
 
@@ -99,11 +105,18 @@ config {
 
 }
 
+nexusPublishing {
+    repositories {
+        sonatype {
+            username = ossrhUsername
+            password = ossrhPassword
+        }
+    }
+}
+
 allprojects {
     repositories {
         mavenCentral()
-        // TODO remove once the dependencies are migrated
-        jcenter()
     }
 
     license {
@@ -125,12 +138,6 @@ projects {
                 mavenCentral()
             }
 
-            config {
-                bintray {
-                    name = subproject.name
-                }
-            }
-
             // location independent tests (useful for stable CI builds)
             tasks.withType(Test){
                 systemProperty 'user.timezone', 'UTC'
@@ -138,7 +145,7 @@ projects {
             }
 
             tasks.withType(JavaCompile) {
-                options.encoding = "UTF-8"
+                options.encoding = 'UTF-8'
                 options.compilerArgs.add('-parameters')
             }
 
@@ -163,28 +170,28 @@ projects {
                 testCompile platform("io.micronaut:micronaut-bom:$micronautVersion")
                 testImplementation platform("io.micronaut:micronaut-bom:$micronautVersion")
 
-                annotationProcessor "io.micronaut:micronaut-inject-java"
-                annotationProcessor "io.micronaut:micronaut-validation"
+                annotationProcessor 'io.micronaut:micronaut-inject-java'
+                annotationProcessor 'io.micronaut:micronaut-validation'
 
-                implementation "io.micronaut:micronaut-core"
-                implementation "io.micronaut:micronaut-inject"
-                implementation "io.micronaut:micronaut-validation"
-                implementation "io.micronaut:micronaut-runtime"
+                implementation 'io.micronaut:micronaut-core'
+                implementation 'io.micronaut:micronaut-inject'
+                implementation 'io.micronaut:micronaut-validation'
+                implementation 'io.micronaut:micronaut-runtime'
 
 
-                compileOnly "io.micronaut:micronaut-inject-groovy"
+                compileOnly 'io.micronaut:micronaut-inject-groovy'
                 compileOnly "com.agorapulse:remember:$rememberVersion"
 
                 testImplementation("org.spockframework:spock-core:$spockVersion") {
-                    exclude group: "org.codehaus.groovy", module: "groovy-all"
+                    exclude group: 'org.codehaus.groovy', module: 'groovy-all'
                 }
 
                 testImplementation 'com.agorapulse:micronaut-log4aws:1.1.5'
-                testImplementation "io.micronaut:micronaut-inject-groovy"
-                testImplementation "io.micronaut.test:micronaut-test-spock"
+                testImplementation 'io.micronaut:micronaut-inject-groovy'
+                testImplementation 'io.micronaut.test:micronaut-test-spock'
 
                 testImplementation(group: 'org.testcontainers', name: 'spock', version: project.testcontainersVersion) {
-                    exclude group: "org.codehaus.groovy", module: "groovy-all"
+                    exclude group: 'org.codehaus.groovy', module: 'groovy-all'
                 }
             }
 
@@ -207,14 +214,20 @@ projects {
                 manifest.attributes provider: 'gradle'
             }
 
+            dependencies {
+                testImplementation group: 'org.spockframework', name: 'spock-core', version: spockVersion
+            }
+        }
+
+        dir('examples') {
             config {
-                bintray {
-                    enabled = true
+                publishing {
+                    enabled = false
                 }
             }
 
             dependencies {
-                testImplementation group: 'org.spockframework', name: 'spock-core', version: spockVersion
+                implementation project(':micronaut-worker')
             }
         }
     }
