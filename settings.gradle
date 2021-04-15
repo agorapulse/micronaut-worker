@@ -28,7 +28,7 @@ buildscript {
         classpath group: 'org.kordamp.gradle',      name: 'guide-gradle-plugin',            version: kordampPluginVersion
         classpath group: 'org.kordamp.gradle',      name: 'coveralls-gradle-plugin',        version: kordampPluginVersion
         classpath group: 'org.ajoberstar',          name: 'gradle-git-publish',             version: gitPublishPluginVersion
-        classpath group: 'io.github.gradle-nexus',  name: 'publish-plugin',                 version; nexusPluginVersion
+        classpath group: 'io.github.gradle-nexus',  name: 'publish-plugin',                 version: nexusPluginVersion
     }
 }
 

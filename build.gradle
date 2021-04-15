@@ -39,9 +39,9 @@ config {
         description = 'Micronaut Worker'
 
         links {
-            website      = "https://github.com/" + slug
-            issueTracker = "https://github.com/" + slug + "/issues"
-            scm          = "https://github.com/" + slug + ".git"
+            website      = 'https://github.com/' + slug
+            issueTracker = 'https://github.com/' + slug + '/issues'
+            scm          = 'https://github.com/' + slug + '.git'
         }
 
         people {
@@ -54,16 +54,12 @@ config {
 
         repositories {
             repository {
-                name = 'mavenRelease'
-                url  = 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
-                credentials {
-                    username = sonatypeUsername
-                    password = sonatypePassword
-                }
+                name = 'localReleases'
+                url  = '' + project.rootProject.buildDir + '/repos/local/releases'
             }
             repository {
                 name = 'localSnapshot'
-                url  = "" + project.rootProject.buildDir + "/repos/local/snapshot"
+                url  = '' + project.rootProject.buildDir + '/repos/local/snapshot'
             }
         }
     }
@@ -83,7 +79,7 @@ config {
             secretKey = signingSecretKey
             password = signingPassword
         }
-        releasesRepository  = 'mavenRelease'
+        releasesRepository  = 'localReleases'
         snapshotsRepository = 'localSnapshot'
     }
 
@@ -149,7 +145,7 @@ projects {
             }
 
             tasks.withType(JavaCompile) {
-                options.encoding = "UTF-8"
+                options.encoding = 'UTF-8'
                 options.compilerArgs.add('-parameters')
             }
 
@@ -174,28 +170,28 @@ projects {
                 testCompile platform("io.micronaut:micronaut-bom:$micronautVersion")
                 testImplementation platform("io.micronaut:micronaut-bom:$micronautVersion")
 
-                annotationProcessor "io.micronaut:micronaut-inject-java"
-                annotationProcessor "io.micronaut:micronaut-validation"
+                annotationProcessor 'io.micronaut:micronaut-inject-java'
+                annotationProcessor 'io.micronaut:micronaut-validation'
 
-                implementation "io.micronaut:micronaut-core"
-                implementation "io.micronaut:micronaut-inject"
-                implementation "io.micronaut:micronaut-validation"
-                implementation "io.micronaut:micronaut-runtime"
+                implementation 'io.micronaut:micronaut-core'
+                implementation 'io.micronaut:micronaut-inject'
+                implementation 'io.micronaut:micronaut-validation'
+                implementation 'io.micronaut:micronaut-runtime'
 
 
-                compileOnly "io.micronaut:micronaut-inject-groovy"
+                compileOnly 'io.micronaut:micronaut-inject-groovy'
                 compileOnly "com.agorapulse:remember:$rememberVersion"
 
                 testImplementation("org.spockframework:spock-core:$spockVersion") {
-                    exclude group: "org.codehaus.groovy", module: "groovy-all"
+                    exclude group: 'org.codehaus.groovy', module: 'groovy-all'
                 }
 
                 testImplementation 'com.agorapulse:micronaut-log4aws:1.1.5'
-                testImplementation "io.micronaut:micronaut-inject-groovy"
-                testImplementation "io.micronaut.test:micronaut-test-spock"
+                testImplementation 'io.micronaut:micronaut-inject-groovy'
+                testImplementation 'io.micronaut.test:micronaut-test-spock'
 
                 testImplementation(group: 'org.testcontainers', name: 'spock', version: project.testcontainersVersion) {
-                    exclude group: "org.codehaus.groovy", module: "groovy-all"
+                    exclude group: 'org.codehaus.groovy', module: 'groovy-all'
                 }
             }
 
