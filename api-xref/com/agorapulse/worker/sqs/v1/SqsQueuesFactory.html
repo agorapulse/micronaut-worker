@@ -1,7 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head><meta http-equiv="content-type" content="text/html; charset=UTF-8" />
-<title>/home/runner/work/micronaut-worker/micronaut-worker/libs/micornaut-worker-queues-sqs-v1/src/main/java/com/agorapulse/worker/sqs/v1/SqsQueuesFactory.java xref</title>
+<title>/home/runner/work/micronaut-worker/micronaut-worker/libs/micronaut-worker-queues-sqs-v1/src/main/java/com/agorapulse/worker/sqs/v1/SqsQueuesFactory.java xref</title>
 <link type="text/css" rel="stylesheet" href="../../../../../stylesheet.css" />
 </head>
 <body>
@@ -52,7 +52,7 @@
 <a class="jxr_linenumber" name="L44" href="#L44">44</a>      @Bean
 <a class="jxr_linenumber" name="L45" href="#L45">45</a>      @Singleton
 <a class="jxr_linenumber" name="L46" href="#L46">46</a>      @Named(<span class="jxr_string">"sqs"</span>)
-<a class="jxr_linenumber" name="L47" href="#L47">47</a>      <strong class="jxr_keyword">public</strong> JobQueues sqsQueues(
+<a class="jxr_linenumber" name="L47" href="#L47">47</a>      <strong class="jxr_keyword">public</strong> <a name="JobQueues" href="../../../../../com/agorapulse/worker/queue/JobQueues.html#JobQueues">JobQueues</a> sqsQueues(
 <a class="jxr_linenumber" name="L48" href="#L48">48</a>              AWSCredentialsProvider provider,
 <a class="jxr_linenumber" name="L49" href="#L49">49</a>              ObjectMapper mapper,
 <a class="jxr_linenumber" name="L50" href="#L50">50</a>              SimpleQueueService service,
@@ -68,7 +68,7 @@
 <a class="jxr_linenumber" name="L60" href="#L60">60</a>              } <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (LOGGER.isInfoEnabled()) {
 <a class="jxr_linenumber" name="L61" href="#L61">61</a>                  LOGGER.info(<span class="jxr_string">"AWS SDK is not authenticated correctly, Using local job queues"</span>);
 <a class="jxr_linenumber" name="L62" href="#L62">62</a>              }
-<a class="jxr_linenumber" name="L63" href="#L63">63</a>              <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">new</strong> LocalQueues(conversionService);
+<a class="jxr_linenumber" name="L63" href="#L63">63</a>              <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">new</strong> <a name="LocalQueues" href="../../../../../com/agorapulse/worker/local/LocalQueues.html#LocalQueues">LocalQueues</a>(conversionService);
 <a class="jxr_linenumber" name="L64" href="#L64">64</a>          }
 <a class="jxr_linenumber" name="L65" href="#L65">65</a>      }
 <a class="jxr_linenumber" name="L66" href="#L66">66</a>  
