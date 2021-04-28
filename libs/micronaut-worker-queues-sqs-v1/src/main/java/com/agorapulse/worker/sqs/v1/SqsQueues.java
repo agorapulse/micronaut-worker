@@ -43,7 +43,7 @@ public class SqsQueues implements JobQueues {
         simpleQueueService.receiveMessages(queueName, maxNumberOfMessages, 0, Math.toIntExact(waitTime.getSeconds())).forEach(m -> {
             try {
                 action.accept(objectMapper.readValue(m.getBody(), JacksonConfiguration.constructType(argument, objectMapper.getTypeFactory())));
-                simpleQueueService.deleteMessage(m.getReceiptHandle());
+                simpleQueueService.deleteMessage(queueName, m.getReceiptHandle());
             } catch (JsonProcessingException e) {
                 throw new IllegalArgumentException("Cannot convert to " + argument + "from message\n" + m.getBody(), e);
             }

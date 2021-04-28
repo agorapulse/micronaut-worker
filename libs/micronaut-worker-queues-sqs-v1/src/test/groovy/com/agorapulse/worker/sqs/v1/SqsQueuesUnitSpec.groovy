@@ -65,8 +65,8 @@ class SqsQueuesUnitSpec extends Specification {
                     ),
                 ]
             }
-            1 * simpleQueueService.deleteMessage('one')
-            1 * simpleQueueService.deleteMessage('two')
+            1 * simpleQueueService.deleteMessage(QUEUE_NAME, 'one')
+            1 * simpleQueueService.deleteMessage(QUEUE_NAME, 'two')
     }
 
     void 'message not deleted on error'() {
@@ -87,7 +87,7 @@ class SqsQueuesUnitSpec extends Specification {
                 ]
             }
 
-            0 * simpleQueueService.deleteMessage('one')
+            0 * simpleQueueService.deleteMessage(QUEUE_NAME, 'one')
     }
 
     void 'send message'() {
