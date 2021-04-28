@@ -51,7 +51,7 @@
 <a class="jxr_linenumber" name="L43" href="#L43">43</a>          simpleQueueService.receiveMessages(queueName, maxNumberOfMessages, 0, Math.toIntExact(waitTime.getSeconds())).forEach(m -&gt; {
 <a class="jxr_linenumber" name="L44" href="#L44">44</a>              <strong class="jxr_keyword">try</strong> {
 <a class="jxr_linenumber" name="L45" href="#L45">45</a>                  action.accept(objectMapper.readValue(m.getBody(), JacksonConfiguration.constructType(argument, objectMapper.getTypeFactory())));
-<a class="jxr_linenumber" name="L46" href="#L46">46</a>                  simpleQueueService.deleteMessage(m.getReceiptHandle());
+<a class="jxr_linenumber" name="L46" href="#L46">46</a>                  simpleQueueService.deleteMessage(queueName, m.getReceiptHandle());
 <a class="jxr_linenumber" name="L47" href="#L47">47</a>              } <strong class="jxr_keyword">catch</strong> (JsonProcessingException e) {
 <a class="jxr_linenumber" name="L48" href="#L48">48</a>                  <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> IllegalArgumentException(<span class="jxr_string">"Cannot convert to "</span> + argument + <span class="jxr_string">"from message\n"</span> + m.getBody(), e);
 <a class="jxr_linenumber" name="L49" href="#L49">49</a>              }
