@@ -41,6 +41,7 @@ jobs:
       matrix:
         repository:
           - agorapulse/agorapulse-bom
+          - agorapulse/agorapulse-oss
     steps:
       - uses: actions/checkout@v1
       - name: Semantic Version
