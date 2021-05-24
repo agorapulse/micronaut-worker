@@ -92,7 +92,7 @@ $(addBlockSwitches);
 <h1>Micronaut Worker</h1>
 <div class="details">
 <span id="author" class="author">Vladimir Orany</span><br>
-<span id="revnumber">version 1.0.3</span>
+<span id="revnumber">version 1.1.0</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -187,13 +187,13 @@ ten minutes, but it will wait one minute before the first execution.</p>
 }
 
 dependencies {
-    implementation 'com.agorapulse:micronaut-worker:1.0.3'
+    implementation 'com.agorapulse:micronaut-worker:1.1.0'
 
     // to enable AWS SQS queues integration
-    implementation 'com.agorapulse:micronaut-worker-queues-sqs-v1:1.0.3'
+    implementation 'com.agorapulse:micronaut-worker-queues-sqs-v1:1.1.0'
 
     // to enable Redis leader/follower capabilites
-    implementation 'com.agorapulse:micronaut-worker-executor-redis:1.0.3'
+    implementation 'com.agorapulse:micronaut-worker-executor-redis:1.1.0'
     // you also need Redis configuration on the classpath depending on your Microaut version
     // for Micornaut 1.x
     implementation 'io.micronaut.configuration:micronaut-redis-lettuce'
@@ -421,6 +421,18 @@ public String pipe(String message) {
   enabled: false</code></pre>
 </div>
 </div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+All the jobs are also disabed for the <code>test</code> and <code>function</code> environment.
+</td>
+</tr>
+</table>
+</div>
 </div>
 <div class="sect3">
 <h4 id="_job_configuration"><a class="anchor" href="#_job_configuration"></a>3.4.2. Job Configuration</h4>
@@ -453,6 +465,7 @@ for each method and the name contains both the simple class name and the name of
 <pre class="prettyprint highlight"><code data-lang="yaml">worker:
   jobs:
     sample-job:
+      enabled: true
       cron: '0 0 0/1 ? * *'</code></pre>
 </div>
 </div>
@@ -478,6 +491,7 @@ is used then the first of <code>cron</code>, <code>fixed-delay</code> or <code>f
 <pre class="prettyprint highlight"><code data-lang="yaml">worker:
   jobs:
     sample-job:
+      enabled: true
       follower-only: true
       concurrency: 10</code></pre>
 </div>
@@ -491,6 +505,7 @@ is used then the first of <code>cron</code>, <code>fixed-delay</code> or <code>f
 <pre class="prettyprint highlight"><code data-lang="yaml">worker:
   jobs:
     sample-job:
+      enabled: true
       consumer:
         queue-name: OtherQueue
         queue-type: local
@@ -761,8 +776,8 @@ on which console&#8217;s endpoint you choose, you get either text or a JSON summ
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 1.0.3<br>
-Last updated 2021-04-28 12:20:08 UTC
+Version 1.1.0<br>
+Last updated 2021-05-24 09:21:38 UTC
 </div>
 </div>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.css">
