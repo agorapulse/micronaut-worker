@@ -18,6 +18,7 @@
 package com.agorapulse.worker.groovy;
 
 import com.agorapulse.worker.Job;
+import com.agorapulse.worker.WorkerConfiguration;
 import com.agorapulse.worker.configuration.DefaultJobConfiguration;
 import com.agorapulse.worker.configuration.MutableJobConfiguration;
 import groovy.lang.Closure;
@@ -36,7 +37,7 @@ public class JobBuilder {
     private Runnable task;
 
     public JobBuilder(String name) {
-        this.configuration = new DefaultJobConfiguration(name);
+        this.configuration = new DefaultJobConfiguration(name, WorkerConfiguration.ENABLED);
     }
 
     public void task(

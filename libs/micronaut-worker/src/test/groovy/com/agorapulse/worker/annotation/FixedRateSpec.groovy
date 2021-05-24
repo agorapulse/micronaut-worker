@@ -19,6 +19,7 @@ package com.agorapulse.worker.annotation
 
 import com.agorapulse.worker.Job
 import com.agorapulse.worker.JobManager
+import io.micronaut.context.annotation.Property
 import io.micronaut.test.annotation.MicronautTest
 import spock.lang.Specification
 
@@ -32,6 +33,7 @@ import java.time.Duration
 ])
 
 @MicronautTest
+@Property(name = 'worker.jobs.fixed-rate-spec.enabled', value = 'true')
 class FixedRateSpec extends Specification {
 
     // tag::job-method[]

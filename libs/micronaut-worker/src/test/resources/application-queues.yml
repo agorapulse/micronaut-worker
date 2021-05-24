@@ -1,6 +1,7 @@
 worker:
   jobs:
     sample-job:
+      enabled: true
       consumer:
         queue-name: OtherQueue
         queue-type: local

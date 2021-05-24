@@ -19,6 +19,7 @@ package com.agorapulse.worker.annotation
 
 import com.agorapulse.worker.Job
 import com.agorapulse.worker.JobManager
+import io.micronaut.context.annotation.Property
 import io.micronaut.test.annotation.MicronautTest
 import spock.lang.Specification
 
@@ -31,6 +32,7 @@ import javax.inject.Inject
 ])
 
 @MicronautTest
+@Property(name = 'worker.jobs.cron-spec.enabled', value = 'true')
 class CronSpec extends Specification {
 
     // tag::job-method[]

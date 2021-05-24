@@ -34,8 +34,8 @@ public interface JobConfiguration {
 
     static JobConfiguration create(String name, Consumer<MutableJobConfiguration> configuration) {
         // using merge prevents misconfiguration
-        DefaultJobConfiguration first = new DefaultJobConfiguration(name);
-        DefaultJobConfiguration second = new DefaultJobConfiguration(name);
+        DefaultJobConfiguration first = new DefaultJobConfiguration(name, WorkerConfiguration.ENABLED);
+        DefaultJobConfiguration second = new DefaultJobConfiguration(name, WorkerConfiguration.ENABLED);
         configuration.accept(second);
         return first.mergeWith(second);
     }
@@ -175,7 +175,7 @@ public interface JobConfiguration {
      * @return new job with a copy of this configuration
      */
     default Job run(Runnable task) {
-        return Job.create(new DefaultJobConfiguration(getName()).mergeWith(this), task);
+        return Job.create(new DefaultJobConfiguration(getName(), WorkerConfiguration.ENABLED).mergeWith(this), task);
     }
 
 }

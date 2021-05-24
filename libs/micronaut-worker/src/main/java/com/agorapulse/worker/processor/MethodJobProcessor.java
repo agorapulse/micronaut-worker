@@ -20,12 +20,12 @@ package com.agorapulse.worker.processor;
 import com.agorapulse.worker.JobConfiguration;
 import com.agorapulse.worker.JobManager;
 import com.agorapulse.worker.JobScheduler;
+import com.agorapulse.worker.WorkerConfiguration;
 import com.agorapulse.worker.annotation.*;
 import com.agorapulse.worker.configuration.DefaultJobConfiguration;
 import com.agorapulse.worker.configuration.MutableJobConfiguration;
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.context.BeanContext;
-import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.processor.ExecutableMethodProcessor;
 import io.micronaut.core.annotation.AnnotationValue;
 import io.micronaut.core.convert.ConversionService;
@@ -57,7 +57,6 @@ import java.util.Optional;
  * @since 1.0
  */
 @Singleton
-@Requires(property = "worker.enabled", notEquals = "false")
 public class MethodJobProcessor implements ExecutableMethodProcessor<Job> {
 
     private static final Logger LOG = LoggerFactory.getLogger(MethodJobProcessor.class);
@@ -76,6 +75,7 @@ public class MethodJobProcessor implements ExecutableMethodProcessor<Job> {
     private final ApplicationConfiguration applicationConfiguration;
     private final JobScheduler jobScheduler;
     private final ConversionService<?> conversionService;
+    private final WorkerConfiguration workerConfiguration;
 
     /**
      * @param beanContext              The bean context for DI of beans annotated with {@link javax.inject.Inject}
@@ -84,6 +84,7 @@ public class MethodJobProcessor implements ExecutableMethodProcessor<Job> {
      * @param jobManager               The job manager
      * @param applicationConfiguration The application configuration
      * @param jobScheduler             The job scheduler
+     * @param workerConfiguration
      */
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     public MethodJobProcessor(
@@ -93,7 +94,8 @@ public class MethodJobProcessor implements ExecutableMethodProcessor<Job> {
         JobManager jobManager,
         ApplicationConfiguration applicationConfiguration,
         JobScheduler jobScheduler,
-        Optional<ConversionService<?>> optionalConversionService
+        Optional<ConversionService<?>> optionalConversionService,
+        WorkerConfiguration workerConfiguration
     ) {
         this.beanContext = beanContext;
         this.taskExceptionHandler = taskExceptionHandler;
@@ -102,6 +104,7 @@ public class MethodJobProcessor implements ExecutableMethodProcessor<Job> {
         this.applicationConfiguration = applicationConfiguration;
         this.jobScheduler = jobScheduler;
         this.conversionService = optionalConversionService.orElse(ConversionService.SHARED);
+        this.workerConfiguration = workerConfiguration;
     }
 
     @Override
@@ -144,9 +147,9 @@ public class MethodJobProcessor implements ExecutableMethodProcessor<Job> {
         String jobName = getJobName(beanDefinition, method);
 
         JobConfiguration configurationOverrides = beanContext.findBean(JobConfiguration.class, Qualifiers.byName(jobName))
-            .orElseGet(() -> new DefaultJobConfiguration(jobName));
+            .orElseGet(() -> new DefaultJobConfiguration(jobName, workerConfiguration));
 
-        DefaultJobConfiguration configuration = new DefaultJobConfiguration(jobName);
+        DefaultJobConfiguration configuration = new DefaultJobConfiguration(jobName, workerConfiguration);
 
         method.stringValue(Job.class, MEMBER_CRON).ifPresent(configuration::setCron);
         method.stringValue(Job.class, MEMBER_FIXED_DELAY).ifPresent(fixedDelay -> configuration.setFixedDelay(convertDuration(jobName, fixedDelay, "fixed delay")));

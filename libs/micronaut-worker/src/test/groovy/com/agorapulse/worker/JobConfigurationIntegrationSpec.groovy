@@ -19,6 +19,7 @@ package com.agorapulse.worker
 
 import com.agorapulse.worker.console.ConsoleSpec
 import io.micronaut.context.ApplicationContext
+import io.micronaut.context.env.Environment
 import spock.lang.AutoCleanup
 import spock.lang.Specification
 
@@ -30,9 +31,14 @@ class JobConfigurationIntegrationSpec extends Specification {
 
     @AutoCleanup ApplicationContext context
 
-    void 'sample job is present'() {
+    void 'sample job is not present in the test environment'() {
         expect:
-            JOB_NAME in manager().jobNames
+            !(JOB_NAME in manager().jobNames)
+    }
+
+    void 'sample job is not present in the function environment'() {
+        expect:
+            !(JOB_NAME in manager(Environment.FUNCTION).jobNames)
     }
 
     void 'jobs can be disabled'() {

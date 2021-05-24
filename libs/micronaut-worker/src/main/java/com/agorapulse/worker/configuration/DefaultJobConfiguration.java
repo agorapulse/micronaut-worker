@@ -18,10 +18,13 @@
 package com.agorapulse.worker.configuration;
 
 import com.agorapulse.worker.JobConfiguration;
+import com.agorapulse.worker.WorkerConfiguration;
 import com.agorapulse.worker.json.DurationSerializer;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import io.micronaut.context.annotation.*;
+import io.micronaut.context.annotation.ConfigurationBuilder;
+import io.micronaut.context.annotation.EachProperty;
+import io.micronaut.context.annotation.Parameter;
 import io.micronaut.core.util.StringUtils;
 import io.micronaut.scheduling.TaskExecutors;
 
@@ -32,7 +35,6 @@ import java.time.Duration;
 import java.util.function.Consumer;
 
 @EachProperty("worker.jobs")
-@Requires(property = "worker.enabled", notEquals = "false")
 public class DefaultJobConfiguration implements MutableJobConfiguration {
 
     @JsonInclude
@@ -120,7 +122,7 @@ public class DefaultJobConfiguration implements MutableJobConfiguration {
 
     private final String name;
 
-    boolean enabled = true;
+    boolean enabled;
 
     int concurrency;
     boolean leaderOnly;
@@ -138,7 +140,8 @@ public class DefaultJobConfiguration implements MutableJobConfiguration {
     @ConfigurationBuilder(configurationPrefix = "producer")
     private final DefaultQueueConfiguration producer = new DefaultQueueConfiguration();
 
-    public DefaultJobConfiguration(@Parameter String name) {
+    public DefaultJobConfiguration(@Parameter String name, WorkerConfiguration workerConfiguration) {
+        this.enabled = workerConfiguration.isEnabled();
         this.name = name;
     }
 
@@ -267,9 +270,7 @@ public class DefaultJobConfiguration implements MutableJobConfiguration {
 
     @Override
     public JobConfiguration mergeWith(JobConfiguration overrides) {
-        if (!overrides.isEnabled()) {
-            this.enabled = overrides.isEnabled();
-        }
+        this.enabled = overrides.isEnabled();
 
         if (overrides.getConcurrency() > 0) {
             this.concurrency = overrides.getConcurrency();

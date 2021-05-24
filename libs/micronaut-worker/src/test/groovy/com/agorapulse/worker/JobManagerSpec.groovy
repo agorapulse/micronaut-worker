@@ -18,6 +18,7 @@
 package com.agorapulse.worker
 
 import com.agorapulse.worker.annotation.FixedRate
+import io.micronaut.context.annotation.Property
 import io.micronaut.context.annotation.Requires
 import io.micronaut.test.annotation.MicronautTest
 import spock.lang.Specification
@@ -28,6 +29,7 @@ import java.time.Duration
 import java.util.function.Consumer
 
 @MicronautTest(environments = MANAGER_SPEC_ENVIRONMENT)
+@Property(name = 'worker.jobs.consumer-job.enabled', value = 'true')
 @SuppressWarnings('AbcMetric')
 class JobManagerSpec extends Specification {
 

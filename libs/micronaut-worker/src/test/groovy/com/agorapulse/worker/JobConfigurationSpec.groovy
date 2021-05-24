@@ -28,7 +28,7 @@ class JobConfigurationSpec extends Specification {
         when:
             JobConfiguration first = createJobConfiguration()
 
-            JobConfiguration second = new DefaultJobConfiguration('first-job')
+            JobConfiguration second = new DefaultJobConfiguration('first-job', WorkerConfiguration.ENABLED)
             second.consumer.queueName = 'prod_FirstQueue'
             second.consumer.waitingTime = Duration.ofMinutes(1)
             second.consumer.queueType = 'sqs'
@@ -125,7 +125,7 @@ class JobConfigurationSpec extends Specification {
             leaderOnly = true
         }
     ) {
-        return new DefaultJobConfiguration('first-job').tap(adjust)
+        return new DefaultJobConfiguration('first-job', WorkerConfiguration.ENABLED).tap(adjust)
     }
 
 }

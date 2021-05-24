@@ -147,6 +147,8 @@ You can disable all jobs by setting `worker.enabled` property to `false`:
 include::{root-dir}/libs/micronaut-worker/src/test/resources/application-disabled.yml[]
 ----
 
+NOTE: All the jobs are also disabed for the `test` and `function` environment.
+
 === Job Configuration
 
 Literally everything you can configure using the annotations, you can configure externally.

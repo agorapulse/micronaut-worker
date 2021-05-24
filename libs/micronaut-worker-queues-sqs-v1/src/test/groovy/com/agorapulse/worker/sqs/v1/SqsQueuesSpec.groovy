@@ -32,19 +32,27 @@ class SqsQueuesSpec extends AbstractQueuesSpec {
     @SuppressWarnings('GetterMethodCouldBeProperty')
     Class<?> getExpectedImplementation() { return SqsQueues }
 
-    @Shared LocalStackContainer localstack = new LocalStackContainer().withServices(LocalStackContainer.Service.SQS)
+    @Shared
+    LocalStackContainer localstack = new LocalStackContainer().withServices(LocalStackContainer.Service.SQS)
 
     @Override
     ApplicationContext buildContext(String[] envs) {
         AmazonSQS sqs = AmazonSQSClientBuilder
-                .standard()
-                .withEndpointConfiguration(localstack.getEndpointConfiguration(LocalStackContainer.Service.SQS))
-                .withCredentials(localstack.defaultCredentialsProvider)
-                .build()
+            .standard()
+            .withEndpointConfiguration(localstack.getEndpointConfiguration(LocalStackContainer.Service.SQS))
+            .withCredentials(localstack.defaultCredentialsProvider)
+            .build()
 
-        return ApplicationContext.build(envs).properties('aws.sqs.auto-create-queue': 'true').build()
-                .registerSingleton(AmazonSQS, sqs)
-                .registerSingleton(AWSCredentialsProvider, localstack.defaultCredentialsProvider)
+        return ApplicationContext
+            .build(envs)
+            .properties(
+                'aws.sqs.auto-create-queue': 'true',
+                'worker.jobs.send-words-job-listen.enabled': 'true',
+                'worker.jobs.send-words-job-hello.enabled': 'true'
+            )
+            .build()
+            .registerSingleton(AmazonSQS, sqs)
+            .registerSingleton(AWSCredentialsProvider, localstack.defaultCredentialsProvider)
     }
 
 }

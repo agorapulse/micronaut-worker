@@ -19,6 +19,7 @@ package com.agorapulse.worker.console
 
 import com.agorapulse.gru.Gru
 import com.agorapulse.worker.annotation.InitialDelay
+import io.micronaut.context.annotation.Property
 import io.micronaut.context.annotation.Requires
 import io.micronaut.test.annotation.MicronautTest
 import spock.lang.AutoCleanup
@@ -28,6 +29,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @MicronautTest(environments = CONSOLE_SPEC_ENVIRONMENT)
+@Property(name = 'worker.jobs.sample-job.enabled', value = 'true')
 class ConsoleSpec extends Specification {
 
     public static final String CONSOLE_SPEC_ENVIRONMENT = 'console-spec-environment'

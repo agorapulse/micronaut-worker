@@ -19,6 +19,7 @@ package com.agorapulse.worker.annotation
 
 import com.agorapulse.worker.Job
 import com.agorapulse.worker.JobManager
+import io.micronaut.context.annotation.Property
 import io.micronaut.test.annotation.MicronautTest
 import spock.lang.Specification
 
@@ -32,6 +33,9 @@ import java.time.Duration
 ])
 
 @MicronautTest
+@Property(name = 'worker.jobs.initial-delay-spec-fixed-rate.enabled', value = 'true')
+@Property(name = 'worker.jobs.initial-delay-spec-fixed-delay.enabled', value = 'true')
+@Property(name = 'worker.jobs.initial-delay-spec-initial-delay.enabled', value = 'true')
 class InitialDelaySpec extends Specification {
 
     // tag::job-method[]

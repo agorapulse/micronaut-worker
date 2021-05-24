@@ -18,6 +18,7 @@
 package com.agorapulse.worker.annotation
 
 import com.agorapulse.worker.JobManager
+import io.micronaut.context.annotation.Property
 import io.micronaut.test.annotation.MicronautTest
 import spock.lang.Specification
 
@@ -34,6 +35,8 @@ import javax.inject.Named
 ])
 
 @MicronautTest
+@Property(name = 'worker.jobs.pipe-spec-listen-to-upper.enabled', value = 'true')
+@Property(name = 'worker.jobs.my-pipe.enabled', value = 'true')
 class PipeSpec extends Specification {
 
     private static List<String> messages = []

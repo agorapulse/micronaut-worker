@@ -15,22 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.agorapulse.worker.local
+package com.agorapulse.worker;
 
-import com.agorapulse.worker.tck.queue.AbstractQueuesSpec
-import io.micronaut.context.ApplicationContext
+public interface WorkerConfiguration {
 
-class LocalQueuesSpec extends AbstractQueuesSpec {
+    WorkerConfiguration ENABLED = () -> true;
 
-    @SuppressWarnings('GetterMethodCouldBeProperty')
-    Class<?> getExpectedImplementation() { return LocalQueues }
-
-    @Override
-    ApplicationContext buildContext(String[] envs) {
-        return ApplicationContext.build(envs).properties(
-            'worker.jobs.send-words-job-listen.enabled': 'true',
-            'worker.jobs.send-words-job-hello.enabled': 'true'
-        ).build()
-    }
+    boolean isEnabled();
 
 }
