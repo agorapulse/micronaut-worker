@@ -147,7 +147,16 @@ You can disable all jobs by setting `worker.enabled` property to `false`:
 include::{root-dir}/libs/micronaut-worker/src/test/resources/application-disabled.yml[]
 ----
 
+
 NOTE: All the jobs are also disabed for the `test` and `function` environment.
+
+You can set the default queue type using the `worker.queue-type` configuration property. This can be very handy for local development to ensure your application is running against the local implementation.
+
+[source,yaml]
+.Setting the Default Queue Type
+----
+include::{root-dir}/libs/micronaut-worker/src/test/resources/application-local.yml[]
+----
 
 === Job Configuration
 
