@@ -26,9 +26,9 @@
 <a class="jxr_linenumber" name="L18" href="#L18">18</a>  <strong class="jxr_keyword">package</strong> com.agorapulse.worker.local;
 <a class="jxr_linenumber" name="L19" href="#L19">19</a>  
 <a class="jxr_linenumber" name="L20" href="#L20">20</a>  <strong class="jxr_keyword">import</strong> com.agorapulse.worker.queue.JobQueues;
-<a class="jxr_linenumber" name="L21" href="#L21">21</a>  <strong class="jxr_keyword">import</strong> io.micronaut.core.convert.ConversionService;
-<a class="jxr_linenumber" name="L22" href="#L22">22</a>  <strong class="jxr_keyword">import</strong> io.micronaut.core.type.Argument;
-<a class="jxr_linenumber" name="L23" href="#L23">23</a>  <strong class="jxr_keyword">import</strong> io.micronaut.retry.annotation.Fallback;
+<a class="jxr_linenumber" name="L21" href="#L21">21</a>  <strong class="jxr_keyword">import</strong> io.micronaut.context.annotation.Secondary;
+<a class="jxr_linenumber" name="L22" href="#L22">22</a>  <strong class="jxr_keyword">import</strong> io.micronaut.core.convert.ConversionService;
+<a class="jxr_linenumber" name="L23" href="#L23">23</a>  <strong class="jxr_keyword">import</strong> io.micronaut.core.type.Argument;
 <a class="jxr_linenumber" name="L24" href="#L24">24</a>  
 <a class="jxr_linenumber" name="L25" href="#L25">25</a>  <strong class="jxr_keyword">import</strong> javax.inject.Named;
 <a class="jxr_linenumber" name="L26" href="#L26">26</a>  <strong class="jxr_keyword">import</strong> javax.inject.Singleton;
@@ -39,7 +39,7 @@
 <a class="jxr_linenumber" name="L31" href="#L31">31</a>  <strong class="jxr_keyword">import</strong> java.util.concurrent.ConcurrentMap;
 <a class="jxr_linenumber" name="L32" href="#L32">32</a>  <strong class="jxr_keyword">import</strong> java.util.function.Consumer;
 <a class="jxr_linenumber" name="L33" href="#L33">33</a>  
-<a class="jxr_linenumber" name="L34" href="#L34">34</a>  @Fallback
+<a class="jxr_linenumber" name="L34" href="#L34">34</a>  @Secondary
 <a class="jxr_linenumber" name="L35" href="#L35">35</a>  @Singleton
 <a class="jxr_linenumber" name="L36" href="#L36">36</a>  @Named(<span class="jxr_string">"local"</span>)
 <a class="jxr_linenumber" name="L37" href="#L37">37</a>  <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">class</strong> <a name="LocalQueues" href="../../../../com/agorapulse/worker/local/LocalQueues.html#LocalQueues">LocalQueues</a> <strong class="jxr_keyword">implements</strong> <a name="JobQueues" href="../../../../com/agorapulse/worker/queue/JobQueues.html#JobQueues">JobQueues</a> {
