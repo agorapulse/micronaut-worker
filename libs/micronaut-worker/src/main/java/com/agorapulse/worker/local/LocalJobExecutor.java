@@ -18,7 +18,7 @@
 package com.agorapulse.worker.local;
 
 import com.agorapulse.worker.executor.DistributedJobExecutor;
-import io.micronaut.retry.annotation.Fallback;
+import io.micronaut.context.annotation.Secondary;
 import io.reactivex.Maybe;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
@@ -32,7 +32,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 
-@Fallback
+@Secondary
 @Singleton
 public class LocalJobExecutor implements DistributedJobExecutor {
 

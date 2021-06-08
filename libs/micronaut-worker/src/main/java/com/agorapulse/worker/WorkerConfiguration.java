@@ -19,8 +19,24 @@ package com.agorapulse.worker;
 
 public interface WorkerConfiguration {
 
-    WorkerConfiguration ENABLED = () -> true;
+    WorkerConfiguration ENABLED = new WorkerConfiguration() {
+        @Override
+        public boolean isEnabled() {
+            return true;
+        }
+
+        @Override
+        public String getQueueType() {
+            return null;
+        }
+
+    };
 
     boolean isEnabled();
+
+    /**
+     * @return the default queue type such as <code>local</code> or <code>sqs</code>
+     */
+    String getQueueType();
 
 }

@@ -18,9 +18,9 @@
 package com.agorapulse.worker.local;
 
 import com.agorapulse.worker.queue.JobQueues;
+import io.micronaut.context.annotation.Secondary;
 import io.micronaut.core.convert.ConversionService;
 import io.micronaut.core.type.Argument;
-import io.micronaut.retry.annotation.Fallback;
 
 import javax.inject.Named;
 import javax.inject.Singleton;
@@ -31,7 +31,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Consumer;
 
-@Fallback
+@Secondary
 @Singleton
 @Named("local")
 public class LocalQueues implements JobQueues {

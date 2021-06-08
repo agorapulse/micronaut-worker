@@ -142,6 +142,8 @@ public class DefaultJobConfiguration implements MutableJobConfiguration {
 
     public DefaultJobConfiguration(@Parameter String name, WorkerConfiguration workerConfiguration) {
         this.enabled = workerConfiguration.isEnabled();
+        this.consumer.setQueueType(workerConfiguration.getQueueType());
+        this.producer.setQueueType(workerConfiguration.getQueueType());
         this.name = name;
     }
 
