@@ -25,6 +25,7 @@ import io.micronaut.context.env.Environment;
 public class DefaultWorkerConfiguration implements WorkerConfiguration {
 
     private boolean enabled;
+    private String queueType;
 
     public DefaultWorkerConfiguration(Environment env) {
         // disable for tests and functions
@@ -40,4 +41,12 @@ public class DefaultWorkerConfiguration implements WorkerConfiguration {
         this.enabled = enabled;
     }
 
+    @Override
+    public String getQueueType() {
+        return queueType;
+    }
+
+    public void setQueueType(String queueType) {
+        this.queueType = queueType;
+    }
 }
