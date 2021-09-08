@@ -26,7 +26,10 @@ import io.micronaut.core.type.Argument;
 import io.micronaut.jackson.JacksonConfiguration;
 
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class SqsQueues implements JobQueues {
 
@@ -41,12 +44,7 @@ public class SqsQueues implements JobQueues {
     @Override
     public <T> void readMessages(String queueName, int maxNumberOfMessages, Duration waitTime, Argument<T> argument, Consumer<T> action) {
         simpleQueueService.receiveMessages(queueName, maxNumberOfMessages, 0, Math.toIntExact(waitTime.getSeconds())).forEach(m -> {
-            try {
-                action.accept(objectMapper.readValue(m.getBody(), JacksonConfiguration.constructType(argument, objectMapper.getTypeFactory())));
-                simpleQueueService.deleteMessage(queueName, m.getReceiptHandle());
-            } catch (JsonProcessingException e) {
-                throw new IllegalArgumentException("Cannot convert to " + argument + "from message\n" + m.getBody(), e);
-            }
+            readMessageInternal(queueName, argument, action, m.getBody(), m.getReceiptHandle(), true);
         });
     }
 
@@ -62,6 +60,24 @@ public class SqsQueues implements JobQueues {
                 return;
             }
             throw sqsException;
+        }
+    }
+
+    private <T> void readMessageInternal(String queueName, Argument<T> argument, Consumer<T> action, String body, String handle, boolean tryReformat) {
+        try {
+            action.accept(objectMapper.readValue(body, JacksonConfiguration.constructType(argument, objectMapper.getTypeFactory())));
+            simpleQueueService.deleteMessage(queueName, handle);
+        } catch (JsonProcessingException e) {
+            if (tryReformat && Collection.class.isAssignableFrom(argument.getType())) {
+                if (argument.getTypeParameters().length > 0 && CharSequence.class.isAssignableFrom(argument.getTypeParameters()[0].getType())) {
+                    String quoted = Arrays.stream(body.split(",\\s*")).map(s -> "\"" + s + "\"").collect(Collectors.joining(","));
+                    readMessageInternal(queueName, argument, action, "[" + quoted + "]", handle, false);
+                    return;
+                }
+                readMessageInternal(queueName, argument, action, "[" + body + "]", handle, false);
+                return;
+            }
+            throw new IllegalArgumentException("Cannot convert to " + argument + "from message\n" + body, e);
         }
     }
 }

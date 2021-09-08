@@ -69,6 +69,66 @@ class SqsQueuesUnitSpec extends Specification {
             1 * simpleQueueService.deleteMessage(QUEUE_NAME, 'two')
     }
 
+    void 'can read legacy messages'() {
+        when:
+            List<List<Long>> values = []
+            sqsQueues.readMessages(QUEUE_NAME, MAX_MESSAGES, WAIT_TIME, Argument.listOf(Long)) {
+                values << it
+            }
+        then:
+            values
+            values.size() == 2
+            values.first() instanceof List
+            values.first()[0] == 1L
+            values.last() instanceof List
+            values.last()[0] == 3L
+
+            1 * simpleQueueService.receiveMessages(QUEUE_NAME, MAX_MESSAGES, 0, WAIT_TIME.seconds) >> {
+                [
+                    new Message(
+                        body: '1,2,3',
+                        receiptHandle: 'one'
+                    ),
+                    new Message(
+                        body: '3,2,1',
+                        receiptHandle: 'two'
+                    ),
+                ]
+            }
+            1 * simpleQueueService.deleteMessage(QUEUE_NAME, 'one')
+            1 * simpleQueueService.deleteMessage(QUEUE_NAME, 'two')
+    }
+
+    void 'can read legacy string messages'() {
+        when:
+            List<List<String>> values = []
+            sqsQueues.readMessages(QUEUE_NAME, MAX_MESSAGES, WAIT_TIME, Argument.listOf(String)) {
+                values << it
+            }
+        then:
+            values
+            values.size() == 2
+            values.first() instanceof List
+            values.first()[0] == 'one'
+            values.last() instanceof List
+            values.last()[0] == 'three'
+
+            1 * simpleQueueService.receiveMessages(QUEUE_NAME, MAX_MESSAGES, 0, WAIT_TIME.seconds) >> {
+                [
+                    new Message(
+                        body: 'one,two,three',
+                        receiptHandle: 'one'
+                    ),
+                    new Message(
+                        body: 'three,two,one',
+                        receiptHandle: 'two'
+                    ),
+                ]
+            }
+            1 * simpleQueueService.deleteMessage(QUEUE_NAME, 'one')
+            1 * simpleQueueService.deleteMessage(QUEUE_NAME, 'two')
+    }
+
     void 'message not deleted on error'() {
         when:
             List<Map<String, String>> values = []
