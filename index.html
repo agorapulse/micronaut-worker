@@ -92,7 +92,7 @@ $(addBlockSwitches);
 <h1>Micronaut Worker</h1>
 <div class="details">
 <span id="author" class="author">Vladimir Orany</span><br>
-<span id="revnumber">version 1.1.1</span>
+<span id="revnumber">version 1.1.2</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -187,13 +187,13 @@ ten minutes, but it will wait one minute before the first execution.</p>
 }
 
 dependencies {
-    implementation 'com.agorapulse:micronaut-worker:1.1.1'
+    implementation 'com.agorapulse:micronaut-worker:1.1.2'
 
     // to enable AWS SQS queues integration
-    implementation 'com.agorapulse:micronaut-worker-queues-sqs-v1:1.1.1'
+    implementation 'com.agorapulse:micronaut-worker-queues-sqs-v1:1.1.2'
 
     // to enable Redis leader/follower capabilites
-    implementation 'com.agorapulse:micronaut-worker-executor-redis:1.1.1'
+    implementation 'com.agorapulse:micronaut-worker-executor-redis:1.1.2'
     // you also need Redis configuration on the classpath depending on your Microaut version
     // for Micornaut 1.x
     implementation 'io.micronaut.configuration:micronaut-redis-lettuce'
@@ -432,6 +432,16 @@ All the jobs are also disabed for the <code>test</code> and <code>function</code
 </td>
 </tr>
 </table>
+</div>
+<div class="paragraph">
+<p>You can set the default queue type using the <code>worker.queue-type</code> configuration property. This can be very handy for local development to ensure your application is running against the local implementation.</p>
+</div>
+<div class="listingblock">
+<div class="title">Setting the Default Queue Type</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="yaml">worker:
+  queue-type: local</code></pre>
+</div>
 </div>
 </div>
 <div class="sect3">
@@ -776,8 +786,8 @@ on which console&#8217;s endpoint you choose, you get either text or a JSON summ
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 1.1.1<br>
-Last updated 2021-06-08 16:00:22 UTC
+Version 1.1.2<br>
+Last updated 2021-09-08 08:12:51 UTC
 </div>
 </div>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.css">
