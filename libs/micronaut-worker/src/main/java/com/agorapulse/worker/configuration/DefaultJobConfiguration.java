@@ -80,8 +80,8 @@ public class DefaultJobConfiguration implements MutableJobConfiguration {
     @JsonInclude
     public static class DefaultConsumerQueueConfiguration extends DefaultQueueConfiguration implements MutableConsumerQueueConfiguration {
 
-        private int maxMessages = 1;
-        private Duration waitingTime = Duration.ZERO;
+        private int maxMessages = 100;
+        private Duration waitingTime = Duration.ofMillis(100);
 
         @Min(1)
         @Override
