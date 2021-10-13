@@ -29,7 +29,9 @@ public class DefaultWorkerConfiguration implements WorkerConfiguration {
 
     public DefaultWorkerConfiguration(Environment env) {
         // disable for tests and functions
-        this.enabled = !env.getActiveNames().contains(Environment.FUNCTION) && !env.getActiveNames().contains(Environment.TEST);
+        this.enabled = !env.getActiveNames().contains(Environment.FUNCTION)
+            && !env.getActiveNames().contains(Environment.TEST)
+            && !env.getActiveNames().contains(Environment.CLI);
     }
 
     @Override

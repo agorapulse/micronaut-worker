@@ -32,23 +32,43 @@ class JobConfigurationIntegrationSpec extends Specification {
     @AutoCleanup ApplicationContext context
 
     void 'sample job is not present in the test environment'() {
+        given:
+            JobManager manager = manager()
         expect:
-            !(JOB_NAME in manager().jobNames)
+            JOB_NAME in manager.jobNames
+            !manager.getJob(JOB_NAME).get().configuration.enabled
     }
 
     void 'sample job is not present in the function environment'() {
+        given:
+            JobManager manager = manager(Environment.FUNCTION)
         expect:
-            !(JOB_NAME in manager(Environment.FUNCTION).jobNames)
+            JOB_NAME in manager.jobNames
+            !manager.getJob(JOB_NAME).get().configuration.enabled
+    }
+
+    void 'sample job is not present in the CLI environment'() {
+        given:
+            JobManager manager = manager(Environment.CLI)
+        expect:
+            JOB_NAME in manager.jobNames
+            !manager.getJob(JOB_NAME).get().configuration.enabled
     }
 
     void 'jobs can be disabled'() {
+        given:
+            JobManager manager = manager('disabled')
         expect:
-            !(JOB_NAME in manager('disabled').jobNames)
+            JOB_NAME in manager.jobNames
+            !manager.getJob(JOB_NAME).get().configuration.enabled
     }
 
     void 'jobs can be disabled individually'() {
+        given:
+            JobManager manager = manager('disabled-individual')
         expect:
-            !(JOB_NAME in manager('disabled-individual').jobNames)
+            JOB_NAME in manager.jobNames
+            !manager.getJob(JOB_NAME).get().configuration.enabled
     }
 
     void 'jobs can switch to different type'() {
