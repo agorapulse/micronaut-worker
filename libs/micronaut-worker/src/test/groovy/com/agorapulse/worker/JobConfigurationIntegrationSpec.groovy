@@ -37,7 +37,6 @@ class JobConfigurationIntegrationSpec extends Specification {
         expect:
             JOB_NAME in manager.jobNames
             !manager.getJob(JOB_NAME).get().configuration.enabled
-
     }
 
     void 'sample job is not present in the function environment'() {
@@ -70,7 +69,6 @@ class JobConfigurationIntegrationSpec extends Specification {
         expect:
             JOB_NAME in manager.jobNames
             !manager.getJob(JOB_NAME).get().configuration.enabled
-
     }
 
     void 'jobs can switch to different type'() {
