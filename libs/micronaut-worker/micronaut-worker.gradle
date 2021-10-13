@@ -19,11 +19,13 @@ dependencies {
     api "space.jasan:groovy-closure-support:$closureSupportVersion"
 
     compileOnly "com.agorapulse:micronaut-snitch:$micronautSnitchVersion"
-    compileOnly  "com.agorapulse:micronaut-console:$micronautConsoleVersion"
+    compileOnly "com.agorapulse:micronaut-console:$micronautConsoleVersion"
+    compileOnly "io.micronaut:micronaut-management"
 
     testImplementation project(':micronaut-worker-tck')
 
     testImplementation "com.agorapulse:micronaut-console:$micronautConsoleVersion"
     testImplementation "io.micronaut:micronaut-http-server-netty"
     testImplementation "com.agorapulse:gru-micronaut:$gruVersion"
+    testImplementation "io.micronaut:micronaut-management"
 }
