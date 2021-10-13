@@ -11,7 +11,7 @@
             "consumer": {
                 "queueName": null,
                 "queueType": null,
-                "maxMessages": 1,
+                "maxMessages": 10,
                 "waitingTime": "0s"
             },
             "producer": {

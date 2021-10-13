@@ -80,8 +80,10 @@ public class DefaultJobConfiguration implements MutableJobConfiguration {
     @JsonInclude
     public static class DefaultConsumerQueueConfiguration extends DefaultQueueConfiguration implements MutableConsumerQueueConfiguration {
 
-        private int maxMessages = 100;
-        private Duration waitingTime = Duration.ofMillis(100);
+        private static final int DEFAULT_MAX_MESSAGES = 10;
+
+        private int maxMessages = DEFAULT_MAX_MESSAGES;
+        private Duration waitingTime = Duration.ZERO;
 
         @Min(1)
         @Override
@@ -110,7 +112,7 @@ public class DefaultJobConfiguration implements MutableJobConfiguration {
         public void mergeWith(ConsumerQueueConfiguration overrides) {
             super.mergeWith(overrides);
 
-            if (overrides.getMaxMessages() > 1 && overrides.getMaxMessages() != this.maxMessages) {
+            if (overrides.getMaxMessages() != DEFAULT_MAX_MESSAGES && overrides.getMaxMessages() != this.maxMessages) {
                 this.maxMessages = overrides.getMaxMessages();
             }
 
