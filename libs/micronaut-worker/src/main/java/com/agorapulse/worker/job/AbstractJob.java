@@ -51,7 +51,7 @@ public abstract class AbstractJob implements Job {
     }
 
     @Override
-    public void forceRun() {
+    public final void forceRun() {
         status.run(this::doRun);
     }
 
