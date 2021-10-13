@@ -15,3 +15,5 @@ Micronaut Worker is a library for advanced scheduling and work distribution in M
 In the opposite of `@Scheduled` annotation, Micronaut Worker annotations are not repeatable but
 they can be combined in meaningful way, e.g. method annotated with `@FixedRate('10m') @InitialDelay('1m')` executes every
 ten minutes, but it will wait one minute before the first execution.
+
+NOTE: All jobs are disabled by default in `function` and `cli` environment but can be triggered individually using `jobManager.forceRun("job-name")` call.

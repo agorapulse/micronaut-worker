@@ -28,4 +28,6 @@ public interface Job extends Runnable, JobInfo {
         return new SimpleJob(configuration, task);
     }
 
+    void forceRun();
+
 }

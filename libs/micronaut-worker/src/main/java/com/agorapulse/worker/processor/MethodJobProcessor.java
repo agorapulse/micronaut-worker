@@ -115,11 +115,6 @@ public class MethodJobProcessor implements ExecutableMethodProcessor<Job> {
 
         JobConfiguration configuration = getJobConfiguration(beanDefinition, method);
 
-        if (!configuration.isEnabled()) {
-            LOG.info("Job {} is disabled in the configuration. Remove jobs.{}.enabled = false configuration to re-enable it.", configuration.getName(), configuration.getName());
-            return;
-        }
-
         com.agorapulse.worker.Job task = new MethodJob<>(
             configuration,
             method,
@@ -130,6 +125,12 @@ public class MethodJobProcessor implements ExecutableMethodProcessor<Job> {
         );
 
         jobManager.register(task);
+
+        if (!configuration.isEnabled()) {
+            LOG.info("Job {} is disabled in the configuration. Remove jobs.{}.enabled = false configuration to re-enable it.", configuration.getName(), configuration.getName());
+            return;
+        }
+
         jobScheduler.schedule(task);
     }
 

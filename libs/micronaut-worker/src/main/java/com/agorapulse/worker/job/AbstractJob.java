@@ -46,8 +46,13 @@ public abstract class AbstractJob implements Job {
     @Override
     public final void run() {
         if (configuration.isEnabled()) {
-            status.run(this::doRun);
+            forceRun();
         }
+    }
+
+    @Override
+    public void forceRun() {
+        status.run(this::doRun);
     }
 
     protected abstract void doRun(Consumer<Throwable> onError);

@@ -22,10 +22,13 @@ import io.micronaut.context.annotation.Property
 import io.micronaut.context.annotation.Requires
 import io.micronaut.test.annotation.MicronautTest
 import spock.lang.Specification
+import spock.util.concurrent.BlockingVariable
 
 import javax.inject.Inject
 import javax.inject.Singleton
 import java.time.Duration
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicReference
 import java.util.function.Consumer
 
 @MicronautTest(environments = MANAGER_SPEC_ENVIRONMENT)
@@ -100,6 +103,32 @@ class JobManagerSpec extends Specification {
             Thread.sleep(200)
         then:
             consumerJob.messages.contains('Hello')
+    }
+
+    void 'can force run'() {
+        given:
+            AtomicBoolean executed = new AtomicBoolean()
+
+            String jobName = 'disabled-job'
+            Job job = Job.build(jobName) {
+                enabled false
+                task {
+                    executed.set(true)
+                }
+            }
+        when:
+            manager.register job
+
+        and:
+            manager.run jobName
+
+        then:
+            !executed.get()
+
+        when:
+            manager.forceRun jobName
+        then:
+            executed.get()
     }
 
 }

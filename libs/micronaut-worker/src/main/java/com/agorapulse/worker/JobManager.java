@@ -53,6 +53,15 @@ public interface JobManager {
     }
 
     /**
+     * Force Execute the job synchronously, even the job is disabled.
+     *
+     * @param jobName the name of the job
+     */
+    default void forceRun(String jobName) {
+        getJob(jobName).ifPresent(Job::forceRun);
+    }
+
+    /**
      * Sends a message to the job queue to be consumed during one of the next executions.
      *
      * @param jobName the name of the job
