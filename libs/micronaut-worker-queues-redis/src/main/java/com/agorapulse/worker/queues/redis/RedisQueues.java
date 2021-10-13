@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.TransactionResult;
 import io.lettuce.core.api.StatefulRedisConnection;
+import io.lettuce.core.api.async.RedisAsyncCommands;
 import io.lettuce.core.api.sync.RedisCommands;
 import io.lettuce.core.support.BoundedAsyncPool;
 import io.lettuce.core.support.BoundedPoolConfig;
@@ -89,11 +90,12 @@ public class RedisQueues implements JobQueues {
             String item = objectMapper.writeValueAsString(result);
             withRedis(redisCommands -> {
                 String key = getKey(queueName);
-                Double zscore = redisCommands.zscore(key, item);
-                if (zscore == null) {
-                    long time = System.currentTimeMillis();
-                    redisCommands.zadd(key, time, item);
-                }
+                redisCommands.zscore(key, item).thenAccept(zscore -> {
+                    if (zscore == null) {
+                        long time = System.currentTimeMillis();
+                        redisCommands.zadd(key, time, item);
+                    }
+                });
             });
         } catch (JsonProcessingException e) {
             throw new IllegalArgumentException("Cannot write " + result + " to JSON", e);
@@ -122,11 +124,11 @@ public class RedisQueues implements JobQueues {
     }
 
     private void withRedis(
-        Consumer<RedisCommands<String, String>> action
+        Consumer<RedisAsyncCommands<String, String>> action
     ) {
         try {
             StatefulRedisConnection<String, String> connection = pool.acquire().get();
-            RedisCommands<String, String> sync = connection.sync();
+            RedisAsyncCommands<String, String> sync = connection.async();
             try {
                 action.accept(sync);
             } finally {

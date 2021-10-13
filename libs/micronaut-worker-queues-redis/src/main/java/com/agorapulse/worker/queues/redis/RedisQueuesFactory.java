@@ -28,14 +28,14 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 
 @Factory
-@Requires(classes = { RedisClient.class }, beans = { RedisClient.class })
+@Requires(classes = { RedisClient.class }, beans = { RedisClient.class }, property = "redis.uri")
 public class RedisQueuesFactory {
 
 
     @Bean
     @Singleton
     @Named("redis")
-    public JobQueues sqsQueues(
+    public JobQueues redisQueues(
             RedisClient redisClient,
             ObjectMapper mapper,
             RedisPoolConfiguration redisPoolConfiguration
