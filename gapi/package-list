@@ -9,6 +9,7 @@ com.agorapulse.worker.json
 com.agorapulse.worker.local
 com.agorapulse.worker.processor
 com.agorapulse.worker.queue
+com.agorapulse.worker.queues.redis
 com.agorapulse.worker.redis
 com.agorapulse.worker.sqs.v1
 com.agorapulse.worker.tck.executor
