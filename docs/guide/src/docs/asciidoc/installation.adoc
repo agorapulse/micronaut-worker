@@ -19,6 +19,10 @@ dependencies {
 
     // to enable Redis leader/follower capabilites
     implementation 'com.agorapulse:micronaut-worker-executor-redis:{project-version}'
+
+    // to enable Redis queues integration
+    implementation 'com.agorapulse:micronaut-worker-queues-redis:{project-version}'
+
     // you also need Redis configuration on the classpath depending on your Microaut version
     // for Micornaut 1.x
     implementation 'io.micronaut.configuration:micronaut-redis-lettuce'
