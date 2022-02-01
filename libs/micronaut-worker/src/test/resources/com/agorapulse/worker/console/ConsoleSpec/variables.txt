@@ -2,4 +2,6 @@ Available Variables:
 
     ctx: io.micronaut.context.DefaultApplicationContext
     jobs: com.agorapulse.worker.console.ConsoleJobManager
+    request: io.micronaut.http.server.netty.NettyHttpRequest
     sampleJob: com.agorapulse.worker.console.JobAccessor
+    user: com.agorapulse.micronaut.console.User
