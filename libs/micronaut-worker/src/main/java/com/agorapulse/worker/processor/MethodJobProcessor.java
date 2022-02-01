@@ -1,7 +1,7 @@
 /*
  * SPDX-License-Identifier: Apache-2.0
  *
- * Copyright 2021 Agorapulse.
+ * Copyright 2022 Agorapulse.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,6 @@ import io.micronaut.scheduling.TaskExceptionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.inject.Named;
 import javax.inject.Singleton;
 import java.lang.annotation.Annotation;
 import java.time.Duration;
@@ -135,13 +134,30 @@ public class MethodJobProcessor implements ExecutableMethodProcessor<Job> {
     }
 
     private String getJobName(BeanDefinition<?> beanDefinition, ExecutableMethod<?, ?> method) {
-        return NameUtils.hyphenate(method.stringValue(Job.class).orElseGet(() -> method.stringValue(Named.class).orElseGet(() -> {
-            // there are more then one job definition
-            if (beanDefinition.getExecutableMethods().size() > 1) {
-                return method.getDeclaringType().getSimpleName() + "-" + method.getMethodName();
-            }
-            return method.getDeclaringType().getSimpleName();
-        })));
+        Optional<String> valueFromJob = method.stringValue(Job.class).map(NameUtils::hyphenate);
+
+        if (valueFromJob.isPresent()) {
+            return valueFromJob.get();
+        }
+
+        Optional<String> valueFromJavaxNamed = method.stringValue("javax.inject.Named").map(NameUtils::hyphenate);
+
+        if (valueFromJavaxNamed.isPresent()) {
+            return valueFromJavaxNamed.get();
+        }
+
+        Optional<String> valueFromJakartaNamed = method.stringValue("jakarta.inject.Named").map(NameUtils::hyphenate);
+
+        if (valueFromJakartaNamed.isPresent()) {
+            return valueFromJakartaNamed.get();
+        }
+
+        // there are more then one job definition
+        if (beanDefinition.getExecutableMethods().size() > 1) {
+            return NameUtils.hyphenate(method.getDeclaringType().getSimpleName() + "-" + method.getMethodName());
+        }
+
+        return NameUtils.hyphenate(method.getDeclaringType().getSimpleName());
     }
 
     private JobConfiguration getJobConfiguration(BeanDefinition<?> beanDefinition, ExecutableMethod<?, ?> method) {

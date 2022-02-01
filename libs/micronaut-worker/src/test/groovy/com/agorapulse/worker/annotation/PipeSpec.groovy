@@ -1,7 +1,7 @@
 /*
  * SPDX-License-Identifier: Apache-2.0
  *
- * Copyright 2021 Agorapulse.
+ * Copyright 2022 Agorapulse.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import com.agorapulse.worker.JobManager
 import io.micronaut.context.annotation.Property
 import io.micronaut.test.annotation.MicronautTest
 import spock.lang.Specification
+import spock.util.concurrent.PollingConditions
 
 import javax.inject.Inject
 import javax.inject.Named
@@ -40,6 +41,8 @@ import javax.inject.Named
 class PipeSpec extends Specification {
 
     private static List<String> messages = []
+
+    PollingConditions conditions = new PollingConditions(timeout: 10, initialDelay: 1.5, factor: 1.25)
 
     // tag::job-method[]
     @Named("my-pipe")
@@ -62,7 +65,9 @@ class PipeSpec extends Specification {
 
     void 'job is registered'() {
         expect:
-            'my-pipe' in jobManager.jobNames
+            conditions.eventually {
+                'my-pipe' in jobManager.jobNames
+            }
 
         when:
             Thread.sleep(100)
@@ -71,13 +76,10 @@ class PipeSpec extends Specification {
             jobManager.enqueue("my-pipe", "hello");
             // end::enqueue[]
 
-            int counter = 0
-            while (!('HELLO' in messages) || counter > 100) {
-                Thread.sleep(10)
-                counter++
-            }
         then:
-            'HELLO' in messages
+            conditions.eventually {
+                'HELLO' in messages
+            }
     }
 
 }

@@ -1,7 +1,7 @@
 /*
  * SPDX-License-Identifier: Apache-2.0
  *
- * Copyright 2021 Agorapulse.
+ * Copyright 2022 Agorapulse.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,8 @@ dependencies {
 
     api "io.lettuce:lettuce-core:$lettuceVersion"
 
-    implementation 'io.micronaut.configuration:micronaut-redis-lettuce'
+    implementation micronautMigratedDependency('micronaut-redis-lettuce')
+    implementation 'io.reactivex.rxjava2:rxjava'
 
     testImplementation project(':micronaut-worker-tck')
 }
