@@ -21,6 +21,7 @@ dependencies {
     api "io.lettuce:lettuce-core:$lettuceVersion"
 
     implementation micronautMigratedDependency('micronaut-redis-lettuce')
+    implementation 'io.reactivex.rxjava2:rxjava'
 
     testImplementation project(':micronaut-worker-tck')
 }
