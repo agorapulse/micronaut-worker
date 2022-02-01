@@ -44,7 +44,7 @@ class SqsQueuesSpec extends AbstractQueuesSpec {
             .build()
 
         return ApplicationContext
-            .build(envs)
+            .builder(envs)
             .properties(
                 'aws.sqs.auto-create-queue': 'true',
                 'worker.jobs.send-words-job-listen.enabled': 'true',
