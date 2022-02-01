@@ -18,6 +18,8 @@
 dependencies {
     api "space.jasan:groovy-closure-support:$closureSupportVersion"
 
+    implementation 'io.reactivex.rxjava2:rxjava'
+
     compileOnly "com.agorapulse:micronaut-snitch:$micronautSnitchVersion"
     compileOnly "com.agorapulse:micronaut-console:$micronautConsoleVersion-micronaut-${micronautVersion[0]}.0"
 
