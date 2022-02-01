@@ -92,7 +92,7 @@ $(addBlockSwitches);
 <h1>Micronaut Worker</h1>
 <div class="details">
 <span id="author" class="author">Vladimir Orany</span><br>
-<span id="revnumber">version 1.1.4</span>
+<span id="revnumber">version 1.2.0-micronaut-3.0</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -199,16 +199,16 @@ All jobs are disabled by default in <code>function</code> and <code>cli</code> e
 }
 
 dependencies {
-    implementation 'com.agorapulse:micronaut-worker:1.1.4'
+    implementation 'com.agorapulse:micronaut-worker:1.2.0-micronaut-3.0'
 
     // to enable AWS SQS queues integration
-    implementation 'com.agorapulse:micronaut-worker-queues-sqs-v1:1.1.4'
+    implementation 'com.agorapulse:micronaut-worker-queues-sqs-v1:1.2.0-micronaut-3.0'
 
     // to enable Redis leader/follower capabilites
-    implementation 'com.agorapulse:micronaut-worker-executor-redis:1.1.4'
+    implementation 'com.agorapulse:micronaut-worker-executor-redis:1.2.0-micronaut-3.0'
 
     // to enable Redis queues integration
-    implementation 'com.agorapulse:micronaut-worker-queues-redis:1.1.4'
+    implementation 'com.agorapulse:micronaut-worker-queues-redis:1.2.0-micronaut-3.0'
 
     // you also need Redis configuration on the classpath depending on your Microaut version
     // for Micornaut 1.x
@@ -587,7 +587,7 @@ import io.micronaut.runtime.event.annotation.EventListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 @Singleton
 public class JobEventsLogger {
@@ -653,7 +653,9 @@ every job as well. The name is a lower-camel-case version on the job name such a
 
     ctx: io.micronaut.context.DefaultApplicationContext
     jobs: com.agorapulse.worker.console.ConsoleJobManager
-    sampleJob: com.agorapulse.worker.console.JobAccessor</code></pre>
+    request: io.micronaut.http.server.netty.NettyHttpRequest
+    sampleJob: com.agorapulse.worker.console.JobAccessor
+    user: com.agorapulse.micronaut.console.User</code></pre>
 </div>
 </div>
 <div class="admonitionblock tip">
@@ -802,8 +804,8 @@ on which console&#8217;s endpoint you choose, you get either text or a JSON summ
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 1.1.4<br>
-Last updated 2021-11-03 15:53:54 UTC
+Version 1.2.0-micronaut-3.0<br>
+Last updated 2022-02-01 14:56:38 UTC
 </div>
 </div>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.css">
