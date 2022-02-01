@@ -20,7 +20,7 @@ dependencies {
 
     api "io.lettuce:lettuce-core:$lettuceVersion"
 
-    implementation 'io.micronaut.configuration:micronaut-redis-lettuce'
+    implementation micronautMigratedDependency('micronaut-redis-lettuce')
 
     testImplementation project(':micronaut-worker-tck')
 }

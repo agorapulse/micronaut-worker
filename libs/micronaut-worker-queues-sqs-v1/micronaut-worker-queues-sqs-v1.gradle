@@ -17,7 +17,7 @@
  */
 dependencies {
     api project(':micronaut-worker')
-    api "com.agorapulse:micronaut-aws-sdk-sqs:$micronautAwsSdkVersion"
+    api "com.agorapulse:micronaut-aws-sdk-sqs:$micronautAwsSdkVersion-micronaut-${micronautVersion[0]}.0"
 
     testImplementation project(':micronaut-worker-tck')
 
