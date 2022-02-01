@@ -1,7 +1,7 @@
 /*
  * SPDX-License-Identifier: Apache-2.0
  *
- * Copyright 2021 Agorapulse.
+ * Copyright 2022 Agorapulse.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ class WorkerConfigurationSpec extends Specification {
     @Inject @Named('two') JobConfiguration two
 
     void setup() {
-        context = ApplicationContext.build(
+        context = ApplicationContext.builder(
             'worker.enabled': true,
             'worker.queue-type': 'foo',
             'worker.jobs.one.consumer.queue-type': 'bar',
