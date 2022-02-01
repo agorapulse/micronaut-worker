@@ -35,7 +35,7 @@ class RedisQueuesSpec extends AbstractQueuesSpec {
     @Override
     ApplicationContext buildContext(String[] envs) {
         return ApplicationContext
-            .build(envs)
+            .builder(envs)
             .properties(
                 'redis.uri': "redis://$redis.containerIpAddress:${redis.getMappedPort(6379)}",
                 'worker.jobs.send-words-job-listen.enabled': 'true',
