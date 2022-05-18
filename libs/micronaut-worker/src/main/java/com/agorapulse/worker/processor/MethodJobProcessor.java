@@ -154,10 +154,10 @@ public class MethodJobProcessor implements ExecutableMethodProcessor<Job> {
 
         // there are more then one job definition
         if (beanDefinition.getExecutableMethods().size() > 1) {
-            return NameUtils.hyphenate(method.getDeclaringType().getSimpleName() + "-" + method.getMethodName());
+            return JobManager.getDefaultJobName(method.getDeclaringType(), method.getMethodName());
         }
 
-        return NameUtils.hyphenate(method.getDeclaringType().getSimpleName());
+        return JobManager.getDefaultJobName(method.getDeclaringType());
     }
 
     private JobConfiguration getJobConfiguration(BeanDefinition<?> beanDefinition, ExecutableMethod<?, ?> method) {

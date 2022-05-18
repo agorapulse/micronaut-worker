@@ -101,6 +101,11 @@ config {
                 enabled = false
             }
         }
+        sourceHtml {
+            aggregate {
+                enabled = false
+            }
+        }
     }
 
 }

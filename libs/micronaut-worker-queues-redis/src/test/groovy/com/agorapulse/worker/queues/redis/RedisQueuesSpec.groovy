@@ -21,8 +21,10 @@ import com.agorapulse.worker.tck.queue.AbstractQueuesSpec
 import io.micronaut.context.ApplicationContext
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.spock.Testcontainers
+import spock.lang.Retry
 import spock.lang.Shared
 
+@Retry
 @Testcontainers
 class RedisQueuesSpec extends AbstractQueuesSpec {
 
