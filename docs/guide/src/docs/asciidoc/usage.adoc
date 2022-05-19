@@ -4,11 +4,11 @@
 
 == Scheduling
 
-The basic usage of this library is to provide easy way to run scheduled tasks in a distributed environment.
+The basic usage of this library is to provide an easy way to run scheduled tasks in a distributed environment.
 
 === Cron Jobs
 
-To create a scheduled CRON job use `@Cron` annotation containing the CRON definition string on a bean method.
+To create a scheduled CRON job, annotate a bean method with `@Cron` containing the CRON definition string.
 
 [source,java]
 .Cron Job
@@ -18,7 +18,7 @@ include::{root-dir}/libs/micronaut-worker/src/test/groovy/com/agorapulse/worker/
 
 === Fixed Delay Jobs
 
-To create a fixed delay job use `@FixedDelay` annotation containing the duration string on a bean method.
+To create a fixed delay job, annotate a bean method with `@FixedDelay` containing the duration string.
 
 [source,java]
 .Fixed Delay Job
@@ -28,7 +28,7 @@ include::{root-dir}/libs/micronaut-worker/src/test/groovy/com/agorapulse/worker/
 
 === Fixed Rate Jobs
 
-To create a fixed delay job use `@FixedRate` annotation containing the duration string on a bean method.
+To create a fixed delay job, annotate a bean method with `@FixedRate` containing the duration string.
 
 [source,java]
 .Fixed Rate Job
@@ -38,7 +38,7 @@ include::{root-dir}/libs/micronaut-worker/src/test/groovy/com/agorapulse/worker/
 
 === Initial Delay Jobs
 
-To create a job with an initial delay use `@InitialDelay` annotation containing the duration string on a bean method.
+To create a job with an initial delay, annotate a bean method with `@InitialDelay` containing the duration string.
 This annotation can be combined with `@FixedRate` and `@FixedDelay` annotations.
 
 [source,java]
@@ -49,8 +49,8 @@ include::{root-dir}/libs/micronaut-worker/src/test/groovy/com/agorapulse/worker/
 
 == Concurrency Management
 
-You can limit the number of parallel executions using the `@Concurrency` annotation. `@Consecutive` annotation
-is an alias to `@Concurrency(1)` and disables parallel execution completely.
+You can limit the number of parallel executions with the `@Concurrency` annotation. The `@Consecutive` annotation
+is an alias for `@Concurrency(1)` and disables parallel execution completely.
 
 [source,java]
 .Fixed Rate Job Running at Most Five Parallel Tasks
@@ -63,7 +63,7 @@ include::{root-dir}/libs/micronaut-worker/src/test/groovy/com/agorapulse/worker/
 
 === Leaders and Followers Jobs
 
-Micronaut Worker library can help you to run jobs in a distributed environments. You can choose to
+Micronaut Worker can help you to run jobs in distributed environments. You can choose to
 run the code only on the leader server or only on the followers.
 
 [source,java]
@@ -82,20 +82,20 @@ include::{root-dir}/libs/micronaut-worker/src/test/groovy/com/agorapulse/worker/
 
 === Jobs using Queue
 
-In the distributed environment, the tasks usually process messages using queues. In Micronaut Worker,
-you have three type of queue related jobs - producers, consumers and pipes - depending on a number of
+In a distributed environment, tasks often process messages using queues. In Micronaut Worker,
+you have three type of queue related jobs - producers, consumers and pipes - depending on the number of
 arguments they have and their return value.
 
 The name of the queue can be customised using `@Consumes` and `@Produces`
-annotations, otherwise the name is derived from the simple name of the class with any `Job`, `Consumer`, `Producer`
-suffixes (in this order recursively). If the `micronaut.application.name` property is set then the
+annotations, otherwise the name is derived from the simple name of the class with any `Job`, `Consumer`, or `Producer`
+suffix (in this order recursively). If the `micronaut.application.name` property is set, the
 extracted name is prefixed with the application name followed by an underscore. For example,
-`MyOwnConsumerJob` with `micronaut.application.name` set to `myapp` will produce the following
+with `micronaut.application.name` set to `myapp`, `MyOwnConsumerJob` will have the
 default queue name `myapp_MyOwn`.
 
 ==== Producer
 
-Producer jobs returns a value, usually a `Publisher`, collection of objects or any other object.
+Producer jobs return a value, usually a `Publisher`, collection of objects, or a single object.
 Producer jobs are always run only on the leader server.
 
 [source,java]
@@ -106,8 +106,8 @@ include::{root-dir}/libs/micronaut-worker-tck/src/main/groovy/com/agorapulse/wor
 
 ==== Consumer
 
-Consumer jobs takes a single parameter. They are usually a `@FixedRate` jobs waiting for a message from a queue.
-The messages can be sent into the queue from external systems, a producer job or using `JobManager#enqueue` method.
+Consumer jobs take a single parameter. They are usually a `@FixedRate` job waiting for a message from a queue.
+Messages can be sent into the queue from external systems, a producer job, or using `JobManager#enqueue` method.
 
 [source,java]
 .Consumer Job
@@ -115,10 +115,9 @@ The messages can be sent into the queue from external systems, a producer job or
 include::{root-dir}/libs/micronaut-worker-tck/src/main/groovy/com/agorapulse/worker/tck/queue/SendWordsJob.groovy[tag=simple-consumer-method,indent=0]
 ----
 
-
 ==== Pipe
 
-Pipe jobs are combination of producer and consumer. They usually use `@Consumes` and `@Produces`
+Pipe jobs are a combination of producer and consumer jobs. They usually use `@Consumes` and `@Produces`
 to specify the source, and the destination name of the queue.
 
 [source,java]
@@ -127,7 +126,7 @@ to specify the source, and the destination name of the queue.
 include::{root-dir}/libs/micronaut-worker/src/test/groovy/com/agorapulse/worker/annotation/PipeSpec.groovy[tag=job-method,indent=0]
 ----
 
-As with consumer job, you can use `JobManager#enqueue` to send messages to the job.
+As with a consumer job, you can use `JobManager#enqueue` to send messages to the job.
 
 [source,java]
 .Send Message to Job
@@ -139,7 +138,7 @@ include::{root-dir}/libs/micronaut-worker/src/test/groovy/com/agorapulse/worker/
 
 === General Settings
 
-You can disable all jobs by setting `worker.enabled` property to `false`:
+You can disable all jobs by setting `worker.enabled` to `false`:
 
 [source,yaml]
 .Disabling All Jobs
@@ -147,10 +146,9 @@ You can disable all jobs by setting `worker.enabled` property to `false`:
 include::{root-dir}/libs/micronaut-worker/src/test/resources/application-disabled.yml[]
 ----
 
+NOTE: All jobs are disabled for the `test` and `function` environments.
 
-NOTE: All the jobs are also disabed for the `test` and `function` environment.
-
-You can set the default queue type using the `worker.queue-type` configuration property. This can be very handy for local development to ensure your application is running against the local implementation.
+You can set the default queue type using the `worker.queue-type` configuration property. This is convenient for local development to ensure your application is running against the local implementation.
 
 [source,yaml]
 .Setting the Default Queue Type
@@ -160,12 +158,12 @@ include::{root-dir}/libs/micronaut-worker/src/test/resources/application-local.y
 
 === Job Configuration
 
-Literally everything you can configure using the annotations, you can configure externally.
-The name of the job for classes having just a single job method is the name of the class hyphenated, e.g. `sample-job`
-for a class `SampleJob`. If the class contains more than one job methods then jobs are created
-for each method and the name contains both the simple class name and the name of the method, e.g.
+Anything you can configure using annotations can be configured externally.
+The name of the job for classes having just a single job method is the name of the class hyphenated, e.g., `sample-job`
+for a class `SampleJob`. If the class contains more than one job method, jobs are created
+for each method, and the name contains both the simple class name and the name of the method, e.g.,
 `sample-job-method-one` for `SampleJob#methodOne`. You can override the default name by using
-`@Named("another-name")`. The custom name should already been hyphenated.
+`@Named("another-name")`. The custom name must already be hyphenated.
 
 You can individually disable specific jobs:
 
@@ -183,8 +181,8 @@ You can even change the type of the job:
 include::{root-dir}/libs/micronaut-worker/src/test/resources/application-cron.yml[]
 ----
 
-WARNING: You can use only one of `cron`, `fixed-delay` and `fixed-rate` settings. If more than one
-is used then the first of `cron`, `fixed-delay` or `fixed-rate` is selected in this particular order. You can use`initial-delay` either individually or with `fixed-delay` or `fixed-rate` settings.
+WARNING: You can only use one of `cron`, `fixed-delay`, and `fixed-rate` settings. If more than one
+is used, the first of `cron`, `fixed-delay` or `fixed-rate` is selected in this particular order. You can use `initial-delay` either individually or with `fixed-delay` or `fixed-rate` settings.
 
 You can change the concurrency level and leader/follower execution:
 
@@ -206,29 +204,29 @@ include::{root-dir}/libs/micronaut-worker/src/test/resources/application-queues.
 
 There are currently three events being fired:
 
-  * `JobExecutionStartedEvent` - this event is fired before executing the job
-  * `JobExecutionFinishedEvent` - this event is fired after the execution is finished
-  * `JobExecutionResultEvent` - this event is fired after the execution of producer or pipe job is finished
+  * `JobExecutionStartedEvent` - fired before executing the job
+  * `JobExecutionFinishedEvent` - fired after execution
+  * `JobExecutionResultEvent` - fired after execution of a producer or pipe job
 
-WARNING: The `JobExecutionResultEvent` contains the reference to the `result` of the execution and any modifications of the `result` may cause unexpected behavior.
+WARNING: The `JobExecutionResultEvent` contains a reference to the `result` of the execution. Any modifications of the `result` may cause unexpected behavior.
 
 The basic example (already present in the codebase) is simple logging:
 
 [source,java]
-.Logging Job Excution using Events
+.Logging Job Execution using Events
 ----
 include::{root-dir}/libs/micronaut-worker/src/main/java/com/agorapulse/worker/event/JobEventsLogger.java[lines=18..-1,options="nowrap"]
 ----
 
-TIP: If https://github.com/agorapulse/micronaut-snitch[Micronaut Snitch] is present on the classpath and configured with the name of the job then the `snitch` method is called automatically after successful execution.
+TIP: If https://github.com/agorapulse/micronaut-snitch[Micronaut Snitch] is present on the classpath and configured with the name of the job, the `snitch` method is called automatically after successful execution.
 
 == Console Integration
 
-Micronaut Worker does not provide any management endpoint for security reasons, but it integrates with
+For security reasons, Micronaut Worker does not provide any management endpoint, but it integrates with
 https://agorapulse.github.io/micronaut-console[Micronaut Console] to monitor the jobs and event to trigger them manually.
 
-There is an instance of `JobManager` aliased as `jobs` added into the script bindings. There is a variable added for
-every job as well. The name is a lower-camel-case version on the job name such as `sampleJob` for the `sample-job` job.
+An instance of `JobManager` aliased as `jobs` is added to the script bindings. There is a also variable added for
+each job. The name is the lower-camel-case version of the job name, e.g., `sampleJob` for the `sample-job` job.
 
 [source]
 .Additional Binding into Micoronaut Console
@@ -236,10 +234,10 @@ every job as well. The name is a lower-camel-case version on the job name such a
 include::{root-dir}/libs/micronaut-worker/src/test/resources/com/agorapulse/worker/console/ConsoleSpec/variables.txt[]
 ----
 
-TIP: The job variables are instances of `JobAccessor` which also provides methods `run()` and `enqueue(message)` to let you easily trigger the jobs from the console.
+TIP: The job variables are instances of `JobAccessor`, which also provides methods `run()` and `enqueue(message)` to let you easily trigger jobs from the console.
 
-A very simple script with just variable `jobs` will actually print the status of the current job execution. Depending
-on which console's endpoint you choose, you get either text or a JSON summary.
+A simple script with just variable `jobs` will print the status of the current job execution. Depending
+on which console endpoint you choose, you get either a text or JSON summary.
 
 [source,groovy]
 .Job Manager Script
@@ -260,7 +258,7 @@ include::{root-dir}/libs/micronaut-worker/src/test/resources/com/agorapulse/work
 include::{root-dir}/libs/micronaut-worker/src/test/resources/com/agorapulse/worker/console/ConsoleSpec/listJobsResponse.json[]
 ----
 
-Returning a job variable from the script will render details for just a single job.
+Returning a job variable from the script will render details for that job.
 
 [source,groovy]
 .Job Detail Script

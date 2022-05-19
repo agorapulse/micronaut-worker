@@ -2,18 +2,18 @@
 [[_introduction]]
 = Introduction
 
-Micronaut Worker is a library for advanced scheduling and work distribution in Micronaut. Compared to
-`@Scheduled` annotation provided by Micronaut itself it adds following capabilities
+Micronaut Worker is a library for advanced scheduling and work distribution in Micronaut. Compared to the Micronaut
+`@Scheduled` annotation, it adds the following capabilities
 
- * Custom annotations for particular use cases - `@Cron`, `@FixedDelay`, `@FixedRate` and `@InitialDelay`
+ * Custom annotations for particular use cases - `@Cron`, `@FixedDelay`, `@FixedRate`, and `@InitialDelay`
  * Runtime configuration via `worker.jobs` properties
  * Distributed processing support with optional queues and leader election
  * Job execution events `JobExecutionStartedEvent`, `JobExecutionFinishedEvent` and `JobExecutionResultEvent`
- * Builtin support for https://github.com/agorapulse/micronaut-snitch[Micronaut Snitch]
- * Builtin support for https://agorapulse.github.io/micronaut-console[Micronaut Console]
+ * Built in support for https://github.com/agorapulse/micronaut-snitch[Micronaut Snitch]
+ * Built in support for https://agorapulse.github.io/micronaut-console[Micronaut Console]
 
-In the opposite of `@Scheduled` annotation, Micronaut Worker annotations are not repeatable but
-they can be combined in meaningful way, e.g. method annotated with `@FixedRate('10m') @InitialDelay('1m')` executes every
+Unlike the `@Scheduled` annotation, Micronaut Worker annotations are not repeatable, but
+they can be combined in meaningful ways. For example, a method annotated with `@FixedRate('10m') @InitialDelay('1m')` executes every
 ten minutes, but it will wait one minute before the first execution.
 
-NOTE: All jobs are disabled by default in `function` and `cli` environment but can be triggered individually using `jobManager.forceRun("job-name")` call.
+NOTE: All jobs are disabled by default in the `function` and `cli` environments, but can be triggered individually by calling `jobManager.forceRun("job-name")`.
