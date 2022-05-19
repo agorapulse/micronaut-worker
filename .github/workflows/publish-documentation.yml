@@ -3,8 +3,8 @@ name: Manual Publish Documentation
 on: workflow_dispatch
 
 jobs:
-  release:
-    name: Release
+  publish:
+    name: Publish Documentation
     runs-on: ubuntu-latest
     env:
       GRADLE_OPTS: "-Xmx6g -Xms4g"
@@ -16,10 +16,13 @@ jobs:
           distribution: corretto
           java-version: 8
           cache: gradle
-      - name: Get the Latest Release
-        id: previoustag
-        uses: WyriHaximus/github-action-get-previous-tag@v1
-      - name: Publish Docs
+      - name: Get Latest Release
+        id: latest_version
+        uses: abatilo/release-info-action@v1.3.0
+        with:
+          owner: agorapulse
+          repo: micronaut-worker
+      - name: Publish GitHub Pages
         uses: eskatos/gradle-command-action@v2
         with:
-          arguments: migrateImports gitPublishPush -x groovydoc -x aggregateGroovydoc -Pversion=${{ steps.previoustag.outputs.tag }}-micronaut-3.0 -Prelease=true --stacktrace -PmicronautVersion=3.2.3 -PspockVersion=2.0-groovy-3.0 -PgroovyVersion=3.0.9 -Dorg.ajoberstar.grgit.auth.username=${{ secrets.AGORAPULSE_BOT_PERSONAL_TOKEN }}
+          arguments: migrateImports gitPublishPush -x groovydoc -x aggregateGroovydoc -Pversion=${{ steps.latest_version.outputs.latest_tag }}-micronaut-3.0 -Prelease=true --stacktrace -PmicronautVersion=3.2.3 -PspockVersion=2.0-groovy-3.0 -PgroovyVersion=3.0.9 -Dorg.ajoberstar.grgit.auth.username=${{ secrets.AGORAPULSE_BOT_PERSONAL_TOKEN }}
