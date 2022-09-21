@@ -17,3 +17,4 @@ com.agorapulse.worker.report
 com.agorapulse.worker.schedule
 com.agorapulse.worker.snitch
 com.agorapulse.worker.sqs.v1
+com.agorapulse.worker.sqs.v2

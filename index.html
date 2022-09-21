@@ -92,7 +92,7 @@ $(addBlockSwitches);
 <h1>Micronaut Worker</h1>
 <div class="details">
 <span id="author" class="author">Vladimir Orany</span><br>
-<span id="revnumber">version 1.2.1-micronaut-3.0</span>
+<span id="revnumber">version 1.2.2-micronaut-3.0</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -199,16 +199,19 @@ All jobs are disabled by default in the <code>function</code> and <code>cli</cod
 }
 
 dependencies {
-    implementation 'com.agorapulse:micronaut-worker:1.2.1-micronaut-3.0'
+    implementation 'com.agorapulse:micronaut-worker:1.2.2-micronaut-3.0'
 
-    // to enable AWS SQS queues integration
-    implementation 'com.agorapulse:micronaut-worker-queues-sqs-v1:1.2.1-micronaut-3.0'
+    // to enable AWS SDK v1 SQS queues integration
+    implementation 'com.agorapulse:micronaut-worker-queues-sqs-v1:1.2.2-micronaut-3.0'
+
+    // to enable AWS SDK v2 SQS queues integration
+    implementation 'com.agorapulse:micronaut-worker-queues-sqs-v2:1.2.2-micronaut-3.0'
 
     // to enable Redis leader/follower capabilities
-    implementation 'com.agorapulse:micronaut-worker-executor-redis:1.2.1-micronaut-3.0'
+    implementation 'com.agorapulse:micronaut-worker-executor-redis:1.2.2-micronaut-3.0'
 
     // to enable Redis queues integration
-    implementation 'com.agorapulse:micronaut-worker-queues-redis:1.2.1-micronaut-3.0'
+    implementation 'com.agorapulse:micronaut-worker-queues-redis:1.2.2-micronaut-3.0'
 
     // you also need Redis configuration on the classpath depending on your Micronaut version
     // for Micronaut 1.x
@@ -596,17 +599,17 @@ public class JobEventsLogger {
 
     @EventListener
     void onJobExecutionStarted(JobExecutionStartedEvent event) {
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("Starting job {}", event.getName());
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Starting job {}", event.getName());
         }
     }
 
     @EventListener
     void onJobExecutionResult(JobExecutionResultEvent event) {
-        if (LOGGER.isInfoEnabled()) {
+        if (LOGGER.isDebugEnabled()) {
             Object result = event.getResult();
             if (result != null) {
-                LOGGER.info("Job {} emitted result {}", event.getName(), result);
+                LOGGER.debug("Job {} emitted result {}", event.getName(), result);
             } else if (LOGGER.isTraceEnabled()){
                 LOGGER.trace("No results emitted from job {}", event.getName());
             }
@@ -615,8 +618,8 @@ public class JobEventsLogger {
 
     @EventListener
     void onJobExecutionFinished(JobExecutionFinishedEvent event) {
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("Finished executing job {} (some results can still be generated asynchronously later)", event.getName());
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Finished executing job {} (some results can still be generated asynchronously later)", event.getName());
         }
     }
 
@@ -801,8 +804,8 @@ on which console endpoint you choose, you get either a text or JSON summary.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 1.2.1-micronaut-3.0<br>
-Last updated 2022-05-19 16:04:10 UTC
+Version 1.2.2-micronaut-3.0<br>
+Last updated 2022-09-21 07:47:29 UTC
 </div>
 </div>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.css">
