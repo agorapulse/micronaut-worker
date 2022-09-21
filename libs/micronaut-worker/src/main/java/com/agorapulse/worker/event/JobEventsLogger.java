@@ -31,17 +31,17 @@ public class JobEventsLogger {
 
     @EventListener
     void onJobExecutionStarted(JobExecutionStartedEvent event) {
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("Starting job {}", event.getName());
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Starting job {}", event.getName());
         }
     }
 
     @EventListener
     void onJobExecutionResult(JobExecutionResultEvent event) {
-        if (LOGGER.isInfoEnabled()) {
+        if (LOGGER.isDebugEnabled()) {
             Object result = event.getResult();
             if (result != null) {
-                LOGGER.info("Job {} emitted result {}", event.getName(), result);
+                LOGGER.debug("Job {} emitted result {}", event.getName(), result);
             } else if (LOGGER.isTraceEnabled()){
                 LOGGER.trace("No results emitted from job {}", event.getName());
             }
@@ -50,8 +50,8 @@ public class JobEventsLogger {
 
     @EventListener
     void onJobExecutionFinished(JobExecutionFinishedEvent event) {
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("Finished executing job {} (some results can still be generated asynchronously later)", event.getName());
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Finished executing job {} (some results can still be generated asynchronously later)", event.getName());
         }
     }
 
