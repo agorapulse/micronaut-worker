@@ -1,7 +1,7 @@
 /*
  * SPDX-License-Identifier: Apache-2.0
  *
- * Copyright 2021 Agorapulse.
+ * Copyright 2022 Agorapulse.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
  */
 dependencies {
     api project(':micronaut-worker')
-    api "com.agorapulse:micronaut-aws-sdk-sqs:$micronautAwsSdkVersion"
+    api "com.agorapulse:micronaut-aws-sdk-sqs:$micronautAwsSdkVersion-micronaut-${micronautVersion[0]}.0"
 
     testImplementation project(':micronaut-worker-tck')
 

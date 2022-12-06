@@ -1,7 +1,7 @@
 /*
  * SPDX-License-Identifier: Apache-2.0
  *
- * Copyright 2021 Agorapulse.
+ * Copyright 2022 Agorapulse.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -101,6 +101,11 @@ config {
                 enabled = false
             }
         }
+        sourceHtml {
+            aggregate {
+                enabled = false
+            }
+        }
     }
 
 }
@@ -108,6 +113,8 @@ config {
 nexusPublishing {
     repositories {
         sonatype {
+            nexusUrl = uri('https://s01.oss.sonatype.org/service/local/')
+            snapshotRepositoryUrl = uri('https://s01.oss.sonatype.org/content/repositories/snapshots/')
             username = ossrhUsername
             password = ossrhPassword
         }
@@ -128,9 +135,11 @@ allprojects {
     }
 }
 
-projects {
+gradleProjects {
     subprojects {
         dirs(['libs', 'examples']) { Project subproject ->
+            apply plugin: 'micronaut-compatibility'
+
             sourceCompatibility = 1.8
             targetCompatibility = 1.8
 
@@ -157,18 +166,14 @@ projects {
             dependencies {
                 annotationProcessor platform("org.codehaus.groovy:groovy-bom:$groovyVersion")
                 api platform("org.codehaus.groovy:groovy-bom:$groovyVersion")
-                compile platform("org.codehaus.groovy:groovy-bom:$groovyVersion")
                 implementation platform("org.codehaus.groovy:groovy-bom:$groovyVersion")
                 compileOnly platform("org.codehaus.groovy:groovy-bom:$groovyVersion")
-                testCompile platform("org.codehaus.groovy:groovy-bom:$groovyVersion")
                 testImplementation platform("org.codehaus.groovy:groovy-bom:$groovyVersion")
 
                 annotationProcessor platform("io.micronaut:micronaut-bom:$micronautVersion")
                 api platform("io.micronaut:micronaut-bom:$micronautVersion")
-                compile platform("io.micronaut:micronaut-bom:$micronautVersion")
                 implementation platform("io.micronaut:micronaut-bom:$micronautVersion")
                 compileOnly platform("io.micronaut:micronaut-bom:$micronautVersion")
-                testCompile platform("io.micronaut:micronaut-bom:$micronautVersion")
                 testImplementation platform("io.micronaut:micronaut-bom:$micronautVersion")
 
                 annotationProcessor 'io.micronaut:micronaut-inject-java'

@@ -1,7 +1,7 @@
 /*
  * SPDX-License-Identifier: Apache-2.0
  *
- * Copyright 2021 Agorapulse.
+ * Copyright 2022 Agorapulse.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,14 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 public interface JobManager {
+
+    static String getDefaultJobName(Class<?> jobClass) {
+        return NameUtils.hyphenate(jobClass.getSimpleName());
+    }
+
+    static String getDefaultJobName(Class<?> jobClass, String methodName) {
+        return NameUtils.hyphenate(jobClass.getSimpleName() + "-" + methodName);
+    }
 
     /**
      * Registers a new job.
@@ -70,10 +78,22 @@ public interface JobManager {
     void enqueue(String jobName, Object message);
 
     default void run(Class<?> jobClass) {
-        run(NameUtils.hyphenate(jobClass.getSimpleName()));
+        run(getDefaultJobName(jobClass));
+    }
+
+    default void run(Class<?> jobClass, String methodName) {
+        run(getDefaultJobName(jobClass, methodName));
+    }
+
+    default void forceRun(Class<?> jobClass) {
+        forceRun(getDefaultJobName(jobClass));
+    }
+
+    default void forceRun(Class<?> jobClass, String methodName) {
+        forceRun(getDefaultJobName(jobClass, methodName));
     }
 
     default <T> void enqueue(Class<? extends Consumer<? extends T>> jobClass, T message) {
-        enqueue(NameUtils.hyphenate(jobClass.getSimpleName()), message);
+        enqueue(getDefaultJobName(jobClass), message);
     }
 }
