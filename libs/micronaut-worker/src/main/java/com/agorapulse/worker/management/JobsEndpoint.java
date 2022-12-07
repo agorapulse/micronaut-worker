@@ -20,8 +20,6 @@ package com.agorapulse.worker.management;
 import com.agorapulse.worker.JobManager;
 import com.agorapulse.worker.console.ConsoleJobManager;
 import io.micronaut.context.annotation.Requires;
-import io.micronaut.http.MediaType;
-import io.micronaut.http.annotation.Produces;
 import io.micronaut.management.endpoint.EndpointConfiguration;
 import io.micronaut.management.endpoint.annotation.Endpoint;
 import io.micronaut.management.endpoint.annotation.Read;

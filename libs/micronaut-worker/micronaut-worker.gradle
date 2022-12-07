@@ -22,7 +22,7 @@ dependencies {
 
     compileOnly "com.agorapulse:micronaut-snitch:$micronautSnitchVersion"
     compileOnly "com.agorapulse:micronaut-console:$micronautConsoleVersion-micronaut-${micronautVersion[0]}.0"
-    compileOnly "io.micronaut:micronaut-management"
+    compileOnly 'io.micronaut:micronaut-management'
 
     testImplementation project(':micronaut-worker-tck')
 

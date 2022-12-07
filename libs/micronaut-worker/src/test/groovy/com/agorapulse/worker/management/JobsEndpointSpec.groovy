@@ -39,7 +39,7 @@ class JobsEndpointSpec extends Specification {
 
     public static final String JOBS_ENDPOINT_SPEC_ENVIRONMENT = 'jobs-endpoint-spec-environment'
 
-    @AutoCleanup @Inject Gru gru
+    @Inject Gru gru
 
     void 'render routes'() {
         expect:
