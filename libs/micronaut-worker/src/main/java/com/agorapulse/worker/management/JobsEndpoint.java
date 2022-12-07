@@ -1,7 +1,7 @@
 /*
  * SPDX-License-Identifier: Apache-2.0
  *
- * Copyright 2021 Agorapulse.
+ * Copyright 2022 Agorapulse.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,12 +20,14 @@ package com.agorapulse.worker.management;
 import com.agorapulse.worker.JobManager;
 import com.agorapulse.worker.console.ConsoleJobManager;
 import io.micronaut.context.annotation.Requires;
+import io.micronaut.http.MediaType;
+import io.micronaut.http.annotation.Produces;
 import io.micronaut.management.endpoint.EndpointConfiguration;
 import io.micronaut.management.endpoint.annotation.Endpoint;
 import io.micronaut.management.endpoint.annotation.Read;
 
 @Endpoint(
-    value = "jobs",
+    value = "worker",
     defaultSensitive = true,
     defaultEnabled = true
 )

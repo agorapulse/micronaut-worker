@@ -29,5 +29,5 @@ dependencies {
     testImplementation "com.agorapulse:micronaut-console:$micronautConsoleVersion-micronaut-${micronautVersion[0]}.0"
     testImplementation "io.micronaut:micronaut-http-server-netty"
     testImplementation "com.agorapulse:gru-micronaut:$gruVersion"
-    testImplementation "io.micronaut:micronaut-management"
+    testImplementation 'io.micronaut:micronaut-management'
 }
