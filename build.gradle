@@ -152,13 +152,6 @@ gradleProjects {
                 useJUnitPlatform()
                 systemProperty 'user.timezone', 'UTC'
                 systemProperty 'user.language', 'en'
-
-                if (providers.environmentVariable('CI').present) {
-                    retry {
-                        maxRetries = 4
-                        maxFailures = 20
-                    }
-                }
             }
 
             tasks.withType(JavaCompile) {

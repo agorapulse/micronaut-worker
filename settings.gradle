@@ -29,7 +29,6 @@ buildscript {
         classpath group: 'org.kordamp.gradle',      name: 'coveralls-gradle-plugin',        version: kordampPluginVersion
         classpath group: 'org.ajoberstar',          name: 'gradle-git-publish',             version: gitPublishPluginVersion
         classpath group: 'io.github.gradle-nexus',  name: 'publish-plugin',                 version: nexusPluginVersion
-        classpath group: 'org.gradle',              name: 'test-retry-gradle-plugin',       version: testRetryPluginVersion
     }
 }
 
@@ -62,7 +61,6 @@ projects {
         dirs(['libs', 'examples']) {
             id 'java-library'
             id 'groovy'
-            id 'org.gradle.test-retry'
         }
     }
 }
