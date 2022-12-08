@@ -157,7 +157,6 @@ gradleProjects {
                     retry {
                         maxRetries = 4
                         maxFailures = 20
-                        failOnPassedAfterRetry = true
                     }
                 }
             }
