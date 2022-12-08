@@ -23,7 +23,6 @@ import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Property
 import io.micronaut.context.annotation.Requires
 import io.micronaut.test.annotation.MicronautTest
-import spock.lang.AutoCleanup
 import spock.lang.Specification
 
 import javax.inject.Inject
@@ -31,8 +30,8 @@ import javax.inject.Singleton
 
 @MicronautTest(environments = JOBS_ENDPOINT_SPEC_ENVIRONMENT)
 @Property(name = 'worker.jobs.sample-job.enabled', value = 'true')
-@Property(name = 'endpoints.worker.enabled', value = 'true')
-@Property(name = 'endpoints.worker.sensitive', value = 'false')
+@Property(name = 'endpoints.jobs.enabled', value = 'true')
+@Property(name = 'endpoints.jobs.sensitive', value = 'false')
 @Property(name = 'endpoints.routes.enabled', value = 'true')
 @Property(name = 'endpoints.routes.sensitive', value = 'false')
 class JobsEndpointSpec extends Specification {
@@ -54,7 +53,7 @@ class JobsEndpointSpec extends Specification {
     void 'render job'() {
         expect:
             gru.test {
-                get '/worker'
+                get '/jobs'
                 expect {
                     json 'jobs.json'
                 }

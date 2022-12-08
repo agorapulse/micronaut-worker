@@ -220,6 +220,16 @@ include::{root-dir}/libs/micronaut-worker/src/main/java/com/agorapulse/worker/ev
 
 TIP: If https://github.com/agorapulse/micronaut-snitch[Micronaut Snitch] is present on the classpath and configured with the name of the job, the `snitch` method is called automatically after successful execution.
 
+== Management
+
+You can use `jobs` management endpoint, by default located at `/jobs`, to see the status of all the jobs in the application.
+
+[source,json]
+.Jobs Response
+----
+include::{root-dir}/libs/micronaut-worker-management/src/test/resources/com/agorapulse/worker/management/JobsEndpointSpec/jobs.json[]
+----
+
 == Console Integration
 
 For security reasons, Micronaut Worker does not provide any management endpoint, but it integrates with

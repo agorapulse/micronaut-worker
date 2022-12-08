@@ -25,7 +25,7 @@ import io.micronaut.management.endpoint.annotation.Endpoint;
 import io.micronaut.management.endpoint.annotation.Read;
 
 @Endpoint(
-    value = "worker",
+    value = "jobs",
     defaultSensitive = true,
     defaultEnabled = true
 )
