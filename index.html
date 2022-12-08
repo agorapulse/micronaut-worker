@@ -92,7 +92,7 @@ $(addBlockSwitches);
 <h1>Micronaut Worker</h1>
 <div class="details">
 <span id="author" class="author">Vladimir Orany</span><br>
-<span id="revnumber">version 1.2.2-micronaut-3.0</span>
+<span id="revnumber">version 1.2.3-micronaut-3.0</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -129,7 +129,8 @@ $(addBlockSwitches);
 </ul>
 </li>
 <li><a href="#_events">3.5. Events</a></li>
-<li><a href="#_console_integration">3.6. Console Integration</a></li>
+<li><a href="#_management">3.6. Management</a></li>
+<li><a href="#_console_integration">3.7. Console Integration</a></li>
 </ul>
 </li>
 <li><a href="#_links">4. Links</a></li>
@@ -199,19 +200,22 @@ All jobs are disabled by default in the <code>function</code> and <code>cli</cod
 }
 
 dependencies {
-    implementation 'com.agorapulse:micronaut-worker:1.2.2-micronaut-3.0'
+    implementation 'com.agorapulse:micronaut-worker:1.2.3-micronaut-3.0'
+
+    // to enable /jobs endpoint
+    implementation 'com.agorapulse:micronaut-worker-management:1.2.3-micronaut-3.0'
 
     // to enable AWS SDK v1 SQS queues integration
-    implementation 'com.agorapulse:micronaut-worker-queues-sqs-v1:1.2.2-micronaut-3.0'
+    implementation 'com.agorapulse:micronaut-worker-queues-sqs-v1:1.2.3-micronaut-3.0'
 
     // to enable AWS SDK v2 SQS queues integration
-    implementation 'com.agorapulse:micronaut-worker-queues-sqs-v2:1.2.2-micronaut-3.0'
+    implementation 'com.agorapulse:micronaut-worker-queues-sqs-v2:1.2.3-micronaut-3.0'
 
     // to enable Redis leader/follower capabilities
-    implementation 'com.agorapulse:micronaut-worker-executor-redis:1.2.2-micronaut-3.0'
+    implementation 'com.agorapulse:micronaut-worker-executor-redis:1.2.3-micronaut-3.0'
 
     // to enable Redis queues integration
-    implementation 'com.agorapulse:micronaut-worker-queues-redis:1.2.2-micronaut-3.0'
+    implementation 'com.agorapulse:micronaut-worker-queues-redis:1.2.3-micronaut-3.0'
 
     // you also need Redis configuration on the classpath depending on your Micronaut version
     // for Micronaut 1.x
@@ -640,7 +644,51 @@ If <a href="https://github.com/agorapulse/micronaut-snitch">Micronaut Snitch</a>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_console_integration"><a class="anchor" href="#_console_integration"></a>3.6. Console Integration</h3>
+<h3 id="_management"><a class="anchor" href="#_management"></a>3.6. Management</h3>
+<div class="paragraph">
+<p>You can use <code>jobs</code> management endpoint, by default located at <code>/jobs</code>, to see the status of all the jobs in the application.</p>
+</div>
+<div class="listingblock">
+<div class="title">Jobs Response</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="json">[
+    {
+        "configuration": {
+            "name": "sample-job",
+            "enabled": true,
+            "concurrency": 0,
+            "leaderOnly": false,
+            "followerOnly": false,
+            "initialDelay": "10m",
+            "scheduler": "scheduled",
+            "consumer": {
+                "queueName": "Sample",
+                "queueType": null,
+                "maxMessages": 10,
+                "waitingTime": "0s"
+            },
+            "producer": {
+                "queueName": "Sample",
+                "queueType": null
+            }
+        },
+        "status": {
+            "executionCount": 0,
+            "lastTriggered": null,
+            "lastFinished": null,
+            "lastDuration": null,
+            "lastException": null,
+            "name": "sample-job"
+        },
+        "source": "method com.agorapulse.worker.management.SampleJob#run",
+        "name": "sample-job"
+    }
+]</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_console_integration"><a class="anchor" href="#_console_integration"></a>3.7. Console Integration</h3>
 <div class="paragraph">
 <p>For security reasons, Micronaut Worker does not provide any management endpoint, but it integrates with
 <a href="https://agorapulse.github.io/micronaut-console">Micronaut Console</a> to monitor the jobs and event to trigger them manually.</p>
@@ -804,8 +852,8 @@ on which console endpoint you choose, you get either a text or JSON summary.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 1.2.2-micronaut-3.0<br>
-Last updated 2022-09-21 07:47:29 UTC
+Version 1.2.3-micronaut-3.0<br>
+Last updated 2022-12-08 09:26:16 UTC
 </div>
 </div>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.css">

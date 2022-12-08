@@ -8,6 +8,7 @@ com.agorapulse.worker.groovy
 com.agorapulse.worker.job
 com.agorapulse.worker.json
 com.agorapulse.worker.local
+com.agorapulse.worker.management
 com.agorapulse.worker.manager
 com.agorapulse.worker.processor
 com.agorapulse.worker.queue
