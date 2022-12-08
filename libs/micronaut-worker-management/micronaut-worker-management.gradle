@@ -17,13 +17,10 @@
  */
 dependencies {
     api project(':micronaut-worker')
-
-    implementation 'io.reactivex.rxjava2:rxjava'
-
-
-    implementation("org.spockframework:spock-core:$spockVersion") {
-        exclude group: "org.codehaus.groovy", module: "groovy-all"
-    }
-
     implementation 'io.micronaut:micronaut-management'
+
+    testImplementation project(':micronaut-worker-tck')
+
+    testImplementation "io.micronaut:micronaut-http-server-netty"
+    testImplementation "com.agorapulse:gru-micronaut:$gruVersion"
 }

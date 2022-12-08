@@ -14,6 +14,9 @@ repositories {
 dependencies {
     implementation 'com.agorapulse:micronaut-worker:{project-version}'
 
+    // to enable /jobs endpoint
+    implementation 'com.agorapulse:micronaut-worker-management:{project-version}'
+
     // to enable AWS SDK v1 SQS queues integration
     implementation 'com.agorapulse:micronaut-worker-queues-sqs-v1:{project-version}'
 

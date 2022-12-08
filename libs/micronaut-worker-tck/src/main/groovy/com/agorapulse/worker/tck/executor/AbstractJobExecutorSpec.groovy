@@ -21,6 +21,7 @@ import com.agorapulse.worker.executor.DistributedJobExecutor
 import io.micronaut.context.ApplicationContext
 import spock.lang.Retry
 import spock.lang.Specification
+import spock.util.concurrent.PollingConditions
 
 abstract class AbstractJobExecutorSpec extends Specification {
 
@@ -28,7 +29,11 @@ abstract class AbstractJobExecutorSpec extends Specification {
 
     public static final String JOBS_INITIAL_DELAY = '100ms'
     public static final long LONG_RUNNING_JOB_DURATION = 500
-    public static final long SLEEP_BEFORE_CHECKING = 2000
+
+    private final PollingConditions conditions = new PollingConditions(
+        timeout: 10,
+        initialDelay: 1
+    )
 
     @Retry(count = 10)
     void 'jobs executed appropriate times on three servers'() {
@@ -40,35 +45,35 @@ abstract class AbstractJobExecutorSpec extends Specification {
         expect:
             requiredExecutorType.isInstance(one.getBean(DistributedJobExecutor))
 
-        when:
-            LongRunningJob jobOne = one.getBean(LongRunningJob)
-            LongRunningJob jobTwo = two.getBean(LongRunningJob)
-            LongRunningJob jobThree = three.getBean(LongRunningJob)
+            conditions.eventually {
+                LongRunningJob jobOne = one.getBean(LongRunningJob)
+                LongRunningJob jobTwo = two.getBean(LongRunningJob)
+                LongRunningJob jobThree = three.getBean(LongRunningJob)
 
-            Thread.sleep(SLEEP_BEFORE_CHECKING)
+                List<LongRunningJob> jobs = [jobOne, jobTwo, jobThree]
 
-            List<LongRunningJob> jobs = [jobOne, jobTwo, jobThree]
-        then:
-            // jobs are unique
-            jobs.unique().size() == 3
+                // jobs are unique
+                jobs.unique().size() == 3
 
-            // unlimited jobs are executed on every server
-            jobs.count { it.unlimited.get() == 1 } == 3
+                // unlimited jobs are executed on every server
+                jobs.count { it.unlimited.get() == 1 } == 3
 
-            // concurrent jobs are at most n-times
-            jobs.count { it.concurrent.get() == 1 } == 2
+                // concurrent jobs are at most n-times
+                jobs.count { it.concurrent.get() == 1 } == 2
 
-            // leader job is executed only on leader
-            jobs.count { it.leader.get() == 1 } == 1
+                // leader job is executed only on leader
+                jobs.count { it.leader.get() == 1 } == 1
 
-            // follower job is executed only on followers
-            jobs.count { it.follower.get() == 1  } == expectedFollowersCount
+                // follower job is executed only on followers
+                jobs.count { it.follower.get() == 1  } == expectedFollowersCount
 
-            //  consecutive job is only executed once on a random server
-            jobs.count { it.consecutive.get() == 1 } == 1
+                //  consecutive job is only executed once on a random server
+                jobs.count { it.consecutive.get() == 1 } == 1
 
-            // producer job is executed only on leader
-            jobs.count { it.producer.get() == 1 } == 1
+                // producer job is executed only on leader
+                jobs.count { it.producer.get() == 1 } == 1
+            }
+
         cleanup:
             closeQuietly one, two, three
     }

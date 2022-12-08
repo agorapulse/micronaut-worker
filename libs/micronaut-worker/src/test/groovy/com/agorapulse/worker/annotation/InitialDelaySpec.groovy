@@ -21,6 +21,7 @@ import com.agorapulse.worker.Job
 import com.agorapulse.worker.JobManager
 import io.micronaut.context.annotation.Property
 import io.micronaut.test.annotation.MicronautTest
+import spock.lang.Retry
 import spock.lang.Specification
 
 import javax.inject.Inject
@@ -32,6 +33,7 @@ import java.time.Duration
     'UnnecessaryPublicModifier',
 ])
 
+@Retry
 @MicronautTest
 @Property(name = 'worker.jobs.initial-delay-spec-fixed-rate.enabled', value = 'true')
 @Property(name = 'worker.jobs.initial-delay-spec-fixed-delay.enabled', value = 'true')
