@@ -96,6 +96,7 @@ class LongRunningJob {
     }
 
     @Override
+    @SuppressWarnings('LineLength')
     String toString() {
         return "LongRunningJob{producer=$producer, leader=$leader, follower=$follower, consecutive=$consecutive, unlimited=$unlimited, concurrent=$concurrent, fork=$fork}"
     }
