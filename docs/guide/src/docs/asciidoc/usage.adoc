@@ -59,6 +59,17 @@ is an alias for `@Concurrency(1)` and disables parallel execution completely.
 include::{root-dir}/libs/micronaut-worker/src/test/groovy/com/agorapulse/worker/annotation/FixedRateSpec.groovy[tag=job-method,indent=0]
 ----
 
+== Fork Options
+
+You can spawn the method execution multiple times in parallel in a single server instance with the `@Fork` annotation.
+
+[source,java]
+.Fixed Rate Job Running at Five Parallel Tasks
+----
+@Fork(5)
+include::{root-dir}/libs/micronaut-worker/src/test/groovy/com/agorapulse/worker/annotation/FixedRateSpec.groovy[tag=job-method,indent=0]
+----
+
 == Distributed Jobs
 
 === Leaders and Followers Jobs

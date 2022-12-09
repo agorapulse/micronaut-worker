@@ -24,6 +24,7 @@ import javax.annotation.Nullable;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
 import java.time.Duration;
 import java.util.function.Consumer;
 
@@ -162,6 +163,9 @@ public interface JobConfiguration {
      */
     @NotNull
     QueueConfiguration getProducer();
+
+    @Positive
+    int getFork();
 
     /**
      * @param overrides the configuration which non-default values will override the values in this configuration
