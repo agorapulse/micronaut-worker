@@ -187,81 +187,82 @@
 <a class="jxr_linenumber" name="L179" href="#L179">179</a>         configuration.setFollowerOnly(method.findAnnotation(FollowerOnly.<strong class="jxr_keyword">class</strong>).isPresent());
 <a class="jxr_linenumber" name="L180" href="#L180">180</a> 
 <a class="jxr_linenumber" name="L181" href="#L181">181</a>         method.findAnnotation(Concurrency.<strong class="jxr_keyword">class</strong>).flatMap(a -&gt; a.getValue(Integer.<strong class="jxr_keyword">class</strong>)).ifPresent(configuration::setConcurrency);
-<a class="jxr_linenumber" name="L182" href="#L182">182</a> 
-<a class="jxr_linenumber" name="L183" href="#L183">183</a>         configureConsumerQueue(jobName, method.findAnnotation(Consumes.<strong class="jxr_keyword">class</strong>), configuration.getConsumer());
-<a class="jxr_linenumber" name="L184" href="#L184">184</a>         configureQueue(method.findAnnotation(Produces.<strong class="jxr_keyword">class</strong>), configuration.getProducer());
-<a class="jxr_linenumber" name="L185" href="#L185">185</a> 
-<a class="jxr_linenumber" name="L186" href="#L186">186</a>         configuration.mergeWith(configurationOverrides);
-<a class="jxr_linenumber" name="L187" href="#L187">187</a> 
-<a class="jxr_linenumber" name="L188" href="#L188">188</a>         <strong class="jxr_keyword">if</strong> (configuration.getConsumer().getQueueName() == <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="L189" href="#L189">189</a>             configuration.getConsumer().setQueueName(extractQueueNameFromMethod(method));
-<a class="jxr_linenumber" name="L190" href="#L190">190</a>         }
-<a class="jxr_linenumber" name="L191" href="#L191">191</a> 
-<a class="jxr_linenumber" name="L192" href="#L192">192</a>         <strong class="jxr_keyword">if</strong> (configuration.getProducer().getQueueName() == <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="L193" href="#L193">193</a>             configuration.getProducer().setQueueName(extractQueueNameFromMethod(method));
-<a class="jxr_linenumber" name="L194" href="#L194">194</a>         }
-<a class="jxr_linenumber" name="L195" href="#L195">195</a> 
-<a class="jxr_linenumber" name="L196" href="#L196">196</a>         <strong class="jxr_keyword">return</strong> configuration;
-<a class="jxr_linenumber" name="L197" href="#L197">197</a>     }
-<a class="jxr_linenumber" name="L198" href="#L198">198</a> 
-<a class="jxr_linenumber" name="L199" href="#L199">199</a>     <strong class="jxr_keyword">private</strong> &lt;A <strong class="jxr_keyword">extends</strong> Annotation&gt; <strong class="jxr_keyword">void</strong> configureQueue(Optional&lt;AnnotationValue&lt;A&gt;&gt; consumesAnnotation, MutableJobConfiguration.MutableQueueConfiguration queueConfiguration) {
-<a class="jxr_linenumber" name="L200" href="#L200">200</a>         <strong class="jxr_keyword">if</strong> (consumesAnnotation.isPresent()) {
-<a class="jxr_linenumber" name="L201" href="#L201">201</a>             AnnotationValue&lt;A&gt; annotationValue = consumesAnnotation.get();
-<a class="jxr_linenumber" name="L202" href="#L202">202</a>             queueConfiguration.setQueueName(annotationValue.getRequiredValue(String.<strong class="jxr_keyword">class</strong>));
-<a class="jxr_linenumber" name="L203" href="#L203">203</a> 
-<a class="jxr_linenumber" name="L204" href="#L204">204</a>             annotationValue.stringValue(<span class="jxr_string">"type"</span>).ifPresent(type -&gt; {
-<a class="jxr_linenumber" name="L205" href="#L205">205</a>                 <strong class="jxr_keyword">if</strong> (StringUtils.isNotEmpty(type)) {
-<a class="jxr_linenumber" name="L206" href="#L206">206</a>                     queueConfiguration.setQueueType(type);
-<a class="jxr_linenumber" name="L207" href="#L207">207</a>                 }
-<a class="jxr_linenumber" name="L208" href="#L208">208</a>             });
-<a class="jxr_linenumber" name="L209" href="#L209">209</a>         }
-<a class="jxr_linenumber" name="L210" href="#L210">210</a>     }
-<a class="jxr_linenumber" name="L211" href="#L211">211</a> 
-<a class="jxr_linenumber" name="L212" href="#L212">212</a>     <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> configureConsumerQueue(String jobName, Optional&lt;AnnotationValue&lt;Consumes&gt;&gt; consumesAnnotation, MutableJobConfiguration.MutableConsumerQueueConfiguration queueConfiguration) {
-<a class="jxr_linenumber" name="L213" href="#L213">213</a>         <strong class="jxr_keyword">if</strong> (consumesAnnotation.isPresent()) {
-<a class="jxr_linenumber" name="L214" href="#L214">214</a>             configureQueue(consumesAnnotation, queueConfiguration);
-<a class="jxr_linenumber" name="L215" href="#L215">215</a> 
-<a class="jxr_linenumber" name="L216" href="#L216">216</a>             AnnotationValue&lt;Consumes&gt; annotationValue = consumesAnnotation.get();
-<a class="jxr_linenumber" name="L217" href="#L217">217</a> 
-<a class="jxr_linenumber" name="L218" href="#L218">218</a>             annotationValue.stringValue(<span class="jxr_string">"waitingTime"</span>).ifPresent(waitingTime -&gt; {
-<a class="jxr_linenumber" name="L219" href="#L219">219</a>                 <strong class="jxr_keyword">if</strong> (StringUtils.isNotEmpty(waitingTime)) {
-<a class="jxr_linenumber" name="L220" href="#L220">220</a>                     queueConfiguration.setWaitingTime(convertDuration(jobName, waitingTime, <span class="jxr_string">"waiting time"</span>));
-<a class="jxr_linenumber" name="L221" href="#L221">221</a>                 }
-<a class="jxr_linenumber" name="L222" href="#L222">222</a>             });
-<a class="jxr_linenumber" name="L223" href="#L223">223</a> 
-<a class="jxr_linenumber" name="L224" href="#L224">224</a>             annotationValue.intValue(<span class="jxr_string">"maxMessages"</span>).ifPresent(maxMessages -&gt; {
-<a class="jxr_linenumber" name="L225" href="#L225">225</a>                 <strong class="jxr_keyword">if</strong> (maxMessages &gt; 1) {
-<a class="jxr_linenumber" name="L226" href="#L226">226</a>                     queueConfiguration.setMaxMessages(maxMessages);
-<a class="jxr_linenumber" name="L227" href="#L227">227</a>                 }
-<a class="jxr_linenumber" name="L228" href="#L228">228</a>             });
-<a class="jxr_linenumber" name="L229" href="#L229">229</a>         }
-<a class="jxr_linenumber" name="L230" href="#L230">230</a>     }
-<a class="jxr_linenumber" name="L231" href="#L231">231</a> 
-<a class="jxr_linenumber" name="L232" href="#L232">232</a>     <strong class="jxr_keyword">private</strong> String extractQueueNameFromMethod(ExecutableMethod&lt;?, ?&gt; method) {
-<a class="jxr_linenumber" name="L233" href="#L233">233</a>         String name = SUFFIXES_TO_REMOVE
-<a class="jxr_linenumber" name="L234" href="#L234">234</a>             .stream()
-<a class="jxr_linenumber" name="L235" href="#L235">235</a>             .reduce(
-<a class="jxr_linenumber" name="L236" href="#L236">236</a>                 method.getDeclaringType().getSimpleName(),
-<a class="jxr_linenumber" name="L237" href="#L237">237</a>                 (acc, suffix) -&gt; acc.endsWith(suffix) ? acc.substring(0, acc.length() - suffix.length()) : acc
-<a class="jxr_linenumber" name="L238" href="#L238">238</a>             );
-<a class="jxr_linenumber" name="L239" href="#L239">239</a> 
-<a class="jxr_linenumber" name="L240" href="#L240">240</a>         String queueName = applicationConfiguration.getName().map(n -&gt; n + <span class="jxr_string">"_"</span> + name).orElse(name);
-<a class="jxr_linenumber" name="L241" href="#L241">241</a>         <strong class="jxr_keyword">if</strong> (LOG.isTraceEnabled()) {
-<a class="jxr_linenumber" name="L242" href="#L242">242</a>             LOG.trace(<span class="jxr_string">"Using default queue name {} queue for method {}#{}. Use @Consumes or @Produces to specify different name!"</span>, queueName, method.getDeclaringType().getName(), method.getMethodName());
-<a class="jxr_linenumber" name="L243" href="#L243">243</a>         }
-<a class="jxr_linenumber" name="L244" href="#L244">244</a>         <strong class="jxr_keyword">return</strong> queueName;
-<a class="jxr_linenumber" name="L245" href="#L245">245</a>     }
-<a class="jxr_linenumber" name="L246" href="#L246">246</a> 
-<a class="jxr_linenumber" name="L247" href="#L247">247</a>     <strong class="jxr_keyword">private</strong> Duration convertDuration(String jobName, String durationString, String humanReadableProperty) {
-<a class="jxr_linenumber" name="L248" href="#L248">248</a>         Optional&lt;Duration&gt; converted = conversionService.convert(durationString, Duration.<strong class="jxr_keyword">class</strong>);
-<a class="jxr_linenumber" name="L249" href="#L249">249</a> 
-<a class="jxr_linenumber" name="L250" href="#L250">250</a>         <strong class="jxr_keyword">if</strong> (converted.isPresent()) {
-<a class="jxr_linenumber" name="L251" href="#L251">251</a>             <strong class="jxr_keyword">return</strong> converted.get();
-<a class="jxr_linenumber" name="L252" href="#L252">252</a>         }
-<a class="jxr_linenumber" name="L253" href="#L253">253</a> 
-<a class="jxr_linenumber" name="L254" href="#L254">254</a>         <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> IllegalArgumentException(<span class="jxr_string">"Invalid "</span> + humanReadableProperty + <span class="jxr_string">"  definition for job "</span> + jobName + <span class="jxr_string">" : "</span> + durationString);
-<a class="jxr_linenumber" name="L255" href="#L255">255</a>     }
-<a class="jxr_linenumber" name="L256" href="#L256">256</a> }
+<a class="jxr_linenumber" name="L182" href="#L182">182</a>         method.findAnnotation(Fork.<strong class="jxr_keyword">class</strong>).flatMap(a -&gt; a.getValue(Integer.<strong class="jxr_keyword">class</strong>)).ifPresent(configuration::setFork);
+<a class="jxr_linenumber" name="L183" href="#L183">183</a> 
+<a class="jxr_linenumber" name="L184" href="#L184">184</a>         configureConsumerQueue(jobName, method.findAnnotation(Consumes.<strong class="jxr_keyword">class</strong>), configuration.getConsumer());
+<a class="jxr_linenumber" name="L185" href="#L185">185</a>         configureQueue(method.findAnnotation(Produces.<strong class="jxr_keyword">class</strong>), configuration.getProducer());
+<a class="jxr_linenumber" name="L186" href="#L186">186</a> 
+<a class="jxr_linenumber" name="L187" href="#L187">187</a>         configuration.mergeWith(configurationOverrides);
+<a class="jxr_linenumber" name="L188" href="#L188">188</a> 
+<a class="jxr_linenumber" name="L189" href="#L189">189</a>         <strong class="jxr_keyword">if</strong> (configuration.getConsumer().getQueueName() == <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L190" href="#L190">190</a>             configuration.getConsumer().setQueueName(extractQueueNameFromMethod(method));
+<a class="jxr_linenumber" name="L191" href="#L191">191</a>         }
+<a class="jxr_linenumber" name="L192" href="#L192">192</a> 
+<a class="jxr_linenumber" name="L193" href="#L193">193</a>         <strong class="jxr_keyword">if</strong> (configuration.getProducer().getQueueName() == <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L194" href="#L194">194</a>             configuration.getProducer().setQueueName(extractQueueNameFromMethod(method));
+<a class="jxr_linenumber" name="L195" href="#L195">195</a>         }
+<a class="jxr_linenumber" name="L196" href="#L196">196</a> 
+<a class="jxr_linenumber" name="L197" href="#L197">197</a>         <strong class="jxr_keyword">return</strong> configuration;
+<a class="jxr_linenumber" name="L198" href="#L198">198</a>     }
+<a class="jxr_linenumber" name="L199" href="#L199">199</a> 
+<a class="jxr_linenumber" name="L200" href="#L200">200</a>     <strong class="jxr_keyword">private</strong> &lt;A <strong class="jxr_keyword">extends</strong> Annotation&gt; <strong class="jxr_keyword">void</strong> configureQueue(Optional&lt;AnnotationValue&lt;A&gt;&gt; consumesAnnotation, MutableJobConfiguration.MutableQueueConfiguration queueConfiguration) {
+<a class="jxr_linenumber" name="L201" href="#L201">201</a>         <strong class="jxr_keyword">if</strong> (consumesAnnotation.isPresent()) {
+<a class="jxr_linenumber" name="L202" href="#L202">202</a>             AnnotationValue&lt;A&gt; annotationValue = consumesAnnotation.get();
+<a class="jxr_linenumber" name="L203" href="#L203">203</a>             queueConfiguration.setQueueName(annotationValue.getRequiredValue(String.<strong class="jxr_keyword">class</strong>));
+<a class="jxr_linenumber" name="L204" href="#L204">204</a> 
+<a class="jxr_linenumber" name="L205" href="#L205">205</a>             annotationValue.stringValue(<span class="jxr_string">"type"</span>).ifPresent(type -&gt; {
+<a class="jxr_linenumber" name="L206" href="#L206">206</a>                 <strong class="jxr_keyword">if</strong> (StringUtils.isNotEmpty(type)) {
+<a class="jxr_linenumber" name="L207" href="#L207">207</a>                     queueConfiguration.setQueueType(type);
+<a class="jxr_linenumber" name="L208" href="#L208">208</a>                 }
+<a class="jxr_linenumber" name="L209" href="#L209">209</a>             });
+<a class="jxr_linenumber" name="L210" href="#L210">210</a>         }
+<a class="jxr_linenumber" name="L211" href="#L211">211</a>     }
+<a class="jxr_linenumber" name="L212" href="#L212">212</a> 
+<a class="jxr_linenumber" name="L213" href="#L213">213</a>     <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> configureConsumerQueue(String jobName, Optional&lt;AnnotationValue&lt;Consumes&gt;&gt; consumesAnnotation, MutableJobConfiguration.MutableConsumerQueueConfiguration queueConfiguration) {
+<a class="jxr_linenumber" name="L214" href="#L214">214</a>         <strong class="jxr_keyword">if</strong> (consumesAnnotation.isPresent()) {
+<a class="jxr_linenumber" name="L215" href="#L215">215</a>             configureQueue(consumesAnnotation, queueConfiguration);
+<a class="jxr_linenumber" name="L216" href="#L216">216</a> 
+<a class="jxr_linenumber" name="L217" href="#L217">217</a>             AnnotationValue&lt;Consumes&gt; annotationValue = consumesAnnotation.get();
+<a class="jxr_linenumber" name="L218" href="#L218">218</a> 
+<a class="jxr_linenumber" name="L219" href="#L219">219</a>             annotationValue.stringValue(<span class="jxr_string">"waitingTime"</span>).ifPresent(waitingTime -&gt; {
+<a class="jxr_linenumber" name="L220" href="#L220">220</a>                 <strong class="jxr_keyword">if</strong> (StringUtils.isNotEmpty(waitingTime)) {
+<a class="jxr_linenumber" name="L221" href="#L221">221</a>                     queueConfiguration.setWaitingTime(convertDuration(jobName, waitingTime, <span class="jxr_string">"waiting time"</span>));
+<a class="jxr_linenumber" name="L222" href="#L222">222</a>                 }
+<a class="jxr_linenumber" name="L223" href="#L223">223</a>             });
+<a class="jxr_linenumber" name="L224" href="#L224">224</a> 
+<a class="jxr_linenumber" name="L225" href="#L225">225</a>             annotationValue.intValue(<span class="jxr_string">"maxMessages"</span>).ifPresent(maxMessages -&gt; {
+<a class="jxr_linenumber" name="L226" href="#L226">226</a>                 <strong class="jxr_keyword">if</strong> (maxMessages &gt; 1) {
+<a class="jxr_linenumber" name="L227" href="#L227">227</a>                     queueConfiguration.setMaxMessages(maxMessages);
+<a class="jxr_linenumber" name="L228" href="#L228">228</a>                 }
+<a class="jxr_linenumber" name="L229" href="#L229">229</a>             });
+<a class="jxr_linenumber" name="L230" href="#L230">230</a>         }
+<a class="jxr_linenumber" name="L231" href="#L231">231</a>     }
+<a class="jxr_linenumber" name="L232" href="#L232">232</a> 
+<a class="jxr_linenumber" name="L233" href="#L233">233</a>     <strong class="jxr_keyword">private</strong> String extractQueueNameFromMethod(ExecutableMethod&lt;?, ?&gt; method) {
+<a class="jxr_linenumber" name="L234" href="#L234">234</a>         String name = SUFFIXES_TO_REMOVE
+<a class="jxr_linenumber" name="L235" href="#L235">235</a>             .stream()
+<a class="jxr_linenumber" name="L236" href="#L236">236</a>             .reduce(
+<a class="jxr_linenumber" name="L237" href="#L237">237</a>                 method.getDeclaringType().getSimpleName(),
+<a class="jxr_linenumber" name="L238" href="#L238">238</a>                 (acc, suffix) -&gt; acc.endsWith(suffix) ? acc.substring(0, acc.length() - suffix.length()) : acc
+<a class="jxr_linenumber" name="L239" href="#L239">239</a>             );
+<a class="jxr_linenumber" name="L240" href="#L240">240</a> 
+<a class="jxr_linenumber" name="L241" href="#L241">241</a>         String queueName = applicationConfiguration.getName().map(n -&gt; n + <span class="jxr_string">"_"</span> + name).orElse(name);
+<a class="jxr_linenumber" name="L242" href="#L242">242</a>         <strong class="jxr_keyword">if</strong> (LOG.isTraceEnabled()) {
+<a class="jxr_linenumber" name="L243" href="#L243">243</a>             LOG.trace(<span class="jxr_string">"Using default queue name {} queue for method {}#{}. Use @Consumes or @Produces to specify different name!"</span>, queueName, method.getDeclaringType().getName(), method.getMethodName());
+<a class="jxr_linenumber" name="L244" href="#L244">244</a>         }
+<a class="jxr_linenumber" name="L245" href="#L245">245</a>         <strong class="jxr_keyword">return</strong> queueName;
+<a class="jxr_linenumber" name="L246" href="#L246">246</a>     }
+<a class="jxr_linenumber" name="L247" href="#L247">247</a> 
+<a class="jxr_linenumber" name="L248" href="#L248">248</a>     <strong class="jxr_keyword">private</strong> Duration convertDuration(String jobName, String durationString, String humanReadableProperty) {
+<a class="jxr_linenumber" name="L249" href="#L249">249</a>         Optional&lt;Duration&gt; converted = conversionService.convert(durationString, Duration.<strong class="jxr_keyword">class</strong>);
+<a class="jxr_linenumber" name="L250" href="#L250">250</a> 
+<a class="jxr_linenumber" name="L251" href="#L251">251</a>         <strong class="jxr_keyword">if</strong> (converted.isPresent()) {
+<a class="jxr_linenumber" name="L252" href="#L252">252</a>             <strong class="jxr_keyword">return</strong> converted.get();
+<a class="jxr_linenumber" name="L253" href="#L253">253</a>         }
+<a class="jxr_linenumber" name="L254" href="#L254">254</a> 
+<a class="jxr_linenumber" name="L255" href="#L255">255</a>         <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> IllegalArgumentException(<span class="jxr_string">"Invalid "</span> + humanReadableProperty + <span class="jxr_string">"  definition for job "</span> + jobName + <span class="jxr_string">" : "</span> + durationString);
+<a class="jxr_linenumber" name="L256" href="#L256">256</a>     }
+<a class="jxr_linenumber" name="L257" href="#L257">257</a> }
 </pre>
 <hr/>
 <div id="footer"></div>
