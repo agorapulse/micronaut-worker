@@ -179,6 +179,7 @@ public class MethodJobProcessor implements ExecutableMethodProcessor<Job> {
         configuration.setFollowerOnly(method.findAnnotation(FollowerOnly.class).isPresent());
 
         method.findAnnotation(Concurrency.class).flatMap(a -> a.getValue(Integer.class)).ifPresent(configuration::setConcurrency);
+        method.findAnnotation(Fork.class).flatMap(a -> a.getValue(Integer.class)).ifPresent(configuration::setFork);
 
         configureConsumerQueue(jobName, method.findAnnotation(Consumes.class), configuration.getConsumer());
         configureQueue(method.findAnnotation(Produces.class), configuration.getProducer());

@@ -87,8 +87,10 @@ public class DefaultJobScheduler implements JobScheduler, Closeable {
                 LOG.debug("Scheduling fixed rate job {} [{}] for {}", configuration.getName(), duration, job.getSource());
             }
 
-            ScheduledFuture<?> scheduledFuture = taskScheduler.scheduleAtFixedRate(initialDelay, duration, job);
-            scheduledTasks.add(scheduledFuture);
+            for (int i = 0; i < configuration.getFork(); i++) {
+                ScheduledFuture<?> scheduledFuture = taskScheduler.scheduleAtFixedRate(initialDelay, duration, job);
+                scheduledTasks.add(scheduledFuture);
+            }
         } else if (configuration.getFixedDelay() != null) {
             Duration duration = configuration.getFixedDelay();
 
@@ -96,12 +98,15 @@ public class DefaultJobScheduler implements JobScheduler, Closeable {
                 LOG.debug("Scheduling fixed delay task {} [{}] for {}", configuration.getName(), duration, job.getSource());
             }
 
-            ScheduledFuture<?> scheduledFuture = taskScheduler.scheduleWithFixedDelay(initialDelay, duration, job);
-            scheduledTasks.add(scheduledFuture);
+            for (int i = 0; i < configuration.getFork(); i++) {
+                ScheduledFuture<?> scheduledFuture = taskScheduler.scheduleWithFixedDelay(initialDelay, duration, job);
+                scheduledTasks.add(scheduledFuture);
+            }
         } else if (initialDelay != null) {
-            ScheduledFuture<?> scheduledFuture = taskScheduler.schedule(initialDelay, job);
-
-            scheduledTasks.add(scheduledFuture);
+            for (int i = 0; i < configuration.getFork(); i++) {
+                ScheduledFuture<?> scheduledFuture = taskScheduler.schedule(initialDelay, job);
+                scheduledTasks.add(scheduledFuture);
+            }
         } else {
             throw new JobConfigurationException(job, "Failed to schedule job " + configuration.getName() + " declared in "  + job.getSource() + ". Invalid definition");
         }

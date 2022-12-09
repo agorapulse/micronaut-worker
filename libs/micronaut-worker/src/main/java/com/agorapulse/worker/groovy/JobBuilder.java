@@ -29,6 +29,7 @@ import space.jasan.support.groovy.closure.ConsumerWithDelegate;
 
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Positive;
 import java.time.Duration;
 
 public class JobBuilder {
@@ -96,6 +97,10 @@ public class JobBuilder {
 
     public void scheduler(@NotBlank String scheduler) {
         configuration.setScheduler(scheduler);
+    }
+
+    public void fork(@Positive int fork) {
+        configuration.setFork(fork);
     }
 
     public void consumer(

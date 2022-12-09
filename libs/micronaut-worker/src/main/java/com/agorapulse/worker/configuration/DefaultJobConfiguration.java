@@ -31,6 +31,7 @@ import io.micronaut.scheduling.TaskExecutors;
 import javax.annotation.Nullable;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Positive;
 import java.time.Duration;
 import java.util.function.Consumer;
 
@@ -135,6 +136,8 @@ public class DefaultJobConfiguration implements MutableJobConfiguration {
     @Nullable private Duration initialDelay;
     @Nullable private Duration fixedRate;
     @NotBlank private String scheduler = TaskExecutors.SCHEDULED;
+
+    @Positive private int fork = 1;
 
     @ConfigurationBuilder(configurationPrefix = "consumer")
     private final DefaultConsumerQueueConfiguration consumer = new DefaultConsumerQueueConfiguration();
@@ -253,6 +256,15 @@ public class DefaultJobConfiguration implements MutableJobConfiguration {
     }
 
     @Override
+    public int getFork() {
+        return fork;
+    }
+
+    public void setFork(int fork) {
+        this.fork = fork;
+    }
+
+    @Override
     public DefaultConsumerQueueConfiguration getConsumer() {
         return consumer;
     }
@@ -316,6 +328,10 @@ public class DefaultJobConfiguration implements MutableJobConfiguration {
 
         if (overrides.getScheduler() != null && !overrides.getScheduler().equals(TaskExecutors.SCHEDULED)) {
             this.scheduler = overrides.getScheduler();
+        }
+
+        if (overrides.getFork() != 1) {
+            this.fork = overrides.getFork();
         }
 
         consumer.mergeWith(overrides.getConsumer());

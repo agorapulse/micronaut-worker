@@ -22,6 +22,7 @@ import com.agorapulse.worker.JobConfiguration;
 import javax.annotation.Nullable;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Positive;
 import java.time.Duration;
 import java.util.function.Consumer;
 
@@ -56,6 +57,8 @@ public interface MutableJobConfiguration extends JobConfiguration {
     void setFixedRate(@Nullable Duration fixedRate);
 
     void setScheduler(@NotBlank String scheduler);
+
+    void setFork(@Positive int fork);
 
     void withConsumer(Consumer<MutableQueueConfiguration> consumer);
 

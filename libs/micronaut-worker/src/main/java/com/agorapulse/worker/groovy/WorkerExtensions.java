@@ -30,6 +30,7 @@ import space.jasan.support.groovy.closure.ConsumerWithDelegate;
 import javax.annotation.Nullable;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Positive;
 import java.time.Duration;
 
 public class WorkerExtensions {
@@ -69,6 +70,11 @@ public class WorkerExtensions {
     public static void scheduler(MutableJobConfiguration self, @NotBlank String scheduler) {
         self.setScheduler(scheduler);
     }
+
+    public static void fork(MutableJobConfiguration self, @Positive int fork) {
+        self.setFork(fork);
+    }
+
 
     public static void consumer(
         MutableJobConfiguration self,

@@ -43,7 +43,8 @@ class RedisJobExecutorSpec extends AbstractJobExecutorSpec {
                         'worker.jobs.long-running-job-execute-on-follower.enabled': 'true',
                         'worker.jobs.long-running-job-execute-consecutive.enabled': 'true',
                         'worker.jobs.long-running-job-execute-unlimited.enabled': 'true',
-                        'worker.jobs.long-running-job-execute-concurrent.enabled': 'true'
+                        'worker.jobs.long-running-job-execute-concurrent.enabled': 'true',
+                        'worker.jobs.long-running-job-execute-fork.enabled': 'true'
                 )
                 .environments(CONCURRENT_JOB_TEST_ENVIRONMENT)
                 .build()
