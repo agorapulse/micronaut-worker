@@ -20,6 +20,7 @@ package com.agorapulse.worker.tck.executor
 import com.agorapulse.worker.annotation.Concurrency
 import com.agorapulse.worker.annotation.Consecutive
 import com.agorapulse.worker.annotation.FollowerOnly
+import com.agorapulse.worker.annotation.Fork
 import com.agorapulse.worker.annotation.Job
 import com.agorapulse.worker.annotation.LeaderOnly
 import groovy.transform.CompileStatic
@@ -44,6 +45,7 @@ class LongRunningJob {
     final AtomicInteger consecutive = new AtomicInteger()
     final AtomicInteger unlimited = new AtomicInteger()
     final AtomicInteger concurrent = new AtomicInteger()
+    final AtomicInteger fork = new AtomicInteger()
 
     @Job(initialDelay = JOBS_INITIAL_DELAY)
     Publisher<String> executeProducer() {
@@ -86,9 +88,16 @@ class LongRunningJob {
         concurrent.incrementAndGet()
     }
 
+    @Fork(2)
+    @Job(initialDelay = JOBS_INITIAL_DELAY)
+    void executeFork() {
+        runLongTask()
+        fork.incrementAndGet()
+    }
+
     @Override
     String toString() {
-        return "LongRunningJob{producer=$producer, leader=$leader, follower=$follower, consecutive=$consecutive, unlimited=$unlimited, concurrent=$concurrent}"
+        return "LongRunningJob{producer=$producer, leader=$leader, follower=$follower, consecutive=$consecutive, unlimited=$unlimited, concurrent=$concurrent, fork=$fork}"
     }
 
     private static void runLongTask() {

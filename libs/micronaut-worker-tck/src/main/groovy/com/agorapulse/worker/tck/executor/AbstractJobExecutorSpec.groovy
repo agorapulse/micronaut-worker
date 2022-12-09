@@ -58,6 +58,9 @@ abstract class AbstractJobExecutorSpec extends Specification {
                 // unlimited jobs are executed on every server
                 jobs.count { it.unlimited.get() == 1 } == 3
 
+                // forked jobs are executed twice
+                jobs.count { it.fork.get() == 2 } == 3
+
                 // concurrent jobs are at most n-times
                 jobs.count { it.concurrent.get() == 1 } == 2
 
