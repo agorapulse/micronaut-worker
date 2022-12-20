@@ -70,6 +70,29 @@ You can spawn the method execution multiple times in parallel in a single server
 include::{root-dir}/libs/micronaut-worker/src/test/groovy/com/agorapulse/worker/annotation/FixedRateSpec.groovy[tag=job-method,indent=0]
 ----
 
+[HINT]
+====
+You should consider using your own scheduler with the pool of the matching size:
+[source,yaml]
+.application.yml
+----
+micronaut:
+  executors:
+    test-job:                                                                           # <1>
+      core-pool-size: 5                                                                 # <2>
+worker:
+  jobs:
+    test-job:                                                                           # <3>
+      scheduler: test-job                                                               # <4>
+----
+<1> The name of the new custom scheduler
+<2> The size of the pool should be the same as the `fork` value
+<3> The name of the job
+<4> The scheduler definition using the name of the executor declared above
+====
+
+WARNING: For the consumer jobs, the messages are consumed synchronously so if you want to benefit from `@Fork` execution then keep the number of `maxMessages` to  the default value `1`.
+
 == Distributed Jobs
 
 === Leaders and Followers Jobs
