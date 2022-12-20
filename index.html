@@ -340,6 +340,58 @@ public void job() {
 }</code></pre>
 </div>
 </div>
+<div class="exampleblock">
+<div class="content">
+<div class="paragraph">
+<p>You should consider using your own scheduler with the pool of the matching size:</p>
+</div>
+<div class="listingblock">
+<div class="title">application.yml</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="yaml">micronaut:
+  executors:
+    test-job:                                                                           <i class="conum" data-value="1"></i><b>(1)</b>
+      core-pool-size: 5                                                                 <i class="conum" data-value="2"></i><b>(2)</b>
+worker:
+  jobs:
+    test-job:                                                                           <i class="conum" data-value="3"></i><b>(3)</b>
+      scheduler: test-job                                                               <i class="conum" data-value="4"></i><b>(4)</b></code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>The name of the new custom scheduler</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>The size of the pool should be the same as the <code>fork</code> value</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>The name of the job</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="4"></i><b>4</b></td>
+<td>The scheduler definition using the name of the executor declared above</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+For the consumer jobs, the messages are consumed synchronously so if you want to benefit from <code>@Fork</code> execution then keep the number of <code>maxMessages</code> to  the default value <code>1</code>.
+</td>
+</tr>
+</table>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_distributed_jobs"><a class="anchor" href="#_distributed_jobs"></a>3.4. Distributed Jobs</h3>
@@ -872,7 +924,7 @@ on which console endpoint you choose, you get either a text or JSON summary.</p>
 <div id="footer">
 <div id="footer-text">
 Version 1.2.4-micronaut-3.0<br>
-Last updated 2022-12-09 10:38:55 UTC
+Last updated 2022-12-20 11:30:38 UTC
 </div>
 </div>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.css">
