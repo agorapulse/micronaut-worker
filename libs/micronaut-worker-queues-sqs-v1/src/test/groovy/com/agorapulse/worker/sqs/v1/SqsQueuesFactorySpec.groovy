@@ -37,12 +37,12 @@ class SqsQueuesFactorySpec extends Specification {
 
     void 'return sqs if there is no issue'() {
         expect:
-            factory.sqsQueues(provider, mapper, simpleQueueService, Optional.empty(), environment) instanceof SqsQueues
+            factory.sqsQueues(provider, mapper, simpleQueueService, environment) instanceof SqsQueues
     }
 
     void 'return local if there is issue'() {
         when:
-            factory.sqsQueues(provider, mapper, simpleQueueService, Optional.empty(), environment) instanceof LocalQueues
+            factory.sqsQueues(provider, mapper, simpleQueueService, environment) instanceof LocalQueues
 
         then:
             1 * provider.credentials >> { throw new SdkClientException('login failed') }
