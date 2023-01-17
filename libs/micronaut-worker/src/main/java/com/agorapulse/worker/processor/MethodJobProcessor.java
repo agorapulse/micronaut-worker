@@ -18,10 +18,12 @@
 package com.agorapulse.worker.processor;
 
 import com.agorapulse.worker.JobConfiguration;
+import com.agorapulse.worker.JobConfigurationException;
 import com.agorapulse.worker.JobManager;
 import com.agorapulse.worker.JobScheduler;
 import com.agorapulse.worker.WorkerConfiguration;
 import com.agorapulse.worker.annotation.*;
+import com.agorapulse.worker.annotation.Job;
 import com.agorapulse.worker.configuration.DefaultJobConfiguration;
 import com.agorapulse.worker.configuration.MutableJobConfiguration;
 import io.micronaut.context.ApplicationContext;
@@ -130,7 +132,11 @@ public class MethodJobProcessor implements ExecutableMethodProcessor<Job> {
             return;
         }
 
-        jobScheduler.schedule(task);
+        try {
+            jobScheduler.schedule(task);
+        } catch (JobConfigurationException e) {
+            LOG.error("Job declared in method " + method +  " is ignored because it is not correctly configured", e);
+        }
     }
 
     private String getJobName(BeanDefinition<?> beanDefinition, ExecutableMethod<?, ?> method) {
