@@ -26,9 +26,9 @@ import com.agorapulse.worker.configuration.DefaultJobConfiguration;
 import com.agorapulse.worker.configuration.MutableJobConfiguration;
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.context.BeanContext;
+import io.micronaut.context.env.Environment;
 import io.micronaut.context.processor.ExecutableMethodProcessor;
 import io.micronaut.core.annotation.AnnotationValue;
-import io.micronaut.core.convert.ConversionService;
 import io.micronaut.core.naming.NameUtils;
 import io.micronaut.core.util.StringUtils;
 import io.micronaut.inject.BeanDefinition;
@@ -73,7 +73,7 @@ public class MethodJobProcessor implements ExecutableMethodProcessor<Job> {
     private final JobManager jobManager;
     private final ApplicationConfiguration applicationConfiguration;
     private final JobScheduler jobScheduler;
-    private final ConversionService<?> conversionService;
+    private final Environment environment;
     private final WorkerConfiguration workerConfiguration;
 
     /**
@@ -93,7 +93,7 @@ public class MethodJobProcessor implements ExecutableMethodProcessor<Job> {
         JobManager jobManager,
         ApplicationConfiguration applicationConfiguration,
         JobScheduler jobScheduler,
-        Optional<ConversionService<?>> optionalConversionService,
+        Environment environment,
         WorkerConfiguration workerConfiguration
     ) {
         this.beanContext = beanContext;
@@ -102,7 +102,7 @@ public class MethodJobProcessor implements ExecutableMethodProcessor<Job> {
         this.jobManager = jobManager;
         this.applicationConfiguration = applicationConfiguration;
         this.jobScheduler = jobScheduler;
-        this.conversionService = optionalConversionService.orElse(ConversionService.SHARED);
+        this.environment = environment;
         this.workerConfiguration = workerConfiguration;
     }
 
@@ -246,7 +246,7 @@ public class MethodJobProcessor implements ExecutableMethodProcessor<Job> {
     }
 
     private Duration convertDuration(String jobName, String durationString, String humanReadableProperty) {
-        Optional<Duration> converted = conversionService.convert(durationString, Duration.class);
+        Optional<Duration> converted = environment.convert(durationString, Duration.class);
 
         if (converted.isPresent()) {
             return converted.get();
