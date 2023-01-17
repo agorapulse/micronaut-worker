@@ -32,7 +32,6 @@ import software.amazon.awssdk.core.exception.SdkClientException;
 
 import javax.inject.Named;
 import javax.inject.Singleton;
-import java.util.Optional;
 
 @Factory
 @Requires(classes = { SimpleQueueService.class }, beans = { SimpleQueueService.class, AwsCredentialsProvider.class })

@@ -32,7 +32,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Named;
 import javax.inject.Singleton;
-import java.util.Optional;
 
 @Factory
 @Requires(classes = { SimpleQueueService.class }, beans = { SimpleQueueService.class, AWSCredentialsProvider.class })
