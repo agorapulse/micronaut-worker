@@ -84,7 +84,7 @@ public class DefaultJobConfiguration implements MutableJobConfiguration {
         private static final int DEFAULT_MAX_MESSAGES = 10;
 
         private int maxMessages = DEFAULT_MAX_MESSAGES;
-        private Duration waitingTime = Duration.ZERO;
+        private Duration waitingTime = Duration.ofSeconds(20);
 
         @Min(1)
         @Override
