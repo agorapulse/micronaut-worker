@@ -13,7 +13,7 @@
                 "queueName": "Sample",
                 "queueType": null,
                 "maxMessages": 10,
-                "waitingTime": "0s"
+                "waitingTime": "20s"
             },
             "producer": {
                 "queueName": "Sample",
