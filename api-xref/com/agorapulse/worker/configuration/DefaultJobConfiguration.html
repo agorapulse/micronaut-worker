@@ -92,7 +92,7 @@
 <a class="jxr_linenumber" name="L84" href="#L84">84</a>          <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> DEFAULT_MAX_MESSAGES = 10;
 <a class="jxr_linenumber" name="L85" href="#L85">85</a>  
 <a class="jxr_linenumber" name="L86" href="#L86">86</a>          <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">int</strong> maxMessages = DEFAULT_MAX_MESSAGES;
-<a class="jxr_linenumber" name="L87" href="#L87">87</a>          <strong class="jxr_keyword">private</strong> Duration waitingTime = Duration.ZERO;
+<a class="jxr_linenumber" name="L87" href="#L87">87</a>          <strong class="jxr_keyword">private</strong> Duration waitingTime = Duration.ofSeconds(20);
 <a class="jxr_linenumber" name="L88" href="#L88">88</a>  
 <a class="jxr_linenumber" name="L89" href="#L89">89</a>          @Min(1)
 <a class="jxr_linenumber" name="L90" href="#L90">90</a>          @Override
