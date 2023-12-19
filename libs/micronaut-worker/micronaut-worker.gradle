@@ -19,13 +19,15 @@ dependencies {
     api "space.jasan:groovy-closure-support:$closureSupportVersion"
 
     implementation 'io.reactivex.rxjava2:rxjava'
+    implementation 'io.micronaut:micronaut-jackson-databind'
 
     compileOnly "com.agorapulse:micronaut-snitch:$micronautSnitchVersion"
-    compileOnly "com.agorapulse:micronaut-console:$micronautConsoleVersion-micronaut-${micronautVersion[0]}.0"
+    compileOnly "com.agorapulse:micronaut-console:$micronautConsoleVersion"
 
     testImplementation project(':micronaut-worker-tck')
-
-    testImplementation "com.agorapulse:micronaut-console:$micronautConsoleVersion-micronaut-${micronautVersion[0]}.0"
+    testImplementation('io.micronaut:micronaut-inject-groovy')
+    testImplementation "com.agorapulse:micronaut-console:$micronautConsoleVersion"
     testImplementation "io.micronaut:micronaut-http-server-netty"
     testImplementation "com.agorapulse:gru-micronaut:$gruVersion"
+    testImplementation 'org.yaml:snakeyaml'
 }

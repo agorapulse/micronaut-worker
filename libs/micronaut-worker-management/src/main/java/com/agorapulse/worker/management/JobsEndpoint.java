@@ -39,7 +39,7 @@ public class JobsEndpoint {
     }
 
     @Read
-    JobManager getJobs() {
+    ConsoleJobManager getJobs() {
         return new ConsoleJobManager(manager);
     }
 

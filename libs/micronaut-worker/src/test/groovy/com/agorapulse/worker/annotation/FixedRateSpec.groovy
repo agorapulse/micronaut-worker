@@ -20,10 +20,10 @@ package com.agorapulse.worker.annotation
 import com.agorapulse.worker.Job
 import com.agorapulse.worker.JobManager
 import io.micronaut.context.annotation.Property
-import io.micronaut.test.annotation.MicronautTest
+import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import spock.lang.Specification
 
-import javax.inject.Inject
+import jakarta.inject.Inject
 import java.time.Duration
 
 @SuppressWarnings([

@@ -17,7 +17,8 @@
  */
 dependencies {
     api project(':micronaut-worker')
-    implementation 'io.micronaut.configuration:micronaut-redis-lettuce:1.1.1'
+    implementation 'io.micronaut.redis:micronaut-redis-lettuce'
+    implementation 'io.micronaut:micronaut-jackson-databind'
 
     testImplementation project(':micronaut-worker-tck')
 }

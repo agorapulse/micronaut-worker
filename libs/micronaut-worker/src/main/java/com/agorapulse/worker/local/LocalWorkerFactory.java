@@ -20,8 +20,8 @@ package com.agorapulse.worker.local;
 import io.micronaut.context.annotation.Bean;
 import io.micronaut.context.annotation.Factory;
 
-import javax.inject.Named;
-import javax.inject.Singleton;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 

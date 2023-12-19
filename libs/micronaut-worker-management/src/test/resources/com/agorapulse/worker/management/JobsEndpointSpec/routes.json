@@ -1,8 +1,8 @@
 {
     "{[/jobs],method=[GET],produces=[application/json]}": {
-        "method": "com.agorapulse.worker.JobManager com.agorapulse.worker.management.JobsEndpoint.getJobs()"
+        "method": "com.agorapulse.worker.console.ConsoleJobManager com.agorapulse.worker.management.JobsEndpoint.getJobs()"
     },
     "{[/jobs],method=[HEAD],produces=[application/json]}": {
-        "method": "com.agorapulse.worker.JobManager com.agorapulse.worker.management.JobsEndpoint.getJobs()"
+        "method": "com.agorapulse.worker.console.ConsoleJobManager com.agorapulse.worker.management.JobsEndpoint.getJobs()"
     }
 }

@@ -20,11 +20,11 @@ package com.agorapulse.worker;
 import com.agorapulse.worker.configuration.DefaultJobConfiguration;
 import com.agorapulse.worker.configuration.MutableJobConfiguration;
 
-import javax.annotation.Nullable;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Positive;
+import jakarta.annotation.Nullable;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import java.time.Duration;
 import java.util.function.Consumer;
 
@@ -146,7 +146,7 @@ public interface JobConfiguration {
     Duration getFixedRate();
 
     /**
-     * @return the name of a {@link javax.inject.Named} bean that is a
+     * @return the name of a {@link jakarta.inject.Named} bean that is a
      * {@link java.util.concurrent.ScheduledExecutorService} to use to schedule the task
      */
     @NotBlank

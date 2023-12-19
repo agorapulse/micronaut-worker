@@ -100,8 +100,12 @@ config {
             autoLinks {
                 enabled = false
             }
+            aggregate {
+                enabled = false
+            }
         }
-        sourceHtml {
+        groovydoc {
+            enabled = false
             aggregate {
                 enabled = false
             }
@@ -137,11 +141,20 @@ allprojects {
 
 gradleProjects {
     subprojects {
-        dirs(['libs', 'examples']) { Project subproject ->
-            apply plugin: 'micronaut-compatibility'
+        dirs(['libs']) { Project subproject ->
+            java {
+                toolchain {
+                    languageVersion = JavaLanguageVersion.of(17)
+                }
+            }
 
-            sourceCompatibility = 1.8
-            targetCompatibility = 1.8
+            micronaut {
+                importMicronautPlatform = true
+                testRuntime 'spock'
+                processing {
+                    incremental false
+                }
+            }
 
             repositories {
                 mavenCentral()
@@ -164,44 +177,16 @@ gradleProjects {
             }
 
             dependencies {
-                annotationProcessor platform("org.codehaus.groovy:groovy-bom:$groovyVersion")
-                api platform("org.codehaus.groovy:groovy-bom:$groovyVersion")
-                implementation platform("org.codehaus.groovy:groovy-bom:$groovyVersion")
-                compileOnly platform("org.codehaus.groovy:groovy-bom:$groovyVersion")
-                testImplementation platform("org.codehaus.groovy:groovy-bom:$groovyVersion")
+                annotationProcessor 'io.micronaut.validation:micronaut-validation-processor'
 
-                annotationProcessor platform("io.micronaut:micronaut-bom:$micronautVersion")
-                api platform("io.micronaut:micronaut-bom:$micronautVersion")
-                implementation platform("io.micronaut:micronaut-bom:$micronautVersion")
-                compileOnly platform("io.micronaut:micronaut-bom:$micronautVersion")
-                testImplementation platform("io.micronaut:micronaut-bom:$micronautVersion")
-
-                annotationProcessor 'io.micronaut:micronaut-inject-java'
-                annotationProcessor 'io.micronaut:micronaut-validation'
-
-                implementation 'io.micronaut:micronaut-core'
-                implementation 'io.micronaut:micronaut-inject'
-                implementation 'io.micronaut:micronaut-validation'
-                implementation 'io.micronaut:micronaut-runtime'
-
+                implementation 'io.micronaut.validation:micronaut-validation'
 
                 compileOnly 'io.micronaut:micronaut-inject-groovy'
-                compileOnly "com.agorapulse:remember:$rememberVersion"
 
-                testImplementation("org.spockframework:spock-core") {
-                    exclude group: 'org.codehaus.groovy', module: 'groovy-all'
-                    version {
-                        strictly spockVersion
-                    }
-                }
-
-                testImplementation 'com.agorapulse:micronaut-log4aws:1.1.5'
+                testImplementation 'com.agorapulse:micronaut-log4aws:4.0.0'
                 testImplementation 'io.micronaut:micronaut-inject-groovy'
-                testImplementation 'io.micronaut.test:micronaut-test-spock'
 
-                testImplementation(group: 'org.testcontainers', name: 'spock', version: project.testcontainersVersion) {
-                    exclude group: 'org.codehaus.groovy', module: 'groovy-all'
-                }
+                testImplementation(group: 'org.testcontainers', name: 'spock', version: project.testcontainersVersion)
             }
 
             // useful for IntelliJ
@@ -210,9 +195,7 @@ gradleProjects {
             }
 
             clean.dependsOn cleanOut
-        }
 
-        dir('libs') {
             processResources {
                 filesMatching('**/org.codehaus.groovy.runtime.ExtensionModule') {
                     filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: [VERSION: version])
@@ -223,11 +206,7 @@ gradleProjects {
                 manifest.attributes provider: 'gradle'
             }
 
-            dependencies {
-                testImplementation group: 'org.spockframework', name: 'spock-core', version: spockVersion
-            }
-
-            project(':micronaut-worker-bom').dependencies.constraints.api it
+            project(':micronaut-worker-bom').dependencies.constraints.api subproject
         }
 
         dir('examples') {

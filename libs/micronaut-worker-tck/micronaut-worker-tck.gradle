@@ -18,12 +18,9 @@
 dependencies {
     api project(':micronaut-worker')
 
+    compileOnly 'io.micronaut:micronaut-inject-groovy'
+
     implementation 'io.reactivex.rxjava2:rxjava'
-
-
-    implementation("org.spockframework:spock-core:$spockVersion") {
-        exclude group: "org.codehaus.groovy", module: "groovy-all"
-    }
-
+    implementation 'org.spockframework:spock-core'
     implementation 'io.micronaut:micronaut-management'
 }

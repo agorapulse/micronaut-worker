@@ -18,45 +18,19 @@
 package com.agorapulse.worker.sqs.v2
 
 import com.agorapulse.worker.tck.queue.AbstractQueuesSpec
-import io.micronaut.context.ApplicationContext
-import org.testcontainers.containers.localstack.LocalStackContainer
-import org.testcontainers.spock.Testcontainers
-import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
-import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider
-import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
-import software.amazon.awssdk.regions.Region
-import software.amazon.awssdk.services.sqs.SqsClient
-import spock.lang.Shared
+import io.micronaut.context.annotation.Property
+import io.micronaut.test.extensions.spock.annotation.MicronautTest
 
-@Testcontainers
+/**
+ * Tests for SQS queues.
+ */
+@MicronautTest(environments = QUEUE_SPEC_ENV_NAME)
+@Property(name = 'aws.sqs.auto-create-queue', value = 'true')
+@Property(name = 'worker.jobs.send-words-job-listen.enabled', value = 'true')
+@Property(name = 'worker.jobs.send-words-job-hello.enabled', value = 'true')
 class SqsQueuesSpec extends AbstractQueuesSpec {
 
     @SuppressWarnings('GetterMethodCouldBeProperty')
     Class<?> getExpectedImplementation() { return SqsQueues }
-
-    @Shared
-    LocalStackContainer localstack = new LocalStackContainer().withServices(LocalStackContainer.Service.SQS)
-
-    @Override
-    ApplicationContext buildContext(String[] envs) {
-        StaticCredentialsProvider credentialsProvider = StaticCredentialsProvider.create(AwsBasicCredentials.create(localstack.accessKey, localstack.secretKey))
-        SqsClient sqs = SqsClient
-            .builder()
-            .endpointOverride(localstack.getEndpointOverride(LocalStackContainer.Service.SQS))
-            .credentialsProvider(credentialsProvider)
-            .region(Region.EU_WEST_1)
-            .build()
-
-        return ApplicationContext
-            .builder(envs)
-            .properties(
-                'aws.sqs.auto-create-queue': 'true',
-                'worker.jobs.send-words-job-listen.enabled': 'true',
-                'worker.jobs.send-words-job-hello.enabled': 'true'
-            )
-            .build()
-            .registerSingleton(SqsClient, sqs)
-            .registerSingleton(AwsCredentialsProvider, credentialsProvider)
-    }
 
 }

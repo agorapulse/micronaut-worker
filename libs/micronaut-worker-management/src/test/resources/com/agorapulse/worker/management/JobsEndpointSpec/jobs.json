@@ -8,11 +8,12 @@
             "followerOnly": false,
             "initialDelay": "10m",
             "scheduler": "scheduled",
+            "fork": 1,
             "consumer": {
                 "queueName": "Sample",
                 "queueType": null,
                 "maxMessages": 10,
-                "waitingTime": "0s"
+                "waitingTime": "20s"
             },
             "producer": {
                 "queueName": "Sample",

@@ -17,13 +17,13 @@
  */
 dependencies {
     api project(':micronaut-worker')
-    api "com.agorapulse:micronaut-amazon-awssdk-sqs:$micronautAwsSdkVersion-micronaut-${micronautVersion[0]}.0"
+    api "com.agorapulse:micronaut-amazon-awssdk-sqs:$micronautAwsSdkVersion"
+
+    implementation 'io.micronaut:micronaut-jackson-databind'
 
     testImplementation project(':micronaut-worker-tck')
 
-    testImplementation group: 'org.testcontainers', name: 'localstack', version: project.testcontainersVersion
-    testImplementation group: 'net.bytebuddy', name: 'byte-buddy', version: project.byteBuddyVersion
-    testImplementation 'com.amazonaws:aws-java-sdk-sqs:1.12.300'
+    testImplementation "com.agorapulse:micronaut-amazon-awssdk-integration-testing:$micronautAwsSdkVersion"
 }
 
 repositories {

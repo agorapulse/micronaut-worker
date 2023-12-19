@@ -18,9 +18,11 @@
 dependencies {
     api project(':micronaut-worker')
     implementation 'io.micronaut:micronaut-management'
+    implementation 'io.micronaut:micronaut-jackson-databind'
 
     testImplementation project(':micronaut-worker-tck')
 
-    testImplementation "io.micronaut:micronaut-http-server-netty"
+    testImplementation 'io.micronaut:micronaut-http-server-netty'
+    testImplementation 'io.micronaut:micronaut-inject-groovy'
     testImplementation "com.agorapulse:gru-micronaut:$gruVersion"
 }

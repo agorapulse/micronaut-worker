@@ -30,8 +30,8 @@ import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.core.exception.SdkClientException;
 
-import javax.inject.Named;
-import javax.inject.Singleton;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
 
 @Factory
 @Requires(classes = { SimpleQueueService.class }, beans = { SimpleQueueService.class, AwsCredentialsProvider.class })

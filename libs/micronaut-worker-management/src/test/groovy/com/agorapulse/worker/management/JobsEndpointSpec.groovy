@@ -22,11 +22,11 @@ import com.agorapulse.worker.annotation.InitialDelay
 import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Property
 import io.micronaut.context.annotation.Requires
-import io.micronaut.test.annotation.MicronautTest
+import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import spock.lang.Specification
 
-import javax.inject.Inject
-import javax.inject.Singleton
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 
 @MicronautTest(environments = JOBS_ENDPOINT_SPEC_ENVIRONMENT)
 @Property(name = 'worker.jobs.sample-job.enabled', value = 'true')

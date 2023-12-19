@@ -23,7 +23,7 @@ import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Requires
 import io.reactivex.Flowable
 
-import javax.inject.Singleton
+import jakarta.inject.Singleton
 
 @SuppressWarnings([
     'EmptyMethod',

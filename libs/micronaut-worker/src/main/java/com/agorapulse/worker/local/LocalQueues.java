@@ -22,8 +22,8 @@ import io.micronaut.context.annotation.Secondary;
 import io.micronaut.context.env.Environment;
 import io.micronaut.core.type.Argument;
 
-import javax.inject.Named;
-import javax.inject.Singleton;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
 import java.time.Duration;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;

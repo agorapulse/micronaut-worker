@@ -28,7 +28,7 @@ import io.micronaut.context.annotation.Requires
 import io.reactivex.Flowable
 import org.reactivestreams.Publisher
 
-import javax.inject.Singleton
+import jakarta.inject.Singleton
 import java.util.concurrent.atomic.AtomicInteger
 
 import static AbstractJobExecutorSpec.JOBS_INITIAL_DELAY

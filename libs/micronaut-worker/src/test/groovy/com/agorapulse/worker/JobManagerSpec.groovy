@@ -20,11 +20,11 @@ package com.agorapulse.worker
 import com.agorapulse.worker.annotation.FixedRate
 import io.micronaut.context.annotation.Property
 import io.micronaut.context.annotation.Requires
-import io.micronaut.test.annotation.MicronautTest
+import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import spock.lang.Specification
 
-import javax.inject.Inject
-import javax.inject.Singleton
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import java.time.Duration
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.function.Consumer

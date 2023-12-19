@@ -24,7 +24,7 @@ import io.micronaut.context.annotation.Requires;
 import io.micronaut.inject.qualifiers.Qualifiers;
 import io.micronaut.runtime.event.annotation.EventListener;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 @Singleton
 @Requires(classes = SnitchService.class)
