@@ -205,6 +205,8 @@ gradleProjects {
             jar {
                 manifest.attributes provider: 'gradle'
             }
+
+            project(':micronaut-worker-bom').dependencies.constraints.api subproject
         }
 
         dir('examples') {

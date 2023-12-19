@@ -49,7 +49,7 @@ gradleEnterprise {
 rootProject.name = 'micronaut-worker-root'
 
 projects {
-    directories = ['libs', 'docs']
+    directories = ['libs', 'docs', 'platforms']
 
     plugins {
         dir('docs') {
@@ -59,6 +59,9 @@ projects {
         dirs(['libs']) {
             id 'io.micronaut.minimal.library'
             id 'groovy'
+        }
+        dir('platforms') {
+            id 'java-platform'
         }
     }
 }

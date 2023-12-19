@@ -19,13 +19,12 @@ package com.agorapulse.worker.local;
 
 import com.agorapulse.worker.queue.JobQueues;
 import io.micronaut.context.annotation.Secondary;
-import io.micronaut.core.convert.ConversionService;
+import io.micronaut.context.env.Environment;
 import io.micronaut.core.type.Argument;
 
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 import java.time.Duration;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentMap;
@@ -37,10 +36,10 @@ import java.util.function.Consumer;
 public class LocalQueues implements JobQueues {
 
     private final ConcurrentMap<String, ConcurrentLinkedDeque<Object>> queues = new ConcurrentHashMap<>();
-    private final ConversionService conversionService;
+    private final Environment environment;
 
-    public LocalQueues(Optional<ConversionService> conversionService) {
-        this.conversionService = conversionService.orElse(ConversionService.SHARED);
+    public LocalQueues(Environment environment) {
+        this.environment = environment;
     }
 
     @Override
@@ -51,7 +50,7 @@ public class LocalQueues implements JobQueues {
         }
 
         for (int i = 0; i < maxNumberOfMessages && !objects.isEmpty(); i++) {
-            action.accept(conversionService.convertRequired(objects.removeFirst(), argument));
+            action.accept(environment.convertRequired(objects.removeFirst(), argument));
         }
     }
 

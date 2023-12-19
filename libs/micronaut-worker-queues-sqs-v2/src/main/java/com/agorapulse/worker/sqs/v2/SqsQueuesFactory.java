@@ -25,7 +25,6 @@ import io.micronaut.context.annotation.Bean;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.env.Environment;
-import io.micronaut.core.convert.ConversionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
@@ -33,7 +32,6 @@ import software.amazon.awssdk.core.exception.SdkClientException;
 
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
-import java.util.Optional;
 
 @Factory
 @Requires(classes = { SimpleQueueService.class }, beans = { SimpleQueueService.class, AwsCredentialsProvider.class })
@@ -48,7 +46,6 @@ public class SqsQueuesFactory {
             AwsCredentialsProvider provider,
             ObjectMapper mapper,
             SimpleQueueService service,
-            Optional<ConversionService> conversionService,
             Environment environment
     ) {
         try {
@@ -60,7 +57,7 @@ public class SqsQueuesFactory {
             } else if (LOGGER.isInfoEnabled()) {
                 LOGGER.info("AWS SDK is not authenticated correctly, Using local job queues");
             }
-            return new LocalQueues(conversionService);
+            return new LocalQueues(environment);
         }
     }
 
