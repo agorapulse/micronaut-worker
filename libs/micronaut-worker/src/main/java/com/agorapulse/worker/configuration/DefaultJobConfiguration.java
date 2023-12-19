@@ -28,10 +28,10 @@ import io.micronaut.context.annotation.Parameter;
 import io.micronaut.core.util.StringUtils;
 import io.micronaut.scheduling.TaskExecutors;
 
-import javax.annotation.Nullable;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Positive;
+import jakarta.annotation.Nullable;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
 import java.time.Duration;
 import java.util.function.Consumer;
 

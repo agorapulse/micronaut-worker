@@ -21,7 +21,7 @@ import com.agorapulse.micronaut.console.BindingProvider;
 import com.agorapulse.worker.JobManager;
 import io.micronaut.core.naming.NameUtils;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 import java.util.HashMap;
 import java.util.Map;
 

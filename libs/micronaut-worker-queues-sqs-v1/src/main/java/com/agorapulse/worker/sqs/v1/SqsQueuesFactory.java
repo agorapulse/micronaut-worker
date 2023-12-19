@@ -31,8 +31,8 @@ import io.micronaut.core.convert.ConversionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.inject.Named;
-import javax.inject.Singleton;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
 import java.util.Optional;
 
 @Factory
@@ -48,7 +48,7 @@ public class SqsQueuesFactory {
             AWSCredentialsProvider provider,
             ObjectMapper mapper,
             SimpleQueueService service,
-            Optional<ConversionService<?>> conversionService,
+            Optional<ConversionService> conversionService,
             Environment environment
     ) {
         try {

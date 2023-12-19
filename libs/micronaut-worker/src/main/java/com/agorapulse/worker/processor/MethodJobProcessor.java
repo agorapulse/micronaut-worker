@@ -41,7 +41,7 @@ import io.micronaut.scheduling.TaskExceptionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 import java.lang.annotation.Annotation;
 import java.time.Duration;
 import java.util.Arrays;
@@ -75,11 +75,11 @@ public class MethodJobProcessor implements ExecutableMethodProcessor<Job> {
     private final JobManager jobManager;
     private final ApplicationConfiguration applicationConfiguration;
     private final JobScheduler jobScheduler;
-    private final ConversionService<?> conversionService;
+    private final ConversionService conversionService;
     private final WorkerConfiguration workerConfiguration;
 
     /**
-     * @param beanContext              The bean context for DI of beans annotated with {@link javax.inject.Inject}
+     * @param beanContext              The bean context for DI of beans annotated with {@link jakarta.inject.Inject}
      * @param taskExceptionHandler     The default task exception handler
      * @param jobMethodInvoker         The job invoker
      * @param jobManager               The job manager
@@ -95,7 +95,7 @@ public class MethodJobProcessor implements ExecutableMethodProcessor<Job> {
         JobManager jobManager,
         ApplicationConfiguration applicationConfiguration,
         JobScheduler jobScheduler,
-        Optional<ConversionService<?>> optionalConversionService,
+        Optional<ConversionService> optionalConversionService,
         WorkerConfiguration workerConfiguration
     ) {
         this.beanContext = beanContext;
@@ -146,7 +146,7 @@ public class MethodJobProcessor implements ExecutableMethodProcessor<Job> {
             return valueFromJob.get();
         }
 
-        Optional<String> valueFromJavaxNamed = method.stringValue("javax.inject.Named").map(NameUtils::hyphenate);
+        Optional<String> valueFromJavaxNamed = method.stringValue("jakarta.inject.Named").map(NameUtils::hyphenate);
 
         if (valueFromJavaxNamed.isPresent()) {
             return valueFromJavaxNamed.get();

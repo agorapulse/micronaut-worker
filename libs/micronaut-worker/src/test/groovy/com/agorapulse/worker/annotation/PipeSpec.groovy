@@ -19,12 +19,12 @@ package com.agorapulse.worker.annotation
 
 import com.agorapulse.worker.JobManager
 import io.micronaut.context.annotation.Property
-import io.micronaut.test.annotation.MicronautTest
+import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import spock.lang.Specification
 import spock.util.concurrent.PollingConditions
 
-import javax.inject.Inject
-import javax.inject.Named
+import jakarta.inject.Inject
+import jakarta.inject.Named
 
 @SuppressWarnings([
     'EmptyMethod',

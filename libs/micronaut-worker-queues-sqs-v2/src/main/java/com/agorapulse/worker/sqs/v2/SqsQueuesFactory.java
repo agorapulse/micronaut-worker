@@ -31,8 +31,8 @@ import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.core.exception.SdkClientException;
 
-import javax.inject.Named;
-import javax.inject.Singleton;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
 import java.util.Optional;
 
 @Factory
@@ -48,7 +48,7 @@ public class SqsQueuesFactory {
             AwsCredentialsProvider provider,
             ObjectMapper mapper,
             SimpleQueueService service,
-            Optional<ConversionService<?>> conversionService,
+            Optional<ConversionService> conversionService,
             Environment environment
     ) {
         try {

@@ -29,7 +29,7 @@ import io.micronaut.scheduling.TaskScheduler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 import java.io.Closeable;
 import java.time.Duration;
 import java.util.Optional;
@@ -49,7 +49,7 @@ public class DefaultJobScheduler implements JobScheduler, Closeable {
     private final Queue<ScheduledFuture<?>> scheduledTasks = new ConcurrentLinkedDeque<>();
 
     /**
-     * @param beanContext               The bean context for DI of beans annotated with {@link javax.inject.Inject}
+     * @param beanContext               The bean context for DI of beans annotated with {@link jakarta.inject.Inject}
      */
     public DefaultJobScheduler(
             BeanContext beanContext

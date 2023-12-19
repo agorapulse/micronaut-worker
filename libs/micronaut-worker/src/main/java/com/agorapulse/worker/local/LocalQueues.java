@@ -22,8 +22,8 @@ import io.micronaut.context.annotation.Secondary;
 import io.micronaut.core.convert.ConversionService;
 import io.micronaut.core.type.Argument;
 
-import javax.inject.Named;
-import javax.inject.Singleton;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
 import java.time.Duration;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -37,9 +37,9 @@ import java.util.function.Consumer;
 public class LocalQueues implements JobQueues {
 
     private final ConcurrentMap<String, ConcurrentLinkedDeque<Object>> queues = new ConcurrentHashMap<>();
-    private final ConversionService<?> conversionService;
+    private final ConversionService conversionService;
 
-    public LocalQueues(Optional<ConversionService<?>> conversionService) {
+    public LocalQueues(Optional<ConversionService> conversionService) {
         this.conversionService = conversionService.orElse(ConversionService.SHARED);
     }
 

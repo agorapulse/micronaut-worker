@@ -18,32 +18,33 @@
 package com.agorapulse.worker.queues.redis
 
 import com.agorapulse.worker.tck.queue.AbstractQueuesSpec
-import io.micronaut.context.ApplicationContext
+import io.micronaut.test.extensions.spock.annotation.MicronautTest
+import io.micronaut.test.support.TestPropertyProvider
 import org.testcontainers.containers.GenericContainer
-import org.testcontainers.spock.Testcontainers
-import spock.lang.Retry
 import spock.lang.Shared
 
-@Retry
-@Testcontainers
-class RedisQueuesSpec extends AbstractQueuesSpec {
+/**
+ * Tests for Redis queues.
+ */
+@MicronautTest(environments = QUEUE_SPEC_ENV_NAME)
+class RedisQueuesSpec extends AbstractQueuesSpec implements TestPropertyProvider {
 
-    @Shared
-    GenericContainer redis = new GenericContainer('redis:3-alpine').withExposedPorts(6379)
+    @Shared static GenericContainer redis = new GenericContainer('redis:3-alpine').withExposedPorts(6379)
+
+    static {
+        redis.start()
+    }
 
     @SuppressWarnings('GetterMethodCouldBeProperty')
     Class<?> getExpectedImplementation() { return RedisQueues }
 
     @Override
-    ApplicationContext buildContext(String[] envs) {
-        return ApplicationContext
-            .builder(envs)
-            .properties(
-                'redis.uri': "redis://$redis.containerIpAddress:${redis.getMappedPort(6379)}",
-                'worker.jobs.send-words-job-listen.enabled': 'true',
-                'worker.jobs.send-words-job-hello.enabled': 'true'
-            )
-            .build()
+    Map<String, String> getProperties() {
+        return [
+            'redis.uri'                                : "redis://$redis.host:${redis.getMappedPort(6379)}",
+            'worker.jobs.send-words-job-listen.enabled': 'true',
+            'worker.jobs.send-words-job-hello.enabled' : 'true',
+        ]
     }
 
 }

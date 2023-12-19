@@ -29,37 +29,35 @@ buildscript {
         classpath group: 'org.kordamp.gradle',      name: 'coveralls-gradle-plugin',        version: kordampPluginVersion
         classpath group: 'org.ajoberstar',          name: 'gradle-git-publish',             version: gitPublishPluginVersion
         classpath group: 'io.github.gradle-nexus',  name: 'publish-plugin',                 version: nexusPluginVersion
+        classpath group: 'io.micronaut.gradle',     name: 'micronaut-minimal-plugin',       version: micronautGradlePluginVersion
     }
 }
 
 plugins {
     id 'org.kordamp.gradle.settings' version "$kordampPluginVersion"
-    id 'com.gradle.enterprise' version '3.6.1'
+    id 'com.gradle.enterprise' version '3.15.1'
 }
 
 gradleEnterprise {
     buildScan {
+        publishAlways()
         termsOfServiceUrl = "https://gradle.com/terms-of-service"
         termsOfServiceAgree = "yes"
-
-        buildScanPublished { scan ->
-            file("scan-journal.log") << "${new Date()} - ${scan.buildScanId} - ${scan.buildScanUri}\n"
-        }
     }
 }
 
 rootProject.name = 'micronaut-worker-root'
 
 projects {
-    directories = ['libs', 'docs', 'examples']
+    directories = ['libs', 'docs']
 
     plugins {
         dir('docs') {
             id 'org.kordamp.gradle.guide'
             id 'org.ajoberstar.git-publish'
         }
-        dirs(['libs', 'examples']) {
-            id 'java-library'
+        dirs(['libs']) {
+            id 'io.micronaut.minimal.library'
             id 'groovy'
         }
     }

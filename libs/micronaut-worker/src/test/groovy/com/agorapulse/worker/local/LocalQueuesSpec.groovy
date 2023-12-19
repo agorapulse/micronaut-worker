@@ -18,19 +18,15 @@
 package com.agorapulse.worker.local
 
 import com.agorapulse.worker.tck.queue.AbstractQueuesSpec
-import io.micronaut.context.ApplicationContext
+import io.micronaut.context.annotation.Property
+import io.micronaut.test.extensions.spock.annotation.MicronautTest
 
+@MicronautTest(environments = AbstractQueuesSpec.QUEUE_SPEC_ENV_NAME)
+@Property(name = 'worker.jobs.send-words-job-listen.enabled', value = 'true')
+@Property(name = 'worker.jobs.send-words-job-hello.enabled', value = 'true')
 class LocalQueuesSpec extends AbstractQueuesSpec {
 
     @SuppressWarnings('GetterMethodCouldBeProperty')
     Class<?> getExpectedImplementation() { return LocalQueues }
-
-    @Override
-    ApplicationContext buildContext(String[] envs) {
-        return ApplicationContext.builder(envs).properties(
-            'worker.jobs.send-words-job-listen.enabled': 'true',
-            'worker.jobs.send-words-job-hello.enabled': 'true'
-        ).build()
-    }
 
 }

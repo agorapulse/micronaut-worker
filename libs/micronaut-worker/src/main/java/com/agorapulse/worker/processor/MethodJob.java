@@ -26,7 +26,7 @@ import io.micronaut.inject.ExecutableMethod;
 import io.micronaut.inject.qualifiers.Qualifiers;
 import io.micronaut.scheduling.TaskExceptionHandler;
 
-import javax.inject.Qualifier;
+import jakarta.inject.Qualifier;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;

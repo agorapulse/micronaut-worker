@@ -24,8 +24,8 @@ import io.micronaut.context.annotation.Bean;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.annotation.Requires;
 
-import javax.inject.Named;
-import javax.inject.Singleton;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
 
 @Factory
 @Requires(classes = { RedisClient.class }, beans = { RedisClient.class }, property = "redis.uri")

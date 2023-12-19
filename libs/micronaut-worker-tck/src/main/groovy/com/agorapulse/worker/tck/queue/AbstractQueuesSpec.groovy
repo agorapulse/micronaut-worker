@@ -19,26 +19,19 @@ package com.agorapulse.worker.tck.queue
 
 import com.agorapulse.worker.queue.JobQueues
 import io.micronaut.context.ApplicationContext
-import spock.lang.AutoCleanup
 import spock.lang.Specification
 
-import javax.inject.Inject
+import jakarta.inject.Inject
 
+/**
+ * Abstract specification for testing queues.
+ */
 abstract class AbstractQueuesSpec extends Specification {
 
     public static final String QUEUE_SPEC_ENV_NAME = 'queue-job-spec'
 
-    @AutoCleanup ApplicationContext context
-
+    @Inject ApplicationContext context
     @Inject SendWordsJob sendWordsJob
-
-    void setup() {
-        context = buildContext(QUEUE_SPEC_ENV_NAME)
-
-        context.start()
-
-        context.inject(this)
-    }
 
     void "jobs are executed"() {
         expect:
@@ -54,7 +47,6 @@ abstract class AbstractQueuesSpec extends Specification {
             sendWordsJob.words.join(' ').startsWith 'Hello World'
     }
 
-    abstract ApplicationContext buildContext(String[] envs)
     abstract Class<?> getExpectedImplementation()
 
 }

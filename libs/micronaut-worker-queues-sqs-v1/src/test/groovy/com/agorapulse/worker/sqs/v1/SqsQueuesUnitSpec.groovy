@@ -189,7 +189,7 @@ class SqsQueuesUnitSpec extends Specification {
 
     void 'send wrong message'() {
         given:
-            ObjectMapper objectMapper = Mock()
+            ObjectMapper objectMapper = new ObjectMapper()
             SqsQueues queues = new SqsQueues(simpleQueueService, objectMapper)
 
         when:
@@ -197,10 +197,6 @@ class SqsQueuesUnitSpec extends Specification {
 
         then:
             thrown IllegalArgumentException
-
-            1 * objectMapper.writeValueAsString(_) >> {
-                mapper.readValue('not a string', Object)
-            }
     }
 
 }
