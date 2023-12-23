@@ -62,6 +62,7 @@ public class RedisQueues implements JobQueues {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T> void readMessages(String queueName, int maxNumberOfMessages, Duration waitTime, Argument<T> argument, Consumer<T> action) {
         TransactionResult result = withTransaction(redisCommands -> {
             String key = getKey(queueName);
@@ -73,7 +74,14 @@ public class RedisQueues implements JobQueues {
             return;
         }
 
-        List<String> messages = result.get(0);
+
+        Object firstResponse = result.get(0);
+
+        if (!(firstResponse instanceof List)) {
+            throw new IllegalStateException("There result is not a list of Strings. Got: " + firstResponse);
+        }
+
+        List<String> messages = (List<String>) firstResponse;
 
         messages.forEach(body -> {
             try {
