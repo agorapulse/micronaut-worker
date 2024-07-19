@@ -17,18 +17,32 @@
  */
 package com.agorapulse.worker.event;
 
+import java.util.Optional;
+
 /**
  * Event dispatched after successful job execution.
  */
 public class JobExecutionStartedEvent {
 
     private final String name;
+    private final Object message;
 
     public JobExecutionStartedEvent(String name) {
         this.name = name;
+        this.message = null;
+    }
+
+    public JobExecutionStartedEvent(String name, Object message) {
+        this.name = name;
+        this.message = message;
     }
 
     public String getName() {
         return name;
     }
+
+    public Optional<Object> getMessage() {
+        return Optional.ofNullable(message);
+    }
+
 }
