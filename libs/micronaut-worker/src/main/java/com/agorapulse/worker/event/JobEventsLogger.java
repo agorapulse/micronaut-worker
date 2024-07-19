@@ -32,7 +32,11 @@ public class JobEventsLogger {
     @EventListener
     void onJobExecutionStarted(JobExecutionStartedEvent event) {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Starting job {}", event.getName());
+            if (event.getMessage().isPresent()) {
+                LOGGER.debug("Starting job {} with message {}", event.getName(), event.getMessage().get());
+            } else {
+                LOGGER.debug("Starting job {}", event.getName());
+            }
         }
     }
 

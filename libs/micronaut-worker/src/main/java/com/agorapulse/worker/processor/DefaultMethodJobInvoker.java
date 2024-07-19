@@ -82,12 +82,11 @@ public class DefaultMethodJobInvoker implements MethodJobInvoker {
 
         Function<Callable<Object>, Publisher<Object>> executor = executor(configuration.getName(), leaderOnly, followerOnly, concurrency);
 
-        applicationEventPublisher.publishEvent(new JobExecutionStartedEvent(
-            configuration.getName()
-        ));
-
         if (method.getArguments().length == 0) {
             handleResult(configuration, executor.apply(() -> method.invoke(bean)));
+            applicationEventPublisher.publishEvent(new JobExecutionStartedEvent(
+                configuration.getName()
+            ));
         } else if (method.getArguments().length == 1) {
             JobConfiguration.ConsumerQueueConfiguration queueConfiguration = configuration.getConsumer();
             queues(queueConfiguration.getQueueType()).readMessages(
@@ -95,7 +94,13 @@ public class DefaultMethodJobInvoker implements MethodJobInvoker {
                 queueConfiguration.getMaxMessages() < 1 ? 1 : queueConfiguration.getMaxMessages(),
                 Optional.ofNullable(queueConfiguration.getWaitingTime()).orElse(Duration.ZERO),
                 method.getArguments()[0],
-                message -> handleResult(configuration, executor.apply(() -> method.invoke(bean, message)))
+                message -> {
+                    applicationEventPublisher.publishEvent(new JobExecutionStartedEvent(
+                        configuration.getName(),
+                        message
+                    ));
+                    handleResult(configuration, executor.apply(() -> method.invoke(bean, message)));
+                }
             );
         } else {
             LOGGER.error("Too many arguments for " + method + "! The job method wasn't executed!");
