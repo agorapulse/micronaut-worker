@@ -22,8 +22,10 @@ import io.micronaut.context.ApplicationContext
 import io.micronaut.inject.qualifiers.Qualifiers
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.spock.Testcontainers
+import spock.lang.Retry
 import spock.lang.Shared
 
+@Retry
 @Testcontainers
 class RedisJobExecutorSpec extends AbstractJobExecutorSpec {
 

@@ -25,10 +25,11 @@ import com.agorapulse.worker.annotation.Job
 import com.agorapulse.worker.annotation.LeaderOnly
 import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Requires
-import io.reactivex.Flowable
 import org.reactivestreams.Publisher
 
 import jakarta.inject.Singleton
+import reactor.core.publisher.Flux
+
 import java.util.concurrent.atomic.AtomicInteger
 
 import static AbstractJobExecutorSpec.JOBS_INITIAL_DELAY
@@ -51,7 +52,7 @@ class LongRunningJob {
     Publisher<String> executeProducer() {
         runLongTask()
         producer.incrementAndGet()
-        return Flowable.just('Hello')
+        return Flux.just('Hello')
     }
 
     @LeaderOnly

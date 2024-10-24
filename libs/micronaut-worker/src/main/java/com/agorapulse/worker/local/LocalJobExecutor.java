@@ -19,13 +19,15 @@ package com.agorapulse.worker.local;
 
 import com.agorapulse.worker.executor.DistributedJobExecutor;
 import io.micronaut.context.annotation.Secondary;
-import io.reactivex.Maybe;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
+
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -52,7 +54,7 @@ public class LocalJobExecutor implements DistributedJobExecutor {
 
     @Override
     public <R> Publisher<R> executeConcurrently(String jobName, int concurrency, Callable<R> supplier) {
-        return Maybe.fromFuture(executorService.submit(() -> {
+        return Mono.fromCallable(() -> {
             int increasedCount = counts.computeIfAbsent(jobName, s -> new AtomicInteger(0)).incrementAndGet();
             LOGGER.trace("Increased count for job {} limited to {}: {}", jobName, concurrency, increasedCount);
             if (increasedCount > concurrency) {
@@ -64,12 +66,12 @@ public class LocalJobExecutor implements DistributedJobExecutor {
             int decreasedCount = counts.get(jobName).decrementAndGet();
             LOGGER.trace("Decreased count for job {} limited to {}: {}", jobName, concurrency, decreasedCount);
             return result;
-        })).toFlowable();
+        }).subscribeOn(Schedulers.fromExecutor(executorService)).flux();
     }
 
     @Override
     public <R> Publisher<R> executeOnlyOnFollower(String jobName, Callable<R> supplier) {
-        return Maybe.fromFuture(executorService.submit(supplier)).toFlowable();
+        return Mono.fromCallable(supplier).subscribeOn(Schedulers.fromExecutor(executorService)).flux();
     }
 
 }

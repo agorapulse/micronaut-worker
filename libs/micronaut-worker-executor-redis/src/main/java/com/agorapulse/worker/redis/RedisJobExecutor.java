@@ -22,13 +22,14 @@ import io.lettuce.core.ScriptOutputType;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.async.RedisAsyncCommands;
 import io.micronaut.context.annotation.Requires;
-import io.reactivex.Maybe;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
+import reactor.core.publisher.Mono;
+
 import java.util.concurrent.Callable;
 
 @Singleton
@@ -75,10 +76,10 @@ public class RedisJobExecutor implements DistributedJobExecutor {
 
         return readMasterHostname(jobName, commands).flatMap(h -> {
             if (hostname.equals(h)) {
-                return Maybe.fromCallable(supplier);
+                return Mono.fromCallable(supplier);
             }
-            return Maybe.empty();
-        }).toFlowable();
+            return Mono.empty();
+        }).flux();
     }
 
     @Override
@@ -90,11 +91,11 @@ public class RedisJobExecutor implements DistributedJobExecutor {
                     if (LOGGER.isTraceEnabled()) {
                         LOGGER.trace("Skipping execution of the job {} as the concurrency level {} is already reached", jobName, maxConcurrency);
                     }
-                    return decreaseCurrentExecutionCount(jobName, commands).flatMap(decreased -> Maybe.empty());
+                    return decreaseCurrentExecutionCount(jobName, commands).flatMap(decreased -> Mono.empty());
                 }
 
-                return Maybe.fromCallable(supplier).doFinally(() -> decreaseCurrentExecutionCount(jobName, commands).subscribe());
-            }).toFlowable();
+                return Mono.fromCallable(supplier).doFinally(signal -> decreaseCurrentExecutionCount(jobName, commands).subscribe());
+            }).flux();
     }
 
     @Override
@@ -102,34 +103,34 @@ public class RedisJobExecutor implements DistributedJobExecutor {
         RedisAsyncCommands<String, String> commands = connection.async();
         return readMasterHostname(jobName, commands).flatMap(h -> {
             if (!"".equals(h) && h.equals(hostname)) {
-                return Maybe.empty();
+                return Mono.empty();
             }
-            return Maybe.fromCallable(supplier);
-        }).toFlowable();
+            return Mono.fromCallable(supplier);
+        }).flux();
     }
 
 
-    private static Maybe<Long> readAndIncreaseCurrentCount(String jobName, RedisAsyncCommands<String, String> commands, int timeout) {
-        return Maybe.fromFuture(commands.eval(
+    private static Mono<Long> readAndIncreaseCurrentCount(String jobName, RedisAsyncCommands<String, String> commands, int timeout) {
+        return Mono.fromFuture(commands.eval(
             INCREASE_JOB_COUNT,
             ScriptOutputType.INTEGER,
             PREFIX_COUNT + jobName, String.valueOf(timeout)
-        )).map(Long.class::cast);
+        ).toCompletableFuture()).map(Long.class::cast);
     }
 
-    private static Maybe<Long> decreaseCurrentExecutionCount(String jobName, RedisAsyncCommands<String, String> commands) {
-        return Maybe.fromFuture(commands.eval(
+    private static Mono<Long> decreaseCurrentExecutionCount(String jobName, RedisAsyncCommands<String, String> commands) {
+        return Mono.fromFuture(commands.eval(
             DECREASE_JOB_COUNT,
             ScriptOutputType.INTEGER,
             PREFIX_COUNT + jobName
-        )).map(Long.class::cast);
+        ).toCompletableFuture()).map(Long.class::cast);
     }
 
-    private Maybe<Object> readMasterHostname(String jobName, RedisAsyncCommands<String, String> commands) {
-        return Maybe.fromFuture(commands.eval(
+    private Mono<Object> readMasterHostname(String jobName, RedisAsyncCommands<String, String> commands) {
+        return Mono.fromFuture(commands.eval(
             LEADER_CHECK,
             ScriptOutputType.VALUE,
             PREFIX_LEADER + jobName, hostname, String.valueOf(LEADER_INACTIVITY_TIMEOUT)
-        )).defaultIfEmpty("");
+        ).toCompletableFuture()).defaultIfEmpty("");
     }
 }

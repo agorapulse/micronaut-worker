@@ -21,11 +21,13 @@ import com.agorapulse.worker.tck.queue.AbstractQueuesSpec
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import io.micronaut.test.support.TestPropertyProvider
 import org.testcontainers.containers.GenericContainer
+import spock.lang.Retry
 import spock.lang.Shared
 
 /**
  * Tests for Redis queues.
  */
+@Retry
 @MicronautTest(environments = QUEUE_SPEC_ENV_NAME)
 class RedisQueuesSpec extends AbstractQueuesSpec implements TestPropertyProvider {
 

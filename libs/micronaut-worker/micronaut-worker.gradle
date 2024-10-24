@@ -18,7 +18,7 @@
 dependencies {
     api "space.jasan:groovy-closure-support:$closureSupportVersion"
 
-    implementation 'io.reactivex.rxjava2:rxjava'
+    implementation 'io.micronaut.reactor:micronaut-reactor'
     implementation 'io.micronaut:micronaut-jackson-databind'
 
     compileOnly "com.agorapulse:micronaut-snitch:$micronautSnitchVersion"
