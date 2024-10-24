@@ -21,9 +21,9 @@ import com.agorapulse.worker.annotation.FixedRate
 import com.agorapulse.worker.annotation.InitialDelay
 import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Requires
-import io.reactivex.Flowable
 
 import jakarta.inject.Singleton
+import reactor.core.publisher.Flux
 
 @SuppressWarnings([
     'EmptyMethod',
@@ -42,8 +42,8 @@ class SendWordsJob {
 
     // tag::simple-producer-method[]
     @InitialDelay("50ms")
-    public Flowable<String> hello() {
-        return Flowable.just("Hello", "World");
+    public Flux<String> hello() {
+        return Flux.just("Hello", "World");
     }
     // end::simple-producer-method[]
 

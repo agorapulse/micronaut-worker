@@ -20,7 +20,7 @@ dependencies {
 
     compileOnly 'io.micronaut:micronaut-inject-groovy'
 
-    implementation 'io.reactivex.rxjava2:rxjava'
+    implementation 'io.micronaut.reactor:micronaut-reactor'
     implementation 'org.spockframework:spock-core'
     implementation 'io.micronaut:micronaut-management'
 }

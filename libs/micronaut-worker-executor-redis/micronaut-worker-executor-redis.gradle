@@ -21,7 +21,7 @@ dependencies {
     api "io.lettuce:lettuce-core:$lettuceVersion"
 
     implementation 'io.micronaut.redis:micronaut-redis-lettuce'
-    implementation 'io.reactivex.rxjava2:rxjava'
+    implementation 'io.micronaut.reactor:micronaut-reactor'
 
     testImplementation project(':micronaut-worker-tck')
 }

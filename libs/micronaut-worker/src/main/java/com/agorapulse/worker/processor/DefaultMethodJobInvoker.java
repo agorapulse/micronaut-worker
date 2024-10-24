@@ -29,13 +29,14 @@ import io.micronaut.context.BeanContext;
 import io.micronaut.context.event.ApplicationEventPublisher;
 import io.micronaut.inject.ExecutableMethod;
 import io.micronaut.inject.qualifiers.Qualifiers;
-import io.reactivex.Flowable;
-import io.reactivex.Maybe;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import jakarta.inject.Singleton;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
 import java.time.Duration;
 import java.util.Optional;
 import java.util.concurrent.Callable;
@@ -121,11 +122,11 @@ public class DefaultMethodJobInvoker implements MethodJobInvoker {
         if (followerOnly) {
             return s -> distributedJobExecutor.executeOnlyOnFollower(jobName, s);
         }
-        return s -> Maybe.fromCallable(s).toFlowable();
+        return s -> Mono.fromCallable(s).flux();
     }
 
     protected void handleResult(JobConfiguration configuration, Publisher<Object> resultPublisher) {
-        Object result = Flowable.fromPublisher(resultPublisher).blockingFirst(null);
+        Object result = Flux.from(resultPublisher).blockFirst();
 
         applicationEventPublisher.publishEvent(new JobExecutionResultEvent(
             configuration.getName(),
@@ -141,7 +142,7 @@ public class DefaultMethodJobInvoker implements MethodJobInvoker {
         JobQueues sender = queues(configuration.getProducer().getQueueType());
 
         if (result instanceof Publisher) {
-            Flowable<?> publisher = Flowable.fromPublisher((Publisher<?>) result);
+            Flux<?> publisher = Flux.from((Publisher<?>) result);
             publisher.subscribe(o -> {
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug("Sending message {} to {} using {}", o, queueName, sender);
