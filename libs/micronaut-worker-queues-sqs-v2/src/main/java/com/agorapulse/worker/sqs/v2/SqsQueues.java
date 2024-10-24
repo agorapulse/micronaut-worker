@@ -23,6 +23,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micronaut.core.type.Argument;
 import io.micronaut.jackson.JacksonConfiguration;
+import org.reactivestreams.Publisher;
+import reactor.core.publisher.Flux;
 import software.amazon.awssdk.services.sqs.model.SqsException;
 
 import java.time.Duration;
@@ -51,9 +53,7 @@ public class SqsQueues implements JobQueues {
     @Override
     public void sendMessage(String queueName, Object result) {
         try {
-            simpleQueueService.sendMessage(queueName, objectMapper.writeValueAsString(result));
-        } catch (JsonProcessingException e) {
-            throw new IllegalArgumentException("Cannot marshal object " + result + " to JSON", e);
+            simpleQueueService.sendMessage(queueName, convertMessageToJson(result));
         } catch (SqsException sqsException) {
             if (sqsException.getMessage() != null && sqsException.getMessage().contains("Concurrent access: Queue already exists")) {
                 sendMessage(queueName, result);
@@ -61,6 +61,11 @@ public class SqsQueues implements JobQueues {
             }
             throw sqsException;
         }
+    }
+
+    @Override
+    public void sendMessages(String queueName, Publisher<?> result) {
+        Flux.from(simpleQueueService.sendMessages(queueName, Flux.from(result).map(this::convertMessageToJson))).subscribe();
     }
 
     private <T> void readMessageInternal(String queueName, Argument<T> argument, Consumer<T> action, String body, String handle, boolean tryReformat) {
@@ -78,6 +83,14 @@ public class SqsQueues implements JobQueues {
                 return;
             }
             throw new IllegalArgumentException("Cannot convert to " + argument + "from message\n" + body, e);
+        }
+    }
+
+    private String convertMessageToJson(Object result) {
+        try {
+            return objectMapper.writeValueAsString(result);
+        } catch (JsonProcessingException e) {
+            throw new IllegalArgumentException("Cannot marshal object " + result + " to JSON", e);
         }
     }
 }

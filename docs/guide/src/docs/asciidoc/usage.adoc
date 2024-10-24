@@ -138,6 +138,8 @@ Producer jobs are always run only on the leader server.
 include::{root-dir}/libs/micronaut-worker-tck/src/main/groovy/com/agorapulse/worker/tck/queue/SendWordsJob.groovy[tag=simple-producer-method,indent=0]
 ----
 
+TIP: If the producer job returns a `Publisher`, the messages can be batched if underlying implementation supports it. At the moment, only SQS AWS v2 implementation supports batching.
+
 ==== Consumer
 
 Consumer jobs take a single parameter. They are usually a `@FixedRate` job waiting for a message from a queue.

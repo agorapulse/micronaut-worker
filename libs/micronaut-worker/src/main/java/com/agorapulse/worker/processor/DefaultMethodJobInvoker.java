@@ -142,14 +142,7 @@ public class DefaultMethodJobInvoker implements MethodJobInvoker {
         JobQueues sender = queues(configuration.getProducer().getQueueType());
 
         if (result instanceof Publisher) {
-            Flux<?> publisher = Flux.from((Publisher<?>) result);
-            publisher.subscribe(o -> {
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Sending message {} to {} using {}", o, queueName, sender);
-
-                }
-                sender.sendMessage(queueName, o);
-            }, t -> LOGGER.error("Exception sending messages to queue " + queueName, t));
+            sender.sendMessages(queueName, (Publisher<?>) result);
             return;
         }
 
