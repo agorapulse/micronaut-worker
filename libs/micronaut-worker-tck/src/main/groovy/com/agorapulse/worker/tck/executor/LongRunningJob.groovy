@@ -25,6 +25,7 @@ import com.agorapulse.worker.annotation.Job
 import com.agorapulse.worker.annotation.LeaderOnly
 import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Requires
+import io.netty.util.concurrent.FastThreadLocalThread
 import org.reactivestreams.Publisher
 
 import jakarta.inject.Singleton
@@ -102,7 +103,11 @@ class LongRunningJob {
         return "LongRunningJob{producer=$producer, leader=$leader, follower=$follower, consecutive=$consecutive, unlimited=$unlimited, concurrent=$concurrent, fork=$fork}"
     }
 
+    @SuppressWarnings('Instanceof')
     private static void runLongTask() {
+        if (Thread.currentThread() instanceof FastThreadLocalThread) {
+            throw new IllegalStateException('Running on FastThreadLocalThread will fail execution of HTTP client requests')
+        }
         Thread.sleep(LONG_RUNNING_JOB_DURATION)
     }
 
