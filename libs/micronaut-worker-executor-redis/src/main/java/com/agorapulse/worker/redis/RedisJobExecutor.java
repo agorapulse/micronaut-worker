@@ -17,11 +17,16 @@
  */
 package com.agorapulse.worker.redis;
 
+import com.agorapulse.worker.Job;
+import com.agorapulse.worker.JobConfiguration;
+import com.agorapulse.worker.JobManager;
 import com.agorapulse.worker.executor.DistributedJobExecutor;
 import io.lettuce.core.ScriptOutputType;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.async.RedisAsyncCommands;
+import io.micronaut.context.BeanContext;
 import io.micronaut.context.annotation.Requires;
+import io.micronaut.inject.qualifiers.Qualifiers;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,8 +34,10 @@ import org.slf4j.LoggerFactory;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
 
 @Singleton
 @Requires(beans = {StatefulRedisConnection.class}, property = "redis.uri")
@@ -64,10 +71,14 @@ public class RedisJobExecutor implements DistributedJobExecutor {
 
     private final StatefulRedisConnection<String, String> connection;
     private final String hostname;
+    private final BeanContext beanContext;
+    private final JobManager jobManager;
 
-    public RedisJobExecutor(StatefulRedisConnection<String, String> connection, @Named(HOSTNAME_PARAMETER_NAME) String hostname) {
+    public RedisJobExecutor(StatefulRedisConnection<String, String> connection, @Named(HOSTNAME_PARAMETER_NAME) String hostname, BeanContext beanContext, JobManager jobManager) {
         this.connection = connection;
         this.hostname = hostname;
+        this.beanContext = beanContext;
+        this.jobManager = jobManager;
     }
 
     @Override
@@ -76,7 +87,7 @@ public class RedisJobExecutor implements DistributedJobExecutor {
 
         return readMasterHostname(jobName, commands).flatMap(h -> {
             if (hostname.equals(h)) {
-                return Mono.fromCallable(supplier);
+                return Mono.fromCallable(supplier).subscribeOn(Schedulers.fromExecutorService(getExecutorService(jobName)));
             }
             return Mono.empty();
         }).flux();
@@ -94,7 +105,7 @@ public class RedisJobExecutor implements DistributedJobExecutor {
                     return decreaseCurrentExecutionCount(jobName, commands).flatMap(decreased -> Mono.empty());
                 }
 
-                return Mono.fromCallable(supplier).doFinally(signal -> decreaseCurrentExecutionCount(jobName, commands).subscribe());
+                return Mono.fromCallable(supplier).subscribeOn(Schedulers.fromExecutorService(getExecutorService(jobName))).doFinally(signal -> decreaseCurrentExecutionCount(jobName, commands).subscribe());
             }).flux();
     }
 
@@ -105,7 +116,7 @@ public class RedisJobExecutor implements DistributedJobExecutor {
             if (!"".equals(h) && h.equals(hostname)) {
                 return Mono.empty();
             }
-            return Mono.fromCallable(supplier);
+            return Mono.fromCallable(supplier).subscribeOn(Schedulers.fromExecutorService(getExecutorService(jobName)));
         }).flux();
     }
 
@@ -132,5 +143,15 @@ public class RedisJobExecutor implements DistributedJobExecutor {
             ScriptOutputType.VALUE,
             PREFIX_LEADER + jobName, hostname, String.valueOf(LEADER_INACTIVITY_TIMEOUT)
         ).toCompletableFuture()).defaultIfEmpty("");
+    }
+
+    private ExecutorService getExecutorService(String jobName) {
+        return jobManager
+            .getJob(jobName)
+            .map(Job::getConfiguration)
+            .map(JobConfiguration::getScheduler)
+            .flatMap(name -> beanContext.findBean(ExecutorService.class, Qualifiers.byName(name)))
+            .or(() -> beanContext.findBean(ExecutorService.class))
+            .orElseThrow(() -> new IllegalArgumentException("No executor service found for job " + jobName));
     }
 }

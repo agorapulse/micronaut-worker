@@ -23,4 +23,5 @@ dependencies {
     implementation 'io.micronaut.reactor:micronaut-reactor'
     implementation 'org.spockframework:spock-core'
     implementation 'io.micronaut:micronaut-management'
+    implementation 'io.netty:netty-common'
 }
