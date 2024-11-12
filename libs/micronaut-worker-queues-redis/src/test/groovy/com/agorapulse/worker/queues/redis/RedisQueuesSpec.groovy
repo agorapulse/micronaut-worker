@@ -27,7 +27,7 @@ import spock.lang.Shared
 /**
  * Tests for Redis queues.
  */
-@Retry
+@Retry(delay = 500)
 @MicronautTest(environments = QUEUE_SPEC_ENV_NAME)
 class RedisQueuesSpec extends AbstractQueuesSpec implements TestPropertyProvider {
 
