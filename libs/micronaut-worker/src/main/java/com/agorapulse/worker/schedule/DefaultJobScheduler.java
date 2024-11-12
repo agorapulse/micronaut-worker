@@ -80,7 +80,11 @@ public class DefaultJobScheduler implements JobScheduler, Closeable {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Scheduling cron job {} [{}] for {}", configuration.getName(), configuration.getCron(), job.getSource());
             }
-            taskScheduler.schedule(configuration.getCron(), job);
+            try {
+                taskScheduler.schedule(configuration.getCron(), job);
+            } catch (IllegalArgumentException e) {
+                throw new JobConfigurationException(job, "Failed to schedule job " + configuration.getName() + " declared in " + job.getSource() + ". Invalid CRON expression: " + configuration.getCron(), e);
+            }
         } else if (configuration.getFixedRate() != null) {
             Duration duration = configuration.getFixedRate();
             if (LOG.isDebugEnabled()) {
