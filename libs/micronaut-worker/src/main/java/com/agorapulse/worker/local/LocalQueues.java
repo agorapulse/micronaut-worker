@@ -18,6 +18,7 @@
 package com.agorapulse.worker.local;
 
 import com.agorapulse.worker.queue.JobQueues;
+import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Secondary;
 import io.micronaut.context.env.Environment;
 import io.micronaut.core.type.Argument;
@@ -33,6 +34,7 @@ import java.util.function.Consumer;
 @Secondary
 @Singleton
 @Named("local")
+@Requires(property = "worker.queues.local.enabled", value = "true", defaultValue = "true")
 public class LocalQueues implements JobQueues {
 
     private final ConcurrentMap<String, ConcurrentLinkedDeque<Object>> queues = new ConcurrentHashMap<>();

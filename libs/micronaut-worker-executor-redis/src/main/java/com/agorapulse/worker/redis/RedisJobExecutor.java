@@ -34,6 +34,7 @@ import java.util.concurrent.Callable;
 
 @Singleton
 @Requires(beans = {StatefulRedisConnection.class}, property = "redis.uri")
+@Requires(property = "worker.executor.redis.enabled", value = "true", defaultValue = "true")
 public class RedisJobExecutor implements DistributedJobExecutor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RedisJobExecutor.class);

@@ -18,6 +18,7 @@
 package com.agorapulse.worker.local;
 
 import com.agorapulse.worker.executor.DistributedJobExecutor;
+import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Secondary;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
@@ -36,6 +37,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Secondary
 @Singleton
+@Requires(property = "worker.executor.local.enabled", value = "true", defaultValue = "true")
 public class LocalJobExecutor implements DistributedJobExecutor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LocalJobExecutor.class);
