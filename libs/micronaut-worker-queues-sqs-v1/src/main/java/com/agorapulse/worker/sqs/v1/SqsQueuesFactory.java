@@ -42,6 +42,7 @@ public class SqsQueuesFactory {
     @Bean
     @Singleton
     @Named("sqs")
+    @Requires(property = "worker.queues.sqs.enabled", value = "true", defaultValue = "true")
     public JobQueues sqsQueues(
             AWSCredentialsProvider provider,
             ObjectMapper mapper,

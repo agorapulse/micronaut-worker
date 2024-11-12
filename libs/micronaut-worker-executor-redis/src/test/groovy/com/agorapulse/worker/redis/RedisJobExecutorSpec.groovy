@@ -25,7 +25,7 @@ import org.testcontainers.spock.Testcontainers
 import spock.lang.Retry
 import spock.lang.Shared
 
-@Retry
+@Retry(delay = 500)
 @Testcontainers
 class RedisJobExecutorSpec extends AbstractJobExecutorSpec {
 

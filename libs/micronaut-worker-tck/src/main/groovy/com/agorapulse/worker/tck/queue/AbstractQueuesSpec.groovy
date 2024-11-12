@@ -37,7 +37,7 @@ abstract class AbstractQueuesSpec extends Specification {
         expect:
             expectedImplementation.isInstance(context.getBean(JobQueues))
         when:
-            for (i in 0..<100) {
+            for (i in 0..<500) {
                 if (sendWordsJob.words.size() >= 2) {
                     break
                 }

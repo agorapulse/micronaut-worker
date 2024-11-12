@@ -35,6 +35,7 @@ public class RedisQueuesFactory {
     @Bean
     @Singleton
     @Named("redis")
+    @Requires(property = "worker.queues.redis.enabled", value = "true", defaultValue = "true")
     public JobQueues redisQueues(
             RedisClient redisClient,
             ObjectMapper mapper,
