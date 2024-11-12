@@ -18,6 +18,7 @@
 package com.agorapulse.worker.annotation;
 
 import io.micronaut.context.annotation.AliasFor;
+import io.micronaut.scheduling.TaskExecutors;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -37,5 +38,15 @@ public @interface Cron {
 
     @AliasFor(annotation = Job.class, member = "cron")
     String value();
+
+    @AliasFor(annotation = Job.class, member = "value")
+    String name() default "";
+
+    /**
+     * @return The name of a {@link jakarta.inject.Named} bean that is a
+     * {@link java.util.concurrent.ScheduledExecutorService} to use to schedule the task
+     */
+    @AliasFor(annotation = Job.class, member = "scheduler")
+    String scheduler() default TaskExecutors.SCHEDULED;
 
 }
