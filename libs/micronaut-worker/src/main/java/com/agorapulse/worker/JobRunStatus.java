@@ -17,17 +17,35 @@
  */
 package com.agorapulse.worker;
 
+import com.agorapulse.worker.json.DurationSerializer;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 import java.time.Duration;
 import java.time.Instant;
 
-public interface JobStatus {
+public interface JobRunStatus {
 
-    String getId();
-    String getName();
-    Instant getLastTriggered();
-    Instant getLastFinished();
-    Duration getLastDuration();
-    Throwable getLastException();
-    int getExecutionCount();
+    @Nullable
+    @JsonSerialize(using = DurationSerializer.class)
+    default Duration getDuration() {
+        Instant started = getStarted();
+        Instant finished = getFinished();
+
+        if (finished == null) {
+            return null;
+        }
+
+        return Duration.between(started, finished);
+    }
+
+    @Nonnull String getName();
+    @Nonnull String getId();
+
+    @Nonnull Instant getStarted();
+    @Nullable Instant getFinished();
+
+    @Nullable Throwable getException();
 
 }
