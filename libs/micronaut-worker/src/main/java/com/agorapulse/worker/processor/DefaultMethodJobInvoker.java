@@ -20,13 +20,10 @@ package com.agorapulse.worker.processor;
 import com.agorapulse.worker.Job;
 import com.agorapulse.worker.JobConfiguration;
 import com.agorapulse.worker.JobConfigurationException;
-import com.agorapulse.worker.event.JobExecutionFinishedEvent;
-import com.agorapulse.worker.event.JobExecutionResultEvent;
-import com.agorapulse.worker.event.JobExecutionStartedEvent;
 import com.agorapulse.worker.executor.DistributedJobExecutor;
+import com.agorapulse.worker.job.JobRunContext;
 import com.agorapulse.worker.queue.JobQueues;
 import io.micronaut.context.BeanContext;
-import io.micronaut.context.event.ApplicationEventPublisher;
 import io.micronaut.inject.ExecutableMethod;
 import io.micronaut.inject.qualifiers.Qualifiers;
 import org.reactivestreams.Publisher;
@@ -48,21 +45,18 @@ public class DefaultMethodJobInvoker implements MethodJobInvoker {
     private static final Logger LOGGER = LoggerFactory.getLogger(Job.class);
 
     private final BeanContext context;
-    private final ApplicationEventPublisher applicationEventPublisher;
     private final DistributedJobExecutor distributedJobExecutor;
 
     public DefaultMethodJobInvoker(
         BeanContext context,
-        ApplicationEventPublisher applicationEventPublisher,
         DistributedJobExecutor distributedJobExecutor
     ) {
         this.context = context;
-        this.applicationEventPublisher = applicationEventPublisher;
         this.distributedJobExecutor = distributedJobExecutor;
     }
 
     @SuppressWarnings("unchecked")
-    public <B> void invoke(MethodJob<B, ?> job, B bean) {
+    public <B> void invoke(MethodJob<B, ?> job, B bean, JobRunContext callback) {
         ExecutableMethod<B, ?> method = job.getMethod();
         JobConfiguration configuration = job.getConfiguration();
 
@@ -84,10 +78,8 @@ public class DefaultMethodJobInvoker implements MethodJobInvoker {
         Function<Callable<Object>, Publisher<Object>> executor = executor(configuration.getName(), leaderOnly, followerOnly, concurrency);
 
         if (method.getArguments().length == 0) {
-            handleResult(configuration, executor.apply(() -> method.invoke(bean)));
-            applicationEventPublisher.publishEvent(new JobExecutionStartedEvent(
-                configuration.getName()
-            ));
+            handleResult(configuration, callback, executor.apply(() -> method.invoke(bean)));
+            callback.message(null);
         } else if (method.getArguments().length == 1) {
             JobConfiguration.ConsumerQueueConfiguration queueConfiguration = configuration.getConsumer();
             queues(queueConfiguration.getQueueType()).readMessages(
@@ -96,20 +88,13 @@ public class DefaultMethodJobInvoker implements MethodJobInvoker {
                 Optional.ofNullable(queueConfiguration.getWaitingTime()).orElse(Duration.ZERO),
                 method.getArguments()[0],
                 message -> {
-                    applicationEventPublisher.publishEvent(new JobExecutionStartedEvent(
-                        configuration.getName(),
-                        message
-                    ));
-                    handleResult(configuration, executor.apply(() -> method.invoke(bean, message)));
+                    callback.message(message);
+                    handleResult(configuration, callback, executor.apply(() -> method.invoke(bean, message)));
                 }
             );
         } else {
             LOGGER.error("Too many arguments for " + method + "! The job method wasn't executed!");
         }
-
-        applicationEventPublisher.publishEvent(new JobExecutionFinishedEvent(
-            configuration.getName()
-        ));
     }
 
     private <T> Function<Callable<T>, Publisher<T>> executor(String jobName, boolean leaderOnly, boolean followerOnly, int concurrency) {
@@ -125,13 +110,10 @@ public class DefaultMethodJobInvoker implements MethodJobInvoker {
         return s -> Mono.fromCallable(s).flux();
     }
 
-    protected void handleResult(JobConfiguration configuration, Publisher<Object> resultPublisher) {
+    protected void handleResult(JobConfiguration configuration, JobRunContext callback, Publisher<Object> resultPublisher) {
         Object result = Flux.from(resultPublisher).blockFirst();
 
-        applicationEventPublisher.publishEvent(new JobExecutionResultEvent(
-            configuration.getName(),
-            result
-        ));
+        callback.result(result);
 
         if (result == null) {
             return;

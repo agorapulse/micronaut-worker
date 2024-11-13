@@ -19,8 +19,6 @@ package com.agorapulse.worker.job;
 
 import com.agorapulse.worker.JobConfiguration;
 
-import java.util.function.Consumer;
-
 public class SimpleJob extends AbstractJob {
 
     private final Runnable task;
@@ -36,11 +34,11 @@ public class SimpleJob extends AbstractJob {
     }
 
     @Override
-    protected void doRun(Consumer<Throwable> onError) {
+    protected void doRun(JobRunContext context) {
         try {
             task.run();
         } catch (Throwable th) {
-            onError.accept(th);
+            context.error(th);
         }
     }
 }

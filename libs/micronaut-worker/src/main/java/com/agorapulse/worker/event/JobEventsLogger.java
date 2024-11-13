@@ -33,9 +33,9 @@ public class JobEventsLogger {
     void onJobExecutionStarted(JobExecutionStartedEvent event) {
         if (LOGGER.isDebugEnabled()) {
             if (event.getMessage().isPresent()) {
-                LOGGER.debug("Starting job {} with message {}", event.getName(), event.getMessage().get());
+                LOGGER.debug("Starting job {}#{} with message {}", event.getName(), event.getId(), event.getMessage().get());
             } else {
-                LOGGER.debug("Starting job {}", event.getName());
+                LOGGER.debug("Starting job {}#{}", event.getName(), event.getId());
             }
         }
     }
@@ -45,9 +45,9 @@ public class JobEventsLogger {
         if (LOGGER.isDebugEnabled()) {
             Object result = event.getResult();
             if (result != null) {
-                LOGGER.debug("Job {} emitted result {}", event.getName(), result);
+                LOGGER.debug("Job {}#{} emitted result {}", event.getName(), event.getId(), result);
             } else if (LOGGER.isTraceEnabled()){
-                LOGGER.trace("No results emitted from job {}", event.getName());
+                LOGGER.trace("No results emitted from job {}#{}", event.getName(), event.getId());
             }
         }
     }
@@ -55,7 +55,7 @@ public class JobEventsLogger {
     @EventListener
     void onJobExecutionFinished(JobExecutionFinishedEvent event) {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Finished executing job {} (some results can still be generated asynchronously later)", event.getName());
+            LOGGER.debug("Finished executing job {}#{} in {} (some results can still be generated asynchronously later)", event.getName(), event.getStatus().getId(), event.getStatus().getDuration());
         }
     }
 

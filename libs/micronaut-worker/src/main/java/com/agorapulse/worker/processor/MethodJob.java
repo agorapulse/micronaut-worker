@@ -18,7 +18,11 @@
 package com.agorapulse.worker.processor;
 
 import com.agorapulse.worker.JobConfiguration;
+import com.agorapulse.worker.event.JobExecutionFinishedEvent;
+import com.agorapulse.worker.event.JobExecutionResultEvent;
+import com.agorapulse.worker.event.JobExecutionStartedEvent;
 import com.agorapulse.worker.job.AbstractJob;
+import com.agorapulse.worker.job.JobRunContext;
 import io.micronaut.context.BeanContext;
 import io.micronaut.core.type.Argument;
 import io.micronaut.inject.BeanDefinition;
@@ -30,7 +34,6 @@ import jakarta.inject.Qualifier;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Consumer;
 
 class MethodJob<B, R> extends AbstractJob {
 
@@ -69,7 +72,7 @@ class MethodJob<B, R> extends AbstractJob {
 
     @Override
     @SuppressWarnings({"rawtypes", "unchecked"})
-    protected void doRun(Consumer<Throwable> onError) {
+    protected void doRun(JobRunContext context) {
         io.micronaut.context.Qualifier<Object> qualifer = beanDefinition
                 .getAnnotationTypeByStereotype(Qualifier.class)
                 .map(type -> Qualifiers.byAnnotation(beanDefinition, type))
@@ -79,9 +82,17 @@ class MethodJob<B, R> extends AbstractJob {
         B bean = null;
         try {
             bean = (B) beanContext.getBean(beanType, qualifer);
-            jobMethodInvoker.invoke(this, bean);
+
+            context
+                .onMessage((status, message) -> beanContext.getEventPublisher(JobExecutionStartedEvent.class).publishEvent(new JobExecutionStartedEvent(getName(), status.getId())))
+                .onFinished(status -> beanContext.getEventPublisher(JobExecutionFinishedEvent.class).publishEvent(new JobExecutionFinishedEvent(getName(), status)))
+                .onResult((status, result) -> beanContext.getEventPublisher(JobExecutionResultEvent.class).publishEvent(new JobExecutionResultEvent(getName(), status.getId(), result)));
+
+            jobMethodInvoker.invoke(this, bean, context);
+
+
         } catch (Throwable e) {
-            onError.accept(e);
+            context.error(e);
             io.micronaut.context.Qualifier<TaskExceptionHandler> qualifier = Qualifiers.byTypeArguments(beanType, e.getClass());
             Collection<BeanDefinition<TaskExceptionHandler>> definitions = beanContext.getBeanDefinitions(TaskExceptionHandler.class, qualifier);
             Optional<BeanDefinition<TaskExceptionHandler>> mostSpecific = definitions.stream().filter(def -> {

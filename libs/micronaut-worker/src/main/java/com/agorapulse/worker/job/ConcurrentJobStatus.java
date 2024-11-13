@@ -39,6 +39,7 @@ public final class ConcurrentJobStatus implements JobStatus {
     private final AtomicReference<Instant> lastFinished = new AtomicReference<>();
     private final AtomicReference<Duration> lastDuration = new AtomicReference<>();
     private final AtomicReference<Throwable> lastException = new AtomicReference<>();
+    private final AtomicReference<String> lastId = new AtomicReference<>();
 
     private final String name;
 
@@ -49,6 +50,11 @@ public final class ConcurrentJobStatus implements JobStatus {
     @Override
     public String getName() {
         return name;
+    }
+
+    @Override
+    public String getLastId() {
+        return lastId.get();
     }
 
     @Override
@@ -80,19 +86,27 @@ public final class ConcurrentJobStatus implements JobStatus {
         return lastDuration.get();
     }
 
-    public final void run(Consumer<Consumer<Throwable>> onError) {
-        Instant start = Instant.now();
+    public void run(Consumer<JobRunContext> doRun) {
+        DefaultJobRunStatus status = DefaultJobRunStatus.create(getName());
         executionCount.incrementAndGet();
-        lastTriggered.set(start);
+        lastTriggered.set(status.getStarted());
+
+        JobRunContext context = JobRunContext.create(status).onError((s, ex) -> {
+            lastException.set(ex);
+            status.fail(ex);
+        });
 
         try {
-            onError.accept(lastException::set);
+            doRun.accept(context);
         } finally {
+            status.finish();
             executionCount.decrementAndGet();
-            Instant finish = Instant.now();
-            lastFinished.set(finish);
-            lastDuration.set(Duration.between(start, finish));
+            lastFinished.set(status.getFinished());
+            lastDuration.set(status.getDuration());
+            lastId.set(status.getId());
         }
+
+        context.finished(status);
     }
 
 }
