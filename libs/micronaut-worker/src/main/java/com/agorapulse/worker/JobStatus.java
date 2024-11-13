@@ -22,7 +22,7 @@ import java.time.Instant;
 
 public interface JobStatus {
 
-    String getId();
+    String getLastId();
     String getName();
     Instant getLastTriggered();
     Instant getLastFinished();

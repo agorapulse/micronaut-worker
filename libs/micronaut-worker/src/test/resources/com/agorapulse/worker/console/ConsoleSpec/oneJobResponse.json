@@ -26,7 +26,8 @@
             "lastFinished": null,
             "lastDuration": null,
             "lastException": null,
-            "name": "sample-job"
+            "name": "sample-job",
+            "lastId": null
         },
         "source": "method com.agorapulse.worker.console.SampleJob#run",
         "name": "sample-job"

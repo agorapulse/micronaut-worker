@@ -17,18 +17,27 @@
  */
 package com.agorapulse.worker.event;
 
+import com.agorapulse.worker.JobRunStatus;
+
 /**
  * Event dispatched after successful job execution.
  */
 public class JobExecutionFinishedEvent {
 
     private final String name;
+    private final JobRunStatus status;
 
-    public JobExecutionFinishedEvent(String name) {
+    public JobExecutionFinishedEvent(String name, JobRunStatus status) {
         this.name = name;
+        this.status = status;
     }
 
     public String getName() {
         return name;
     }
+
+    public JobRunStatus getStatus() {
+        return status;
+    }
+
 }

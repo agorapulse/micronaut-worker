@@ -53,7 +53,7 @@ public final class ConcurrentJobStatus implements JobStatus {
     }
 
     @Override
-    public String getId() {
+    public String getLastId() {
         return lastId.get();
     }
 
@@ -86,16 +86,18 @@ public final class ConcurrentJobStatus implements JobStatus {
         return lastDuration.get();
     }
 
-    public void run(Consumer<Consumer<Throwable>> onError) {
+    public void run(Consumer<JobRunContext> doRun) {
         DefaultJobRunStatus status = DefaultJobRunStatus.create(getName());
         executionCount.incrementAndGet();
         lastTriggered.set(status.getStarted());
 
+        JobRunContext context = JobRunContext.create(status).onError((s, ex) -> {
+            lastException.set(ex);
+            status.fail(ex);
+        });
+
         try {
-            onError.accept(ex -> {
-                lastException.set(ex);
-                status.fail(ex);
-            });
+            doRun.accept(context);
         } finally {
             status.finish();
             executionCount.decrementAndGet();
@@ -103,6 +105,8 @@ public final class ConcurrentJobStatus implements JobStatus {
             lastDuration.set(status.getDuration());
             lastId.set(status.getId());
         }
+
+        context.finished(status);
     }
 
 }

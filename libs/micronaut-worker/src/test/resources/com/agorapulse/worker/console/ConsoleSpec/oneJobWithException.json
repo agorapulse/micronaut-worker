@@ -26,7 +26,8 @@
             "lastFinished": "${json-unit.matches:isoDateNow}",
             "lastDuration": "${json-unit.regex}^0\\.\\d+s$",
             "lastException": "${json-unit.any-string}",
-            "name": "failing-job"
+            "name": "failing-job",
+            "lastId": "${json-unit.any-string}"
         },
         "source": "${json-unit.regex}.*SimpleJob.*",
         "name": "failing-job"

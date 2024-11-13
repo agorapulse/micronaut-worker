@@ -25,20 +25,27 @@ import java.util.Optional;
 public class JobExecutionStartedEvent {
 
     private final String name;
+    private final String id;
     private final Object message;
 
-    public JobExecutionStartedEvent(String name) {
+    public JobExecutionStartedEvent(String name, String id) {
         this.name = name;
+        this.id = id;
         this.message = null;
     }
 
-    public JobExecutionStartedEvent(String name, Object message) {
+    public JobExecutionStartedEvent(String name, String id, Object message) {
         this.name = name;
+        this.id = id;
         this.message = message;
     }
 
     public String getName() {
         return name;
+    }
+
+    public String getId() {
+        return id;
     }
 
     public Optional<Object> getMessage() {

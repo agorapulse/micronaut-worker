@@ -23,15 +23,21 @@ package com.agorapulse.worker.event;
 public class JobExecutionResultEvent {
 
     private final String name;
+    private final String id;
     private final Object result;
 
-    public JobExecutionResultEvent(String name, Object result) {
+    public JobExecutionResultEvent(String name, String id, Object result) {
         this.name = name;
+        this.id = id;
         this.result = result;
     }
 
     public Object getResult() {
         return result;
+    }
+
+    public String getId() {
+        return id;
     }
 
     public String getName() {

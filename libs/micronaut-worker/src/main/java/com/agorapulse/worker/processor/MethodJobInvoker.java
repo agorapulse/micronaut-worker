@@ -17,6 +17,8 @@
  */
 package com.agorapulse.worker.processor;
 
+import com.agorapulse.worker.job.JobRunContext;
+
 public interface MethodJobInvoker {
 
     /**
@@ -24,6 +26,6 @@ public interface MethodJobInvoker {
      * @param job the method job
      * @param bean the bean where the method is declared
      */
-    <B> void invoke(MethodJob<B, ?> job, B bean);
+    <B> void invoke(MethodJob<B, ?> job, B bean, JobRunContext callback);
 
 }

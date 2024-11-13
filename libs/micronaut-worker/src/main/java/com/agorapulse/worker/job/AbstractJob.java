@@ -21,8 +21,6 @@ import com.agorapulse.worker.Job;
 import com.agorapulse.worker.JobConfiguration;
 import com.agorapulse.worker.JobStatus;
 
-import java.util.function.Consumer;
-
 public abstract class AbstractJob implements Job {
 
     private final JobConfiguration configuration;
@@ -55,5 +53,5 @@ public abstract class AbstractJob implements Job {
         status.run(this::doRun);
     }
 
-    protected abstract void doRun(Consumer<Throwable> onError);
+    protected abstract void doRun(JobRunContext context);
 }
