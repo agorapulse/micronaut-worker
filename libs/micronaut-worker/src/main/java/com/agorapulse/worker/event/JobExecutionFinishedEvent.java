@@ -18,10 +18,12 @@
 package com.agorapulse.worker.event;
 
 import com.agorapulse.worker.JobRunStatus;
+import io.micronaut.core.annotation.Introspected;
 
 /**
  * Event dispatched after successful job execution.
  */
+@Introspected
 public class JobExecutionFinishedEvent {
 
     private final String name;

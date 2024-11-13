@@ -17,11 +17,14 @@
  */
 package com.agorapulse.worker.event;
 
+import io.micronaut.core.annotation.Introspected;
+
 import java.util.Optional;
 
 /**
  * Event dispatched after successful job execution.
  */
+@Introspected
 public class JobExecutionStartedEvent {
 
     private final String name;
