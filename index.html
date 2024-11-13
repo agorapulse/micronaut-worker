@@ -92,7 +92,7 @@ $(addBlockSwitches);
 <h1>Micronaut Worker</h1>
 <div class="details">
 <span id="author" class="author">Vladimir Orany</span><br>
-<span id="revnumber">version 2.1.1</span>
+<span id="revnumber">version 2.2.0</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -201,22 +201,22 @@ All jobs are disabled by default in the <code>function</code> and <code>cli</cod
 }
 
 dependencies {
-    implementation 'com.agorapulse:micronaut-worker:2.1.1'
+    implementation 'com.agorapulse:micronaut-worker:2.2.0'
 
     // to enable /jobs endpoint
-    implementation 'com.agorapulse:micronaut-worker-management:2.1.1'
+    implementation 'com.agorapulse:micronaut-worker-management:2.2.0'
 
     // to enable AWS SDK v1 SQS queues integration
-    implementation 'com.agorapulse:micronaut-worker-queues-sqs-v1:2.1.1'
+    implementation 'com.agorapulse:micronaut-worker-queues-sqs-v1:2.2.0'
 
     // to enable AWS SDK v2 SQS queues integration
-    implementation 'com.agorapulse:micronaut-worker-queues-sqs-v2:2.1.1'
+    implementation 'com.agorapulse:micronaut-worker-queues-sqs-v2:2.2.0'
 
     // to enable Redis leader/follower capabilities
-    implementation 'com.agorapulse:micronaut-worker-executor-redis:2.1.1'
+    implementation 'com.agorapulse:micronaut-worker-executor-redis:2.2.0'
 
     // to enable Redis queues integration
-    implementation 'com.agorapulse:micronaut-worker-queues-redis:2.1.1'
+    implementation 'com.agorapulse:micronaut-worker-queues-redis:2.2.0'
 
     // you also need Redis configuration on the classpath depending on your Micronaut version
     // for Micronaut 1.x
@@ -686,9 +686,9 @@ public class JobEventsLogger {
     void onJobExecutionStarted(JobExecutionStartedEvent event) {
         if (LOGGER.isDebugEnabled()) {
             if (event.getMessage().isPresent()) {
-                LOGGER.debug("Starting job {} with message {}", event.getName(), event.getMessage().get());
+                LOGGER.debug("Starting job {}#{} with message {}", event.getName(), event.getId(), event.getMessage().get());
             } else {
-                LOGGER.debug("Starting job {}", event.getName());
+                LOGGER.debug("Starting job {}#{}", event.getName(), event.getId());
             }
         }
     }
@@ -698,9 +698,9 @@ public class JobEventsLogger {
         if (LOGGER.isDebugEnabled()) {
             Object result = event.getResult();
             if (result != null) {
-                LOGGER.debug("Job {} emitted result {}", event.getName(), result);
+                LOGGER.debug("Job {}#{} emitted result {}", event.getName(), event.getId(), result);
             } else if (LOGGER.isTraceEnabled()){
-                LOGGER.trace("No results emitted from job {}", event.getName());
+                LOGGER.trace("No results emitted from job {}#{}", event.getName(), event.getId());
             }
         }
     }
@@ -708,7 +708,7 @@ public class JobEventsLogger {
     @EventListener
     void onJobExecutionFinished(JobExecutionFinishedEvent event) {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Finished executing job {} (some results can still be generated asynchronously later)", event.getName());
+            LOGGER.debug("Finished executing job {}#{} in {} (some results can still be generated asynchronously later)", event.getName(), event.getStatus().getId(), event.getStatus().getDuration());
         }
     }
 
@@ -764,7 +764,8 @@ If <a href="https://github.com/agorapulse/micronaut-snitch">Micronaut Snitch</a>
             "lastFinished": null,
             "lastDuration": null,
             "lastException": null,
-            "name": "sample-job"
+            "name": "sample-job",
+            "lastId": null
         },
         "source": "method com.agorapulse.worker.management.SampleJob#run",
         "name": "sample-job"
@@ -859,7 +860,8 @@ on which console endpoint you choose, you get either a text or JSON summary.</p>
                 "lastFinished": null,
                 "lastDuration": null,
                 "lastException": null,
-                "name": "sample-job"
+                "name": "sample-job",
+                "lastId": null
             },
             "source": "method com.agorapulse.worker.console.SampleJob#run",
             "name": "sample-job"
@@ -918,7 +920,8 @@ on which console endpoint you choose, you get either a text or JSON summary.</p>
             "lastFinished": null,
             "lastDuration": null,
             "lastException": null,
-            "name": "sample-job"
+            "name": "sample-job",
+            "lastId": null
         },
         "source": "method com.agorapulse.worker.console.SampleJob#run",
         "name": "sample-job"
@@ -940,8 +943,8 @@ on which console endpoint you choose, you get either a text or JSON summary.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 2.1.1<br>
-Last updated 2024-11-12 11:30:09 UTC
+Version 2.2.0<br>
+Last updated 2024-11-13 14:24:03 UTC
 </div>
 </div>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.css">
