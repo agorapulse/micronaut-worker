@@ -24,7 +24,6 @@ import jakarta.inject.Inject
 import spock.lang.Specification
 import spock.util.concurrent.PollingConditions
 
-
 @MicronautTest
 @Property(name = 'event.producer.job.enabled', value = 'true')
 class EventSpec extends Specification {
