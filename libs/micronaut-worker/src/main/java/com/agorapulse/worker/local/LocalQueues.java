@@ -26,6 +26,7 @@ import io.micronaut.core.type.Argument;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 import java.time.Duration;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentMap;
@@ -59,5 +60,9 @@ public class LocalQueues implements JobQueues {
     @Override
     public void sendMessage(String queueName, Object result) {
         queues.computeIfAbsent(queueName, key -> new ConcurrentLinkedDeque<>()).addLast(result);
+    }
+
+    public <T> List<T> getMessages(String queueName, Argument<T> type) {
+        return List.copyOf(queues.get(queueName).stream().map(o -> environment.convertRequired(o, type)).toList());
     }
 }
