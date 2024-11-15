@@ -87,7 +87,11 @@ public class RedisQueues implements JobQueues {
             try {
                 action.accept(objectMapper.readValue(body, JacksonConfiguration.constructType(argument, objectMapper.getTypeFactory())));
             } catch (JsonProcessingException e) {
-                throw new IllegalArgumentException("Cannot convert to " + argument + "from message\n" + body, e);
+                if (argument.equalsType(Argument.STRING)) {
+                    action.accept((T) body);
+                } else {
+                    throw new IllegalArgumentException("Cannot convert to " + argument + "from message\n" + body, e);
+                }
             }
         });
     }
@@ -96,18 +100,24 @@ public class RedisQueues implements JobQueues {
     public void sendMessage(String queueName, Object result) {
         try {
             String item = objectMapper.writeValueAsString(result);
-            withRedis(redisCommands -> {
-                String key = getKey(queueName);
-                redisCommands.zscore(key, item).thenAccept(zscore -> {
-                    if (zscore == null) {
-                        long time = System.currentTimeMillis();
-                        redisCommands.zadd(key, time, item);
-                    }
-                });
-            });
+            sendRawMessage(queueName, item);
         } catch (JsonProcessingException e) {
             throw new IllegalArgumentException("Cannot write " + result + " to JSON", e);
         }
+    }
+
+    @Override
+    public void sendRawMessage(String queueName, Object result) {
+        String item = result.toString();
+        withRedis(redisCommands -> {
+            String key = getKey(queueName);
+            redisCommands.zscore(key, item).thenAccept(zscore -> {
+                if (zscore == null) {
+                    long time = System.currentTimeMillis();
+                    redisCommands.zadd(key, time, item);
+                }
+            });
+        });
     }
 
     private String getKey(String queueName) {

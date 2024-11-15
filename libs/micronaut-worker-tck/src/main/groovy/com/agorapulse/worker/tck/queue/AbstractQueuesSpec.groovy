@@ -19,9 +19,14 @@ package com.agorapulse.worker.tck.queue
 
 import com.agorapulse.worker.queue.JobQueues
 import io.micronaut.context.ApplicationContext
+import io.micronaut.core.async.publisher.Publishers
+import io.micronaut.core.type.Argument
+import io.micronaut.inject.qualifiers.Qualifiers
 import spock.lang.Specification
 
 import jakarta.inject.Inject
+
+import java.time.Duration
 
 /**
  * Abstract specification for testing queues.
@@ -47,7 +52,23 @@ abstract class AbstractQueuesSpec extends Specification {
             sendWordsJob.words.join(' ').startsWith 'Hello World'
     }
 
+    void 'can send raw messages to queue'() {
+        given:
+            JobQueues queues = context.getBean(JobQueues, Qualifiers.byName(name))
+            List<String> messages = []
+        when:
+            queues.sendRawMessage('foo', 'one')
+            queues.sendRawMessages('foo', Publishers.just('two'))
+        and:
+            queues.readMessages('foo', 2, Duration.ofSeconds(1), Argument.STRING) { message ->
+                messages << message
+            }
+        then:
+            messages == ['one', 'two']
+    }
+
     abstract Class<?> getExpectedImplementation()
+    abstract String getName()
 
 }
 

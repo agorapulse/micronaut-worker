@@ -27,7 +27,16 @@ import java.util.function.Consumer;
 public interface JobQueues {
 
     <T> void readMessages(String queueName, int maxNumberOfMessages, Duration waitTime, Argument<T> argument, Consumer<T> action);
-    void sendMessage(String queueName, Object result);
+
+    default void sendRawMessages(String queueName, Publisher<?> result) {
+        Flux.from(result).subscribe(message -> sendRawMessage(queueName, message));
+    }
+
+    void sendRawMessage(String queueName, Object result);
+
+    default void sendMessage(String queueName, Object result) {
+        sendRawMessage(queueName, result);
+    }
 
     default void sendMessages(String queueName, Publisher<?> result) {
         Flux.from(result).subscribe(message -> sendMessage(queueName, message));

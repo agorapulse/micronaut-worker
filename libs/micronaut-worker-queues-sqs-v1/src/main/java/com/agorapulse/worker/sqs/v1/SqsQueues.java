@@ -51,9 +51,16 @@ public class SqsQueues implements JobQueues {
     @Override
     public void sendMessage(String queueName, Object result) {
         try {
-            simpleQueueService.sendMessage(queueName, objectMapper.writeValueAsString(result));
+            sendRawMessage(queueName, objectMapper.writeValueAsString(result));
         } catch (JsonProcessingException e) {
             throw new IllegalArgumentException("Cannot marshal object " + result + " to JSON", e);
+        }
+    }
+
+    @Override
+    public void sendRawMessage(String queueName, Object result) {
+        try {
+            simpleQueueService.sendMessage(queueName, result.toString());
         } catch (AmazonSQSException sqsException) {
             if (sqsException.getMessage() != null && sqsException.getMessage().contains("Concurrent access: Queue already exists")) {
                 sendMessage(queueName, result);
@@ -68,14 +75,20 @@ public class SqsQueues implements JobQueues {
             action.accept(objectMapper.readValue(body, JacksonConfiguration.constructType(argument, objectMapper.getTypeFactory())));
             simpleQueueService.deleteMessage(queueName, handle);
         } catch (JsonProcessingException e) {
-            if (tryReformat && Collection.class.isAssignableFrom(argument.getType())) {
-                if (argument.getTypeParameters().length > 0 && CharSequence.class.isAssignableFrom(argument.getTypeParameters()[0].getType())) {
-                    String quoted = Arrays.stream(body.split(",\\s*")).map(s -> "\"" + s + "\"").collect(Collectors.joining(","));
-                    readMessageInternal(queueName, argument, action, "[" + quoted + "]", handle, false);
+            if (tryReformat) {
+                if (String.class.isAssignableFrom(argument.getType())) {
+                    action.accept(argument.getType().cast(body));
                     return;
                 }
-                readMessageInternal(queueName, argument, action, "[" + body + "]", handle, false);
-                return;
+                if (Collection.class.isAssignableFrom(argument.getType())) {
+                    if (argument.getTypeParameters().length > 0 && CharSequence.class.isAssignableFrom(argument.getTypeParameters()[0].getType())) {
+                        String quoted = Arrays.stream(body.split(",\\s*")).map(s -> "\"" + s + "\"").collect(Collectors.joining(","));
+                        readMessageInternal(queueName, argument, action, "[" + quoted + "]", handle, false);
+                        return;
+                    }
+                    readMessageInternal(queueName, argument, action, "[" + body + "]", handle, false);
+                    return;
+                }
             }
             throw new IllegalArgumentException("Cannot convert to " + argument + "from message\n" + body, e);
         }
