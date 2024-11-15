@@ -19,12 +19,23 @@ package com.agorapulse.worker.local
 
 import com.agorapulse.worker.tck.queue.AbstractQueuesSpec
 import io.micronaut.context.annotation.Property
+import io.micronaut.core.type.Argument
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
+import jakarta.inject.Inject
 
 @MicronautTest(environments = AbstractQueuesSpec.QUEUE_SPEC_ENV_NAME)
 @Property(name = 'worker.jobs.send-words-job-listen.enabled', value = 'true')
 @Property(name = 'worker.jobs.send-words-job-hello.enabled', value = 'true')
 class LocalQueuesSpec extends AbstractQueuesSpec {
+
+    @Inject LocalQueues queues
+
+    void 'can easily read messages from queue'() {
+        when:
+            queues.sendMessage('foo', 'bar')
+        then:
+            queues.getMessages('foo', Argument.STRING) == ['bar']
+    }
 
     @SuppressWarnings('GetterMethodCouldBeProperty')
     Class<?> getExpectedImplementation() { return LocalQueues }
