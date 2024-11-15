@@ -17,10 +17,10 @@
  */
 package com.agorapulse.worker.sqs.v1
 
-
 import com.agorapulse.worker.tck.queue.AbstractQueuesSpec
 import io.micronaut.context.annotation.Property
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
+
 /**
  * Tests for SQS queues.
  */
