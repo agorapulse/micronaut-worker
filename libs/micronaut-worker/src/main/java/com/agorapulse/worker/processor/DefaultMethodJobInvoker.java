@@ -113,8 +113,6 @@ public class DefaultMethodJobInvoker implements MethodJobInvoker {
     protected void handleResult(JobConfiguration configuration, JobRunContext callback, Publisher<Object> resultPublisher) {
         Object result = Flux.from(resultPublisher).blockFirst();
 
-        callback.result(result);
-
         if (result == null) {
             return;
         }
@@ -124,7 +122,8 @@ public class DefaultMethodJobInvoker implements MethodJobInvoker {
         JobQueues sender = queues(configuration.getProducer().getQueueType());
 
         if (result instanceof Publisher) {
-            sender.sendMessages(queueName, (Publisher<?>) result);
+            Flux<?> resultFLux = Flux.from((Publisher<?>) result).doOnNext(callback::result);
+            sender.sendMessages(queueName, resultFLux);
             return;
         }
 
@@ -133,6 +132,7 @@ public class DefaultMethodJobInvoker implements MethodJobInvoker {
 
         }
 
+        callback.result(result);
         sender.sendMessage(queueName, result);
     }
 
