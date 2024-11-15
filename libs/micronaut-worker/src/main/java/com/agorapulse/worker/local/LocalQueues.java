@@ -58,7 +58,7 @@ public class LocalQueues implements JobQueues {
     }
 
     @Override
-    public void sendMessage(String queueName, Object result) {
+    public void sendRawMessage(String queueName, Object result) {
         queues.computeIfAbsent(queueName, key -> new ConcurrentLinkedDeque<>()).addLast(result);
     }
 

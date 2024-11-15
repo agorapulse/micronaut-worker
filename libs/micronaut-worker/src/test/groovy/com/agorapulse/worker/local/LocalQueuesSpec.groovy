@@ -37,7 +37,12 @@ class LocalQueuesSpec extends AbstractQueuesSpec {
             queues.getMessages('foo', Argument.STRING) == ['bar']
     }
 
+    @Override
     @SuppressWarnings('GetterMethodCouldBeProperty')
     Class<?> getExpectedImplementation() { return LocalQueues }
+
+    @Override
+    @SuppressWarnings('GetterMethodCouldBeProperty')
+    String getName() { return 'local' }
 
 }

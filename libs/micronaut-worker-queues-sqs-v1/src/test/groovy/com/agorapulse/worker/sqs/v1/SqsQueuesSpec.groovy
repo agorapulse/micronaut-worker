@@ -33,4 +33,8 @@ class SqsQueuesSpec extends AbstractQueuesSpec {
     @SuppressWarnings('GetterMethodCouldBeProperty')
     Class<?> getExpectedImplementation() { return SqsQueues }
 
+    @Override
+    @SuppressWarnings('GetterMethodCouldBeProperty')
+    String getName() { return 'sqs' }
+
 }

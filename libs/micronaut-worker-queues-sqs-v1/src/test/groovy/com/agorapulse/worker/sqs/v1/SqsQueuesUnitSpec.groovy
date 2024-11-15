@@ -159,18 +159,15 @@ class SqsQueuesUnitSpec extends Specification {
     }
 
     void 'retry on concurrent exception'() {
-        given:
-            String json = mapper.writeValueAsString(one: '1')
-
         when:
             sqsQueues.sendMessage(QUEUE_NAME, [one: '1'])
 
         then:
-            1 * simpleQueueService.sendMessage(QUEUE_NAME, json) >> {
+            1 * simpleQueueService.sendMessage(QUEUE_NAME, _) >> {
                 throw new AmazonSQSException('Concurrent access: Queue already exists')
             }
 
-            1 * simpleQueueService.sendMessage(QUEUE_NAME, json)
+            1 * simpleQueueService.sendMessage(QUEUE_NAME, _)
     }
 
     void 'do not retry on another sqs exceptions'() {

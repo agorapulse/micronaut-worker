@@ -41,6 +41,10 @@ class RedisQueuesSpec extends AbstractQueuesSpec implements TestPropertyProvider
     Class<?> getExpectedImplementation() { return RedisQueues }
 
     @Override
+    @SuppressWarnings('GetterMethodCouldBeProperty')
+    String getName() { return 'redis' }
+
+    @Override
     Map<String, String> getProperties() {
         return [
             'redis.uri'                                : "redis://$redis.host:${redis.getMappedPort(6379)}",
