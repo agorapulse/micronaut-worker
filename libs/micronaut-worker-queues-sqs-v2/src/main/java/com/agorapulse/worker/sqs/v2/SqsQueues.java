@@ -86,6 +86,7 @@ public class SqsQueues implements JobQueues {
             if (tryReformat) {
                 if (String.class.isAssignableFrom(argument.getType())) {
                     action.accept(argument.getType().cast(body));
+                    simpleQueueService.deleteMessage(queueName, handle);
                     return;
                 }
                 if (Collection.class.isAssignableFrom(argument.getType())) {
