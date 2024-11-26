@@ -71,7 +71,7 @@ class MethodJob<B, R> extends AbstractJob {
     }
 
     @Override
-    @SuppressWarnings({"rawtypes", "unchecked"})
+    @SuppressWarnings({"unchecked"})
     protected void doRun(JobRunContext context) {
         io.micronaut.context.Qualifier<Object> qualifer = beanDefinition
                 .getAnnotationTypeByStereotype(Qualifier.class)
@@ -84,7 +84,7 @@ class MethodJob<B, R> extends AbstractJob {
             bean = (B) beanContext.getBean(beanType, qualifer);
 
             context
-                .onMessage((status, message) -> beanContext.getEventPublisher(JobExecutionStartedEvent.class).publishEvent(new JobExecutionStartedEvent(getName(), status.getId())))
+                .onMessage((status, message) -> beanContext.getEventPublisher(JobExecutionStartedEvent.class).publishEvent(new JobExecutionStartedEvent(getName(), status.getId(), message)))
                 .onFinished(status -> beanContext.getEventPublisher(JobExecutionFinishedEvent.class).publishEvent(new JobExecutionFinishedEvent(getName(), status)))
                 .onError((status, ex) -> beanContext.getEventPublisher(JobExecutionFinishedEvent.class).publishEvent(new JobExecutionFinishedEvent(getName(), status)))
                 .onResult((status, result) -> beanContext.getEventPublisher(JobExecutionResultEvent.class).publishEvent(new JobExecutionResultEvent(getName(), status.getId(), result)));

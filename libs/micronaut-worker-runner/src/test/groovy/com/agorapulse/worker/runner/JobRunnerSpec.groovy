@@ -1,5 +1,6 @@
 package com.agorapulse.worker.runner
 
+import com.agorapulse.worker.JobManager
 import io.micronaut.context.ApplicationContext
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import jakarta.inject.Inject
@@ -9,9 +10,9 @@ import spock.lang.Specification
 class JobRunnerSpec extends Specification {
 
     @Inject ApplicationContext context
-    @Inject TestJob job
     @Inject TestFunctionExitHandler exitHandler
     @Inject JobExecutionRecorder recorder
+    @Inject JobManager jobManager
 
     void 'single job is executed'() {
         when:
@@ -56,4 +57,33 @@ class JobRunnerSpec extends Specification {
             !exitHandler.success
             exitHandler.error instanceof IllegalStateException
     }
+
+    void 'consumer job is executed'() {
+        when:
+            JobRunner runner = new JobRunner(context)
+            jobManager.enqueue('test-job-five', 'foo')
+            runner.run('test-job-five')
+        then:
+            'test-job-five' in recorder.finishedEvents*.name
+
+            recorder.startedEvents.any { start -> start.name == 'test-job-five' && start.message.orElse(null) == 'foo' }
+
+            exitHandler.success
+    }
+
+    void 'pipe job waits until all messages are produced'() {
+        when:
+            JobRunner runner = new JobRunner(context)
+            jobManager.enqueue('test-job-six', 'Foo')
+            runner.run('test-job-six')
+        then:
+            'test-job-six' in recorder.finishedEvents*.name
+
+            recorder.startedEvents.any { start -> start.name == 'test-job-six' && start.message.orElse(null) == 'Foo' }
+            recorder.resultEvents.any { result -> result.name == 'test-job-six' && result.result == 'FOO' }
+            recorder.resultEvents.any { result -> result.name == 'test-job-six' && result.result == 'foo' }
+
+            exitHandler.success
+    }
+
 }

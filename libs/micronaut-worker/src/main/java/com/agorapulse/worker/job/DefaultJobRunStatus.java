@@ -82,4 +82,8 @@ public class DefaultJobRunStatus implements JobRunStatus {
         this.exception = exception;
     }
 
+    @Override
+    public String toString() {
+        return "DefaultJobRunStatus{id='%s', name='%s', started=%s, finished=%s, exception=%s}".formatted(id, name, started, finished, exception);
+    }
 }

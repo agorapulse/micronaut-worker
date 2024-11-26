@@ -6,6 +6,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
+import java.util.Locale;
 
 @Singleton
 public class TestJob {
@@ -28,6 +29,16 @@ public class TestJob {
     @Job("test-job-four")
     public Flux<String> recordingJobFour() {
         return Flux.error(new UnsupportedOperationException("This job is supposed to fail"));
+    }
+
+    @Job("test-job-five")
+    public void recordingJobFive(String ignored) {
+        // do nothing
+    }
+
+    @Job("test-job-six")
+    public Flux<String> recordingJobSix(String input) {
+        return Flux.just(input.toUpperCase(Locale.ROOT), input.toLowerCase(Locale.ROOT));
     }
 
 }
