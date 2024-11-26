@@ -11,6 +11,7 @@ import io.micronaut.function.executor.FunctionInitializer;
 import jakarta.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
@@ -66,6 +67,15 @@ public class JobRunner extends FunctionInitializer {
             return false;
         }
 
+        for (String jobName : jobManager.getJobNames()) {
+            if (!jobNames.contains(jobName)) {
+                jobManager.getJob(jobName).filter(job -> job.getConfiguration().isEnabled()).ifPresent(job -> {
+                    LOGGER.warn("Job '{}' is not in the list of jobs to run, but it is enabled. Disabling it.", jobName);
+                    jobManager.configure(jobName, c -> c.setEnabled(false));
+                });
+            }
+        }
+
         boolean result = true;
 
         for (String jobName : jobNames) {
@@ -80,8 +90,20 @@ public class JobRunner extends FunctionInitializer {
                 Job job = optionalJob.get();
 
                 job.forceRun();
+            } catch (Exception e) {
+                LOGGER.error("Error running job '{}'", jobName, e);
 
-                waitUntilFinished(job).block();
+                result = false;
+            }
+        }
+
+        waitUntilAllJobsAreFinished(jobNames);
+
+        for (String jobName : jobNames) {
+            Optional<Job> optionalJob = jobManager.getJob(jobName);
+
+            if (optionalJob.isPresent()) {
+                Job job = optionalJob.get();
 
                 if (LOGGER.isInfoEnabled()) {
                     LOGGER.info("Job '{}' executed in {}", jobName, JobReport.humanReadableFormat(job.getStatus().getLastDuration()));
@@ -91,14 +113,19 @@ public class JobRunner extends FunctionInitializer {
                     // the exception is already logged
                     result = false;
                 }
-            } catch (Exception e) {
-                LOGGER.error("Error running job '{}'", jobName, e);
-
-                result = false;
             }
         }
 
         return result;
+    }
+
+    private void waitUntilAllJobsAreFinished(List<String> jobNames) {
+        Flux.fromIterable(jobNames)
+            .map(jobManager::getJob)
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .flatMap(JobRunner::waitUntilFinished)
+            .blockLast();
     }
 
     private static Mono<Void> waitUntilFinished(Job job) {

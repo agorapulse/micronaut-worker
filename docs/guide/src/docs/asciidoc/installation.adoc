@@ -12,6 +12,8 @@ repositories {
 }
 
 dependencies {
+    // minimal dependency with local queue and executor
+    // select some of the following dependencies to enable more features
     implementation 'com.agorapulse:micronaut-worker:{project-version}'
 
     // to enable /jobs endpoint
@@ -28,6 +30,9 @@ dependencies {
 
     // to enable Redis queues integration
     implementation 'com.agorapulse:micronaut-worker-queues-redis:{project-version}'
+
+    // to enable running jobs as CLI apps
+    implementation 'com.agorapulse:micronaut-worker-runner:{project-version}'
 
     // you also need Redis configuration on the classpath depending on your Micronaut version
     // for Micronaut 1.x

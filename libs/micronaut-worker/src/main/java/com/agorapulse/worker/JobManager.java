@@ -17,6 +17,7 @@
  */
 package com.agorapulse.worker;
 
+import com.agorapulse.worker.configuration.MutableJobConfiguration;
 import io.micronaut.core.naming.NameUtils;
 
 import java.util.Optional;
@@ -95,5 +96,15 @@ public interface JobManager {
 
     default <T> void enqueue(Class<? extends Consumer<? extends T>> jobClass, T message) {
         enqueue(getDefaultJobName(jobClass), message);
+    }
+
+    /**
+     * Configures the job with the given name if possible.
+     *
+     * @param jobName the name of the job
+     * @param configuration the configuration to be applied
+     */
+    default void configure(String jobName, Consumer<MutableJobConfiguration> configuration) {
+        getJob(jobName).ifPresent(job -> job.configure(configuration));
     }
 }

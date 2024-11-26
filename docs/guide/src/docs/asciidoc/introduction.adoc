@@ -11,6 +11,7 @@ Micronaut Worker is a library for advanced scheduling and work distribution in M
  * Job execution events `JobExecutionStartedEvent`, `JobExecutionFinishedEvent` and `JobExecutionResultEvent`
  * Built in support for https://github.com/agorapulse/micronaut-snitch[Micronaut Snitch]
  * Built in support for https://agorapulse.github.io/micronaut-console[Micronaut Console]
+ * Ability to execute a single job from the CLI (for e.g. https://aws.amazon.com/batch/ or https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definitions.html)
 
 Unlike the `@Scheduled` annotation, Micronaut Worker annotations are not repeatable, but
 they can be combined in meaningful ways. For example, a method annotated with `@FixedRate('10m') @InitialDelay('1m')` executes every

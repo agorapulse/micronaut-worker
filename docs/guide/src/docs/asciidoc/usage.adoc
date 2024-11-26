@@ -256,6 +256,16 @@ include::{root-dir}/libs/micronaut-worker/src/main/java/com/agorapulse/worker/ev
 
 TIP: If https://github.com/agorapulse/micronaut-snitch[Micronaut Snitch] is present on the classpath and configured with the name of the job, the `snitch` method is called automatically after successful execution.
 
+== CLI Runner
+
+You can run a single job from the command line using the `com.agorapulse.worker.runner.JobRunner` class as the main class. The arguments are the names of the jobs to run. All other jobs are disabled, even when enabled in the configuration. The application will run until all jobs are finished.
+
+[source,shell]
+.Run Job from CLI
+----
+java -cp myapp-shadow.jar com.agorapulse.worker.runner.JobRunner sample-job other-job
+----
+
 == Management
 
 You can use `jobs` management endpoint, by default located at `/jobs`, to see the status of all the jobs in the application.

@@ -20,6 +20,9 @@ package com.agorapulse.worker.job;
 import com.agorapulse.worker.Job;
 import com.agorapulse.worker.JobConfiguration;
 import com.agorapulse.worker.JobStatus;
+import com.agorapulse.worker.configuration.MutableJobConfiguration;
+
+import java.util.function.Consumer;
 
 public abstract class AbstractJob implements Job {
 
@@ -51,6 +54,20 @@ public abstract class AbstractJob implements Job {
     @Override
     public final void forceRun() {
         status.run(this::doRun);
+    }
+
+    @Override
+    public void configure(Consumer<MutableJobConfiguration> change) {
+        if (configuration instanceof MutableJobConfiguration c) {
+            change.accept(c);
+        } else {
+            throw new IllegalStateException("The configuration of the job is not mutable!");
+        }
+    }
+
+    @Override
+    public String getSource() {
+        return "";
     }
 
     protected abstract void doRun(JobRunContext context);

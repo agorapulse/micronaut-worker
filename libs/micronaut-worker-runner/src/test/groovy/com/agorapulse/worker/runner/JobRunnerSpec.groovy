@@ -2,6 +2,7 @@ package com.agorapulse.worker.runner
 
 import com.agorapulse.worker.JobManager
 import io.micronaut.context.ApplicationContext
+import io.micronaut.context.annotation.Property
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import jakarta.inject.Inject
 import spock.lang.Specification
@@ -82,6 +83,20 @@ class JobRunnerSpec extends Specification {
             recorder.startedEvents.any { start -> start.name == 'test-job-six' && start.message.orElse(null) == 'Foo' }
             recorder.resultEvents.any { result -> result.name == 'test-job-six' && result.result == 'FOO' }
             recorder.resultEvents.any { result -> result.name == 'test-job-six' && result.result == 'foo' }
+
+            exitHandler.success
+    }
+
+    @Property(name = 'worker.jobs.test-job-three.enabled', value = 'true')
+    @Property(name = 'worker.jobs.test-job-three.initial-delay', value = '1ms')
+    void 'only selected jobs are executed ignoring the enabled setting'() {
+        when:
+            JobRunner runner = new JobRunner(context)
+            runner.run('test-job-one', 'test-job-two')
+        then:
+            'test-job-one' in recorder.finishedEvents*.name
+            'test-job-two' in recorder.finishedEvents*.name
+            'test-job-three' !in recorder.finishedEvents*.name
 
             exitHandler.success
     }
