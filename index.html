@@ -92,7 +92,7 @@ $(addBlockSwitches);
 <h1>Micronaut Worker</h1>
 <div class="details">
 <span id="author" class="author">Vladimir Orany</span><br>
-<span id="revnumber">version 2.2.5</span>
+<span id="revnumber">version 2.3.0</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -130,8 +130,9 @@ $(addBlockSwitches);
 </ul>
 </li>
 <li><a href="#_events">3.6. Events</a></li>
-<li><a href="#_management">3.7. Management</a></li>
-<li><a href="#_console_integration">3.8. Console Integration</a></li>
+<li><a href="#_cli_runner">3.7. CLI Runner</a></li>
+<li><a href="#_management">3.8. Management</a></li>
+<li><a href="#_console_integration">3.9. Console Integration</a></li>
 </ul>
 </li>
 <li><a href="#_links">4. Links</a></li>
@@ -165,6 +166,9 @@ $(addBlockSwitches);
 </li>
 <li>
 <p>Built in support for <a href="https://agorapulse.github.io/micronaut-console">Micronaut Console</a></p>
+</li>
+<li>
+<p>Ability to execute a single job from the CLI (for e.g. <a href="https://aws.amazon.com/batch/" class="bare">https://aws.amazon.com/batch/</a> or <a href="https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definitions.html" class="bare">https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definitions.html</a>)</p>
 </li>
 </ul>
 </div>
@@ -201,22 +205,27 @@ All jobs are disabled by default in the <code>function</code> and <code>cli</cod
 }
 
 dependencies {
-    implementation 'com.agorapulse:micronaut-worker:2.2.5'
+    // minimal dependency with local queue and executor
+    // select some of the following dependencies to enable more features
+    implementation 'com.agorapulse:micronaut-worker:2.3.0'
 
     // to enable /jobs endpoint
-    implementation 'com.agorapulse:micronaut-worker-management:2.2.5'
+    implementation 'com.agorapulse:micronaut-worker-management:2.3.0'
 
     // to enable AWS SDK v1 SQS queues integration
-    implementation 'com.agorapulse:micronaut-worker-queues-sqs-v1:2.2.5'
+    implementation 'com.agorapulse:micronaut-worker-queues-sqs-v1:2.3.0'
 
     // to enable AWS SDK v2 SQS queues integration
-    implementation 'com.agorapulse:micronaut-worker-queues-sqs-v2:2.2.5'
+    implementation 'com.agorapulse:micronaut-worker-queues-sqs-v2:2.3.0'
 
     // to enable Redis leader/follower capabilities
-    implementation 'com.agorapulse:micronaut-worker-executor-redis:2.2.5'
+    implementation 'com.agorapulse:micronaut-worker-executor-redis:2.3.0'
 
     // to enable Redis queues integration
-    implementation 'com.agorapulse:micronaut-worker-queues-redis:2.2.5'
+    implementation 'com.agorapulse:micronaut-worker-queues-redis:2.3.0'
+
+    // to enable running jobs as CLI apps
+    implementation 'com.agorapulse:micronaut-worker-runner:2.3.0'
 
     // you also need Redis configuration on the classpath depending on your Micronaut version
     // for Micronaut 1.x
@@ -677,6 +686,8 @@ import org.slf4j.LoggerFactory;
 
 import jakarta.inject.Singleton;
 
+import java.util.Optional;
+
 @Singleton
 public class JobEventsLogger {
 
@@ -685,8 +696,9 @@ public class JobEventsLogger {
     @EventListener
     void onJobExecutionStarted(JobExecutionStartedEvent event) {
         if (LOGGER.isDebugEnabled()) {
-            if (event.getMessage().isPresent()) {
-                LOGGER.debug("Starting job {}#{} with message {}", event.getName(), event.getId(), event.getMessage().get());
+            Optional&lt;Object&gt; message = event.getMessage();
+            if (message.isPresent()) {
+                LOGGER.debug("Starting job {}#{} with message {}", event.getName(), event.getId(), message.get());
             } else {
                 LOGGER.debug("Starting job {}#{}", event.getName(), event.getId());
             }
@@ -708,7 +720,7 @@ public class JobEventsLogger {
     @EventListener
     void onJobExecutionFinished(JobExecutionFinishedEvent event) {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Finished executing job {}#{} in {} (some results can still be generated asynchronously later)", event.getName(), event.getStatus().getId(), event.getStatus().getDuration());
+            LOGGER.debug("Finished executing job {}#{} in {}", event.getName(), event.getStatus().getId(), event.getStatus().getHumanReadableDuration());
         }
     }
 
@@ -729,7 +741,31 @@ If <a href="https://github.com/agorapulse/micronaut-snitch">Micronaut Snitch</a>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_management"><a class="anchor" href="#_management"></a>3.7. Management</h3>
+<h3 id="_cli_runner"><a class="anchor" href="#_cli_runner"></a>3.7. CLI Runner</h3>
+<div class="paragraph">
+<p>You can run a single job from the command line using the <code>com.agorapulse.worker.runner.JobRunner</code> class as the main class. The arguments are the names of the jobs to run. All other jobs are disabled, even when enabled in the configuration (see corner cases below). The application will run until all jobs are finished.</p>
+</div>
+<div class="listingblock">
+<div class="title">Run Job from CLI</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="shell">java -cp myapp-shadow.jar com.agorapulse.worker.runner.JobRunner sample-job other-job</code></pre>
+</div>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+In some corner cases, some unrelated jobs can still be executed if they have a very short delay or frequency if they are manually enabled in the configuration. Please, prefer annotation driven jobs over configuring them manually in the configuration to avoid this issue.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_management"><a class="anchor" href="#_management"></a>3.8. Management</h3>
 <div class="paragraph">
 <p>You can use <code>jobs</code> management endpoint, by default located at <code>/jobs</code>, to see the status of all the jobs in the application.</p>
 </div>
@@ -775,7 +811,7 @@ If <a href="https://github.com/agorapulse/micronaut-snitch">Micronaut Snitch</a>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_console_integration"><a class="anchor" href="#_console_integration"></a>3.8. Console Integration</h3>
+<h3 id="_console_integration"><a class="anchor" href="#_console_integration"></a>3.9. Console Integration</h3>
 <div class="paragraph">
 <p>For security reasons, Micronaut Worker does not provide any management endpoint, but it integrates with
 <a href="https://agorapulse.github.io/micronaut-console">Micronaut Console</a> to monitor the jobs and event to trigger them manually.</p>
@@ -803,7 +839,7 @@ each job. The name is the lower-camel-case version of the job name, e.g., <code>
 <i class="fa icon-tip" title="Tip"></i>
 </td>
 <td class="content">
-The job variables are instances of <code>JobAccessor</code>, which also provides methods <code>run()</code> and <code>enqueue(message)</code> to let you easily trigger jobs from the console.
+The job variables are instances of <code>JobAccessor</code>, which also provides methods <code>run()</code> and <code>enqueue(message)</code> to let you easily trigger jobs from the console. You can also use method <code>reconfigure(consumer)</code> that changes the in-memory configuration of the job and reschedules it.
 </td>
 </tr>
 </table>
@@ -867,6 +903,20 @@ on which console endpoint you choose, you get either a text or JSON summary.</p>
             "name": "sample-job"
         }
     ]
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Reconfiguring the job will try to change the configuration of the job and reschedule it if it&#8217;s still enabled.</p>
+</div>
+<div class="listingblock">
+<div class="title">Job Manager Script - Reconfigure</div>
+<div class="content">
+<pre class="prettyprint highlight nowrap"><code>import java.time.Duration
+
+sampleJob.reconfigure {
+    enabled true
+    initialDelay Duration.ofMillis(1)
 }</code></pre>
 </div>
 </div>
@@ -943,8 +993,8 @@ on which console endpoint you choose, you get either a text or JSON summary.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 2.2.5<br>
-Last updated 2024-11-21 14:05:31 UTC
+Version 2.3.0<br>
+Last updated 2024-11-26 19:35:25 UTC
 </div>
 </div>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.css">
