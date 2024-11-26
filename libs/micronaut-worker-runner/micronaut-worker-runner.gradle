@@ -19,7 +19,8 @@ dependencies {
     api project(':micronaut-worker')
     api 'io.micronaut:micronaut-function'
 
-    testImplementation 'io.micronaut.reactor:micronaut-reactor'
+    implementation 'io.micronaut.reactor:micronaut-reactor'
+
     // verify everything works as expected even with server environment present
     testImplementation 'io.micronaut:micronaut-http-server-netty'
 }

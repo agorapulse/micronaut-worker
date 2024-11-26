@@ -86,6 +86,7 @@ class MethodJob<B, R> extends AbstractJob {
             context
                 .onMessage((status, message) -> beanContext.getEventPublisher(JobExecutionStartedEvent.class).publishEvent(new JobExecutionStartedEvent(getName(), status.getId())))
                 .onFinished(status -> beanContext.getEventPublisher(JobExecutionFinishedEvent.class).publishEvent(new JobExecutionFinishedEvent(getName(), status)))
+                .onError((status, ex) -> beanContext.getEventPublisher(JobExecutionFinishedEvent.class).publishEvent(new JobExecutionFinishedEvent(getName(), status)))
                 .onResult((status, result) -> beanContext.getEventPublisher(JobExecutionResultEvent.class).publishEvent(new JobExecutionResultEvent(getName(), status.getId(), result)));
 
             jobMethodInvoker.invoke(this, bean, context);
@@ -93,19 +94,24 @@ class MethodJob<B, R> extends AbstractJob {
 
         } catch (Throwable e) {
             context.error(e);
-            io.micronaut.context.Qualifier<TaskExceptionHandler> qualifier = Qualifiers.byTypeArguments(beanType, e.getClass());
-            Collection<BeanDefinition<TaskExceptionHandler>> definitions = beanContext.getBeanDefinitions(TaskExceptionHandler.class, qualifier);
-            Optional<BeanDefinition<TaskExceptionHandler>> mostSpecific = definitions.stream().filter(def -> {
-                List<Argument<?>> typeArguments = def.getTypeArguments(TaskExceptionHandler.class);
-                if (typeArguments.size() == 2) {
-                    return typeArguments.get(0).getType() == beanType && typeArguments.get(1).getType() == e.getClass();
-                }
-                return false;
-            }).findFirst();
-
-            TaskExceptionHandler finalHandler = mostSpecific.map(bd -> beanContext.getBean(bd.getBeanType(), qualifier)).orElse(taskExceptionHandler);
-            finalHandler.handle(bean, e);
+            handleException(e, beanType, bean);
         }
 
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private void handleException(Throwable e, Class<Object> beanType, B bean) {
+        io.micronaut.context.Qualifier<TaskExceptionHandler> qualifier = Qualifiers.byTypeArguments(beanType, e.getClass());
+        Collection<BeanDefinition<TaskExceptionHandler>> definitions = beanContext.getBeanDefinitions(TaskExceptionHandler.class, qualifier);
+        Optional<BeanDefinition<TaskExceptionHandler>> mostSpecific = definitions.stream().filter(def -> {
+            List<Argument<?>> typeArguments = def.getTypeArguments(TaskExceptionHandler.class);
+            if (typeArguments.size() == 2) {
+                return typeArguments.get(0).getType() == beanType && typeArguments.get(1).getType() == e.getClass();
+            }
+            return false;
+        }).findFirst();
+
+        TaskExceptionHandler finalHandler = mostSpecific.map(bd -> beanContext.getBean(bd.getBeanType(), qualifier)).orElse(taskExceptionHandler);
+        finalHandler.handle(bean, e);
     }
 }

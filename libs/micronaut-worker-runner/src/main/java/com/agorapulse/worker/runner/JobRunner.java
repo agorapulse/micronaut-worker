@@ -11,13 +11,12 @@ import io.micronaut.function.executor.FunctionInitializer;
 import jakarta.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Mono;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 @SuppressWarnings("java:S6813")
 public class JobRunner extends FunctionInitializer {
@@ -82,7 +81,7 @@ public class JobRunner extends FunctionInitializer {
 
                 job.forceRun();
 
-                waitUntilFinished(job);
+                waitUntilFinished(job).block();
 
                 if (LOGGER.isInfoEnabled()) {
                     LOGGER.info("Job '{}' executed in {}", jobName, JobReport.humanReadableFormat(job.getStatus().getLastDuration()));
@@ -102,13 +101,13 @@ public class JobRunner extends FunctionInitializer {
         return result;
     }
 
-    private static void waitUntilFinished(Job job) {
-        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-        scheduler.scheduleAtFixedRate(() -> {
+    private static Mono<Void> waitUntilFinished(Job job) {
+        return Mono.defer(() -> {
             if (job.getStatus().getLastDuration() != null) {
-                scheduler.shutdown();
+                return Mono.empty();
             }
-        }, 0, 100, TimeUnit.MILLISECONDS);
+            return Mono.delay(Duration.ofMillis(100)).then(waitUntilFinished(job));
+        });
     }
 
 }

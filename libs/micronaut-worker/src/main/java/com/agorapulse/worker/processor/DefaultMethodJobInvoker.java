@@ -78,8 +78,8 @@ public class DefaultMethodJobInvoker implements MethodJobInvoker {
         Function<Callable<Object>, Publisher<Object>> executor = executor(configuration.getName(), leaderOnly, followerOnly, concurrency);
 
         if (method.getArguments().length == 0) {
-            handleResult(configuration, callback, executor.apply(() -> method.invoke(bean)));
             callback.message(null);
+            handleResult(configuration, callback, executor.apply(() -> method.invoke(bean)));
         } else if (method.getArguments().length == 1) {
             JobConfiguration.ConsumerQueueConfiguration queueConfiguration = configuration.getConsumer();
             queues(queueConfiguration.getQueueType()).readMessages(
@@ -114,6 +114,7 @@ public class DefaultMethodJobInvoker implements MethodJobInvoker {
         Object result = Flux.from(resultPublisher).blockFirst();
 
         if (result == null) {
+            callback.finished();
             return;
         }
 
@@ -122,7 +123,10 @@ public class DefaultMethodJobInvoker implements MethodJobInvoker {
         JobQueues sender = queues(configuration.getProducer().getQueueType());
 
         if (result instanceof Publisher) {
-            Flux<?> resultFLux = Flux.from((Publisher<?>) result).doOnNext(callback::result);
+            Flux<?> resultFLux = Flux.from((Publisher<?>) result)
+                .doOnNext(callback::result)
+                .doOnError(callback::error)
+                .doFinally(signalType -> callback.finished());
             sender.sendMessages(queueName, resultFLux);
             return;
         }
@@ -134,6 +138,7 @@ public class DefaultMethodJobInvoker implements MethodJobInvoker {
 
         callback.result(result);
         sender.sendMessage(queueName, result);
+        callback.finished();
     }
 
     private JobQueues queues(String qualifier) {

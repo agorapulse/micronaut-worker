@@ -58,7 +58,7 @@ public class JobEventsLogger {
     @EventListener
     void onJobExecutionFinished(JobExecutionFinishedEvent event) {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Finished executing job {}#{} in {} (some results can still be generated asynchronously later)", event.getName(), event.getStatus().getId(), event.getStatus().getHumanReadableDuration());
+            LOGGER.debug("Finished executing job {}#{} in {}", event.getName(), event.getStatus().getId(), event.getStatus().getHumanReadableDuration());
         }
     }
 

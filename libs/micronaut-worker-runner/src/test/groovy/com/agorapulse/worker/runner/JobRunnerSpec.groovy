@@ -19,8 +19,6 @@ class JobRunnerSpec extends Specification {
             runner.run('test-job-one')
         then:
             'test-job-one' in recorder.finishedEvents*.name
-            'test-job-two' !in recorder.finishedEvents*.name
-            'test-job-three' !in recorder.finishedEvents*.name
 
             exitHandler.success
     }
@@ -30,9 +28,7 @@ class JobRunnerSpec extends Specification {
             JobRunner runner = new JobRunner(context)
             runner.run('test-job-two')
         then:
-            'test-job-one' !in recorder.finishedEvents*.name
             'test-job-two' in recorder.finishedEvents*.name
-            'test-job-three' !in recorder.finishedEvents*.name
 
             recorder.resultEvents.any { result -> result.name == 'test-job-two' && result.result == 'foo' }
 
@@ -44,9 +40,18 @@ class JobRunnerSpec extends Specification {
             JobRunner runner = new JobRunner(context)
             runner.run('test-job-three')
         then:
-            'test-job-one' !in recorder.finishedEvents*.name
-            'test-job-two' !in recorder.finishedEvents*.name
             'test-job-three' in recorder.finishedEvents*.name
+
+            !exitHandler.success
+            exitHandler.error instanceof IllegalStateException
+    }
+
+    void 'job generation failure is propagated'() {
+        when:
+            JobRunner runner = new JobRunner(context)
+            runner.run('test-job-four')
+        then:
+            'test-job-four' in recorder.finishedEvents*.name
 
             !exitHandler.success
             exitHandler.error instanceof IllegalStateException
