@@ -22,6 +22,7 @@ import io.micronaut.context.ApplicationContext
 import io.micronaut.core.async.publisher.Publishers
 import io.micronaut.core.type.Argument
 import io.micronaut.inject.qualifiers.Qualifiers
+import reactor.core.publisher.Flux
 import spock.lang.Specification
 
 import jakarta.inject.Inject
@@ -55,14 +56,11 @@ abstract class AbstractQueuesSpec extends Specification {
     void 'can send raw messages to queue'() {
         given:
             JobQueues queues = context.getBean(JobQueues, Qualifiers.byName(name))
-            List<String> messages = []
         when:
             queues.sendRawMessage('foo', 'one')
             queues.sendRawMessages('foo', Publishers.just('two'))
         and:
-            queues.readMessages('foo', 2, Duration.ofSeconds(1), Argument.STRING) { message ->
-                messages << message
-            }
+            List<String> messages = Flux.from(queues.readMessages('foo', 2, Duration.ofSeconds(1), Argument.STRING)).collectList().block()
         then:
             messages == ['one', 'two']
     }

@@ -22,15 +22,17 @@ import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Secondary;
 import io.micronaut.context.env.Environment;
 import io.micronaut.core.type.Argument;
-
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
+import org.reactivestreams.Publisher;
+import reactor.core.publisher.Flux;
+
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentMap;
-import java.util.function.Consumer;
 
 @Secondary
 @Singleton
@@ -46,15 +48,19 @@ public class LocalQueues implements JobQueues {
     }
 
     @Override
-    public <T> void readMessages(String queueName, int maxNumberOfMessages, Duration waitTime, Argument<T> argument, Consumer<T> action) {
+    public <T> Publisher<T> readMessages(String queueName, int maxNumberOfMessages, Duration waitTime, Argument<T> argument) {
         ConcurrentLinkedDeque<Object> objects = queues.get(queueName);
         if (objects == null) {
-            return;
+            return Flux.empty();
         }
 
+        List<T> results = new ArrayList<>();
+
         for (int i = 0; i < maxNumberOfMessages && !objects.isEmpty(); i++) {
-            action.accept(environment.convertRequired(objects.removeFirst(), argument));
+            results.add(environment.convertRequired(objects.removeFirst(), argument));
         }
+
+        return Flux.fromIterable(results);
     }
 
     @Override

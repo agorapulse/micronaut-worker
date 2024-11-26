@@ -26,11 +26,10 @@ import com.agorapulse.worker.queue.JobQueues;
 import io.micronaut.context.BeanContext;
 import io.micronaut.inject.ExecutableMethod;
 import io.micronaut.inject.qualifiers.Qualifiers;
+import jakarta.inject.Singleton;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import jakarta.inject.Singleton;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -55,7 +54,6 @@ public class DefaultMethodJobInvoker implements MethodJobInvoker {
         this.distributedJobExecutor = distributedJobExecutor;
     }
 
-    @SuppressWarnings("unchecked")
     public <B> void invoke(MethodJob<B, ?> job, B bean, JobRunContext callback) {
         ExecutableMethod<B, ?> method = job.getMethod();
         JobConfiguration configuration = job.getConfiguration();
@@ -82,16 +80,18 @@ public class DefaultMethodJobInvoker implements MethodJobInvoker {
             handleResult(configuration, callback, executor.apply(() -> method.invoke(bean)));
         } else if (method.getArguments().length == 1) {
             JobConfiguration.ConsumerQueueConfiguration queueConfiguration = configuration.getConsumer();
-            queues(queueConfiguration.getQueueType()).readMessages(
-                queueConfiguration.getQueueName(),
-                queueConfiguration.getMaxMessages() < 1 ? 1 : queueConfiguration.getMaxMessages(),
-                Optional.ofNullable(queueConfiguration.getWaitingTime()).orElse(Duration.ZERO),
-                method.getArguments()[0],
-                message -> {
-                    callback.message(message);
-                    handleResult(configuration, callback, executor.apply(() -> method.invoke(bean, message)));
-                }
-            );
+            Publisher<Object> results = Flux.from(
+                    queues(queueConfiguration.getQueueType()).readMessages(
+                        queueConfiguration.getQueueName(),
+                        queueConfiguration.getMaxMessages() < 1 ? 1 : queueConfiguration.getMaxMessages(),
+                        Optional.ofNullable(queueConfiguration.getWaitingTime()).orElse(Duration.ZERO),
+                        method.getArguments()[0]
+                    )
+                )
+                .doOnNext(callback::message)
+                .flatMap(message -> executor.apply(() -> method.invoke(bean, message)));
+
+            handleResult(configuration, callback, results);
         } else {
             LOGGER.error("Too many arguments for " + method + "! The job method wasn't executed!");
         }
@@ -143,9 +143,9 @@ public class DefaultMethodJobInvoker implements MethodJobInvoker {
 
     private JobQueues queues(String qualifier) {
         return context.findBean(
-            JobQueues.class,
-            qualifier == null ? null : Qualifiers.byName(qualifier)
-        )
+                JobQueues.class,
+                qualifier == null ? null : Qualifiers.byName(qualifier)
+            )
             .orElseGet(() -> context.getBean(JobQueues.class));
     }
 
