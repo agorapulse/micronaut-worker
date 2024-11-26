@@ -21,6 +21,7 @@ import com.agorapulse.micronaut.amazon.awssdk.sqs.SimpleQueueService
 import com.agorapulse.worker.queue.JobQueues
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.micronaut.core.type.Argument
+import reactor.core.publisher.Flux
 import software.amazon.awssdk.services.sqs.model.Message
 import software.amazon.awssdk.services.sqs.model.SqsException
 import spock.lang.Shared
@@ -42,10 +43,9 @@ class SqsQueuesUnitSpec extends Specification {
 
     void 'message is deleted once read'() {
         when:
-            List<Map<String, String>> values = []
-            sqsQueues.readMessages(QUEUE_NAME, MAX_MESSAGES, WAIT_TIME, Argument.mapOf(String, String)) {
-                values << it
-            }
+            List<Map<String, String>> values = Flux.from(
+                sqsQueues.readMessages(QUEUE_NAME, MAX_MESSAGES, WAIT_TIME, Argument.mapOf(String, String))
+            ).collectList().block()
         then:
             values
             values.size() == 2
@@ -71,10 +71,9 @@ class SqsQueuesUnitSpec extends Specification {
 
     void 'can read legacy messages'() {
         when:
-            List<List<Long>> values = []
-            sqsQueues.readMessages(QUEUE_NAME, MAX_MESSAGES, WAIT_TIME, Argument.listOf(Long)) {
-                values << it
-            }
+            List<List<Long>> values = Flux.from(
+                sqsQueues.readMessages(QUEUE_NAME, MAX_MESSAGES, WAIT_TIME, Argument.listOf(Long))
+            ).collectList().block()
         then:
             values
             values.size() == 2
@@ -101,10 +100,9 @@ class SqsQueuesUnitSpec extends Specification {
 
     void 'can read legacy string messages'() {
         when:
-            List<List<String>> values = []
-            sqsQueues.readMessages(QUEUE_NAME, MAX_MESSAGES, WAIT_TIME, Argument.listOf(String)) {
-                values << it
-            }
+            List<List<String>> values = Flux.from(
+                sqsQueues.readMessages(QUEUE_NAME, MAX_MESSAGES, WAIT_TIME, Argument.listOf(String))
+            ).collectList().block()
         then:
             values
             values.size() == 2
@@ -131,10 +129,9 @@ class SqsQueuesUnitSpec extends Specification {
 
     void 'message not deleted on error'() {
         when:
-            List<Map<String, String>> values = []
-            sqsQueues.readMessages(QUEUE_NAME, MAX_MESSAGES, WAIT_TIME, Argument.mapOf(String, String)) {
-                values << it
-            }
+            Flux.from(
+                sqsQueues.readMessages(QUEUE_NAME, MAX_MESSAGES, WAIT_TIME, Argument.mapOf(String, String))
+            ).collectList().block()
         then:
             thrown IllegalArgumentException
 

@@ -20,6 +20,9 @@ package com.agorapulse.worker.manager;
 import com.agorapulse.worker.Job;
 import com.agorapulse.worker.JobConfiguration;
 import com.agorapulse.worker.JobManager;
+import com.agorapulse.worker.JobScheduler;
+import com.agorapulse.worker.configuration.MutableJobConfiguration;
+import com.agorapulse.worker.job.CancelableJob;
 import com.agorapulse.worker.queue.JobQueues;
 import com.agorapulse.worker.report.JobReport;
 import io.micronaut.context.BeanContext;
@@ -32,6 +35,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Consumer;
 
 @Singleton
 public class DefaultJobManager implements JobManager {
@@ -39,9 +43,11 @@ public class DefaultJobManager implements JobManager {
     private final ConcurrentMap<String, Job> tasks = new ConcurrentHashMap<>();
 
     private final BeanContext beanContext;
+    private final JobScheduler jobScheduler;
 
-    public DefaultJobManager(List<Job> tasksFromContext, BeanContext beanContext) {
+    public DefaultJobManager(List<Job> tasksFromContext, BeanContext beanContext, JobScheduler jobScheduler) {
         this.beanContext = beanContext;
+        this.jobScheduler = jobScheduler;
         tasksFromContext.forEach(this::registerInternal);
     }
 
@@ -84,4 +90,18 @@ public class DefaultJobManager implements JobManager {
             }
         );
     }
+
+    @Override
+    public void reconfigure(String jobName, Consumer<MutableJobConfiguration> configuration) {
+        getJob(jobName).ifPresent(job -> {
+            job.configure(configuration);
+            if (job instanceof CancelableJob cj) {
+                cj.cancel();
+                if (job.getConfiguration().isEnabled()) {
+                    jobScheduler.schedule(cj);
+                }
+            }
+        });
+    }
+
 }

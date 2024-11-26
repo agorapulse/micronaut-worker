@@ -18,6 +18,7 @@
 package com.agorapulse.worker
 
 import com.agorapulse.worker.annotation.FixedRate
+import com.agorapulse.worker.annotation.InitialDelay
 import io.micronaut.context.annotation.Property
 import io.micronaut.context.annotation.Requires
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
@@ -38,6 +39,7 @@ class JobManagerSpec extends Specification {
 
     @Inject JobManager manager
     @Inject ConsumerJob consumerJob
+    @Inject InLongFutureJob inLongFutureJob
 
     void 'can register new jobs'() {
         given:
@@ -129,6 +131,22 @@ class JobManagerSpec extends Specification {
             executed.get()
     }
 
+    void 'can reconfigure'() {
+        expect:
+            'in-long-future-job' in manager.jobNames
+        when:
+            manager.enqueue(InLongFutureJob, 'Hello')
+
+            manager.reconfigure('in-long-future-job') {
+                enabled true
+                initialDelay Duration.ofMillis(1)
+            }
+
+            Thread.sleep(100)
+        then:
+            inLongFutureJob.messages.contains('Hello')
+    }
+
 }
 
 @Singleton
@@ -139,6 +157,20 @@ class ConsumerJob implements Consumer<String> {
 
     @Override
     @FixedRate('10ms')
+    void accept(String message) {
+        messages << message
+    }
+
+}
+
+@Singleton
+@Requires(env = JobManagerSpec.MANAGER_SPEC_ENVIRONMENT)
+class InLongFutureJob implements Consumer<String> {
+
+    List<String> messages = []
+
+    @Override
+    @InitialDelay('24h')
     void accept(String message) {
         messages << message
     }

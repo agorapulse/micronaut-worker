@@ -67,7 +67,7 @@ public class JobRunContext {
         onError.accept(status, error);
     }
 
-    public void finished(JobRunStatus status) {
+    public void finished() {
         onFinished.accept(status);
     }
 

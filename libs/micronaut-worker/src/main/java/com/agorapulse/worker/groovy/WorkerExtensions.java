@@ -127,4 +127,23 @@ public class WorkerExtensions {
         return job;
     }
 
+    public static void reconfigure(
+        JobManager self,
+        String name,
+        @DelegatesTo(value = MutableJobConfiguration.class, strategy = Closure.DELEGATE_FIRST)
+        @ClosureParams(value = SimpleType.class, options = "com.agorapulse.worker.configuration.MutableJobConfiguration")
+            Closure<?> configurator
+    ) {
+        self.reconfigure(name, ConsumerWithDelegate.create(configurator));
+    }
+
+    public static void reconfigure(
+        JobAccessor self,
+        @DelegatesTo(value = MutableJobConfiguration.class, strategy = Closure.DELEGATE_FIRST)
+        @ClosureParams(value = SimpleType.class, options = "com.agorapulse.worker.configuration.MutableJobConfiguration")
+        Closure<?> configurator
+    ) {
+        self.reconfigure(ConsumerWithDelegate.create(configurator));
+    }
+
 }

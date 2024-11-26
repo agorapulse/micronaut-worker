@@ -17,7 +17,10 @@
  */
 package com.agorapulse.worker;
 
+import com.agorapulse.worker.configuration.MutableJobConfiguration;
 import com.agorapulse.worker.job.SimpleJob;
+
+import java.util.function.Consumer;
 
 /**
  * Job is a {@link Runnable} with a name.
@@ -29,5 +32,11 @@ public interface Job extends Runnable, JobInfo {
     }
 
     void forceRun();
+
+    /**
+     * Allows changing the configuration of the job if possible only for the lifetime of the application.
+     * @param configuration the configuration to be changed
+     */
+    void configure(Consumer<MutableJobConfiguration> configuration);
 
 }

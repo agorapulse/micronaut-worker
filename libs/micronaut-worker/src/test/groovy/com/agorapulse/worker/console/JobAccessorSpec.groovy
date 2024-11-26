@@ -39,4 +39,11 @@ class JobAccessorSpec extends Specification {
             1 * jobManager.enqueue('test-job', 'foo')
     }
 
+    void 'reconfigure'() {
+        when:
+            accessor.reconfigure { }
+        then:
+            1 * jobManager.reconfigure('test-job', _)
+    }
+
 }

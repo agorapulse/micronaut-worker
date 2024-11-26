@@ -20,6 +20,7 @@ dependencies {
     api "com.agorapulse:micronaut-aws-sdk-sqs:$micronautAwsSdkVersion"
 
     implementation 'io.micronaut:micronaut-jackson-databind'
+    implementation 'io.micronaut.reactor:micronaut-reactor'
 
     testImplementation project(':micronaut-worker-tck')
 

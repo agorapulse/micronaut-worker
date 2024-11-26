@@ -42,4 +42,8 @@ public class JobExecutionFinishedEvent {
         return status;
     }
 
+    @Override
+    public String toString() {
+        return "JobExecutionFinishedEvent{name='%s', status=%s}".formatted(name, status);
+    }
 }

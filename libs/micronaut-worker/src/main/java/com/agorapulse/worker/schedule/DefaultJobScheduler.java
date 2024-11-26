@@ -17,21 +17,25 @@
  */
 package com.agorapulse.worker.schedule;
 
+import com.agorapulse.worker.Job;
 import com.agorapulse.worker.JobConfiguration;
 import com.agorapulse.worker.JobConfigurationException;
 import com.agorapulse.worker.JobScheduler;
+import com.agorapulse.worker.job.MutableCancelableJob;
 import io.micronaut.context.BeanContext;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.core.util.StringUtils;
 import io.micronaut.inject.qualifiers.Qualifiers;
 import io.micronaut.scheduling.ScheduledExecutorTaskScheduler;
 import io.micronaut.scheduling.TaskScheduler;
+import jakarta.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jakarta.inject.Singleton;
 import java.io.Closeable;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -49,10 +53,10 @@ public class DefaultJobScheduler implements JobScheduler, Closeable {
     private final Queue<ScheduledFuture<?>> scheduledTasks = new ConcurrentLinkedDeque<>();
 
     /**
-     * @param beanContext               The bean context for DI of beans annotated with {@link jakarta.inject.Inject}
+     * @param beanContext The bean context for DI of beans annotated with {@link jakarta.inject.Inject}
      */
     public DefaultJobScheduler(
-            BeanContext beanContext
+        BeanContext beanContext
     ) {
         this.beanContext = beanContext;
     }
@@ -71,6 +75,27 @@ public class DefaultJobScheduler implements JobScheduler, Closeable {
         JobConfiguration configuration = job.getConfiguration();
         TaskScheduler taskScheduler = getTaskScheduler(job);
 
+        List<ScheduledFuture<?>> scheduled = new ArrayList<>();
+
+        for (int i = 0; i < configuration.getFork(); i++) {
+            scheduled.addAll(doSchedule(job, configuration, taskScheduler));
+        }
+
+        if (job instanceof MutableCancelableJob mj) {
+            mj.cancelAction(() -> {
+                for (ScheduledFuture<?> scheduledTask : scheduled) {
+                    if (!scheduledTask.isCancelled()) {
+                        scheduledTask.cancel(false);
+                    }
+                }
+            });
+        }
+
+        scheduledTasks.addAll(scheduled);
+    }
+
+    private List<ScheduledFuture<?>> doSchedule(Job job, JobConfiguration configuration, TaskScheduler taskScheduler) {
+        List<ScheduledFuture<?>> scheduled = new ArrayList<>();
         Duration initialDelay = configuration.getInitialDelay();
 
         if (StringUtils.isNotEmpty(configuration.getCron())) {
@@ -81,7 +106,8 @@ public class DefaultJobScheduler implements JobScheduler, Closeable {
                 LOG.debug("Scheduling cron job {} [{}] for {}", configuration.getName(), configuration.getCron(), job.getSource());
             }
             try {
-                taskScheduler.schedule(configuration.getCron(), job);
+                ScheduledFuture<?> scheduledFuture = taskScheduler.schedule(configuration.getCron(), job);
+                scheduled.add(scheduledFuture);
             } catch (IllegalArgumentException e) {
                 throw new JobConfigurationException(job, "Failed to schedule job " + configuration.getName() + " declared in " + job.getSource() + ". Invalid CRON expression: " + configuration.getCron(), e);
             }
@@ -91,10 +117,8 @@ public class DefaultJobScheduler implements JobScheduler, Closeable {
                 LOG.debug("Scheduling fixed rate job {} [{}] for {}", configuration.getName(), duration, job.getSource());
             }
 
-            for (int i = 0; i < configuration.getFork(); i++) {
-                ScheduledFuture<?> scheduledFuture = taskScheduler.scheduleAtFixedRate(initialDelay, duration, job);
-                scheduledTasks.add(scheduledFuture);
-            }
+            ScheduledFuture<?> scheduledFuture = taskScheduler.scheduleAtFixedRate(initialDelay, duration, job);
+            scheduled.add(scheduledFuture);
         } else if (configuration.getFixedDelay() != null) {
             Duration duration = configuration.getFixedDelay();
 
@@ -102,18 +126,15 @@ public class DefaultJobScheduler implements JobScheduler, Closeable {
                 LOG.debug("Scheduling fixed delay task {} [{}] for {}", configuration.getName(), duration, job.getSource());
             }
 
-            for (int i = 0; i < configuration.getFork(); i++) {
-                ScheduledFuture<?> scheduledFuture = taskScheduler.scheduleWithFixedDelay(initialDelay, duration, job);
-                scheduledTasks.add(scheduledFuture);
-            }
+            ScheduledFuture<?> scheduledFuture = taskScheduler.scheduleWithFixedDelay(initialDelay, duration, job);
+            scheduled.add(scheduledFuture);
         } else if (initialDelay != null) {
-            for (int i = 0; i < configuration.getFork(); i++) {
-                ScheduledFuture<?> scheduledFuture = taskScheduler.schedule(initialDelay, job);
-                scheduledTasks.add(scheduledFuture);
-            }
+            ScheduledFuture<?> scheduledFuture = taskScheduler.schedule(initialDelay, job);
+            scheduled.add(scheduledFuture);
         } else {
-            throw new JobConfigurationException(job, "Failed to schedule job " + configuration.getName() + " declared in "  + job.getSource() + ". Invalid definition");
+            throw new JobConfigurationException(job, "Failed to schedule job " + configuration.getName() + " declared in " + job.getSource() + ". Invalid definition");
         }
+        return scheduled;
     }
 
     private TaskScheduler getTaskScheduler(com.agorapulse.worker.Job job) {
@@ -122,8 +143,8 @@ public class DefaultJobScheduler implements JobScheduler, Closeable {
 
         if (!optionalTaskScheduler.isPresent()) {
             optionalTaskScheduler = beanContext.findBean(ExecutorService.class, Qualifiers.byName(configuration.getScheduler()))
-                    .filter(ScheduledExecutorService.class::isInstance)
-                    .map(ScheduledExecutorTaskScheduler::new);
+                .filter(ScheduledExecutorService.class::isInstance)
+                .map(ScheduledExecutorTaskScheduler::new);
         }
 
         return optionalTaskScheduler.orElseThrow(() -> new JobConfigurationException(job, "No scheduler of type TaskScheduler configured for name: " + configuration.getScheduler()));

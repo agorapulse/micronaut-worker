@@ -17,14 +17,17 @@
  */
 package com.agorapulse.worker.job;
 
-import com.agorapulse.worker.Job;
 import com.agorapulse.worker.JobConfiguration;
 import com.agorapulse.worker.JobStatus;
+import com.agorapulse.worker.configuration.MutableJobConfiguration;
 
-public abstract class AbstractJob implements Job {
+import java.util.function.Consumer;
+
+public abstract class AbstractJob implements MutableCancelableJob {
 
     private final JobConfiguration configuration;
     private final ConcurrentJobStatus status;
+    private Runnable cancelAction = () -> {};
 
     protected AbstractJob(JobConfiguration configuration) {
         this.configuration = configuration;
@@ -53,5 +56,34 @@ public abstract class AbstractJob implements Job {
         status.run(this::doRun);
     }
 
+    @Override
+    public void configure(Consumer<MutableJobConfiguration> change) {
+        if (configuration instanceof MutableJobConfiguration c) {
+            change.accept(c);
+        } else {
+            throw new IllegalStateException("The configuration of the job is not mutable!");
+        }
+    }
+
+    @Override
+    public String getSource() {
+        return "";
+    }
+
     protected abstract void doRun(JobRunContext context);
+
+    @Override
+    public void cancelAction(Runnable runnable) {
+        Runnable current = this.cancelAction;
+        this.cancelAction = () -> {
+            current.run();
+            runnable.run();
+        };
+    }
+
+    @Override
+    public void cancel() {
+        cancelAction.run();
+    }
+
 }

@@ -256,6 +256,18 @@ include::{root-dir}/libs/micronaut-worker/src/main/java/com/agorapulse/worker/ev
 
 TIP: If https://github.com/agorapulse/micronaut-snitch[Micronaut Snitch] is present on the classpath and configured with the name of the job, the `snitch` method is called automatically after successful execution.
 
+== CLI Runner
+
+You can run a single job from the command line using the `com.agorapulse.worker.runner.JobRunner` class as the main class. The arguments are the names of the jobs to run. All other jobs are disabled, even when enabled in the configuration (see corner cases below). The application will run until all jobs are finished.
+
+[source,shell]
+.Run Job from CLI
+----
+java -cp myapp-shadow.jar com.agorapulse.worker.runner.JobRunner sample-job other-job
+----
+
+WARNING: In some corner cases, some unrelated jobs can still be executed if they have a very short delay or frequency if they are manually enabled in the configuration. Please, prefer annotation driven jobs over configuring them manually in the configuration to avoid this issue.
+
 == Management
 
 You can use `jobs` management endpoint, by default located at `/jobs`, to see the status of all the jobs in the application.
@@ -280,7 +292,7 @@ each job. The name is the lower-camel-case version of the job name, e.g., `sampl
 include::{root-dir}/libs/micronaut-worker/src/test/resources/com/agorapulse/worker/console/ConsoleSpec/variables.txt[]
 ----
 
-TIP: The job variables are instances of `JobAccessor`, which also provides methods `run()` and `enqueue(message)` to let you easily trigger jobs from the console.
+TIP: The job variables are instances of `JobAccessor`, which also provides methods `run()` and `enqueue(message)` to let you easily trigger jobs from the console. You can also use method `reconfigure(consumer)` that changes the in-memory configuration of the job and reschedules it.
 
 A simple script with just variable `jobs` will print the status of the current job execution. Depending
 on which console endpoint you choose, you get either a text or JSON summary.
@@ -297,11 +309,18 @@ include::{root-dir}/libs/micronaut-worker/src/test/resources/com/agorapulse/work
 include::{root-dir}/libs/micronaut-worker/src/test/resources/com/agorapulse/worker/console/ConsoleSpec/listJobsResponse.txt[]
 ----
 
-
 [source]
 .Job Manager Script - JSON Result
 ----
 include::{root-dir}/libs/micronaut-worker/src/test/resources/com/agorapulse/worker/console/ConsoleSpec/listJobsResponse.json[]
+----
+
+Reconfiguring the job will try to change the configuration of the job and reschedule it if it's still enabled.
+
+[source,options="nowrap"]
+.Job Manager Script - Reconfigure
+----
+include::{root-dir}/libs/micronaut-worker/src/test/resources/com/agorapulse/worker/console/ConsoleSpec/reconfigure.groovy[]
 ----
 
 Returning a job variable from the script will render details for that job.

@@ -17,6 +17,7 @@
  */
 package com.agorapulse.worker.job;
 
+import com.agorapulse.worker.JobRunStatus;
 import com.agorapulse.worker.JobStatus;
 import com.agorapulse.worker.json.DurationSerializer;
 import com.agorapulse.worker.json.StacktraceSerializer;
@@ -91,22 +92,25 @@ public final class ConcurrentJobStatus implements JobStatus {
         executionCount.incrementAndGet();
         lastTriggered.set(status.getStarted());
 
-        JobRunContext context = JobRunContext.create(status).onError((s, ex) -> {
-            lastException.set(ex);
-            status.fail(ex);
-        });
+        JobRunContext context = JobRunContext.create(status)
+            .onFinished(s -> {
+                status.finish();
+                recordLastStatus(s);
+            })
+            .onError((s, ex) -> {
+                status.fail(ex);
+                lastException.set(ex);
+                recordLastStatus(s);
+            });
 
-        try {
-            doRun.accept(context);
-        } finally {
-            status.finish();
-            executionCount.decrementAndGet();
-            lastFinished.set(status.getFinished());
-            lastDuration.set(status.getDuration());
-            lastId.set(status.getId());
-        }
+        doRun.accept(context);
+    }
 
-        context.finished(status);
+    private void recordLastStatus(JobRunStatus s) {
+        lastFinished.set(s.getFinished());
+        lastDuration.set(s.getDuration());
+        lastId.set(s.getId());
+        executionCount.decrementAndGet();
     }
 
 }

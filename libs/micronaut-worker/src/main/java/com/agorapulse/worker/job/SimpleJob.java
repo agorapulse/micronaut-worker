@@ -37,6 +37,7 @@ public class SimpleJob extends AbstractJob {
     protected void doRun(JobRunContext context) {
         try {
             task.run();
+            context.finished();
         } catch (Throwable th) {
             context.error(th);
         }

@@ -46,4 +46,9 @@ public class JobExecutionResultEvent {
     public String getName() {
         return name;
     }
+
+    @Override
+    public String toString() {
+        return "JobExecutionResultEvent{name='%s', id='%s', result=%s}".formatted(name, id, result);
+    }
 }

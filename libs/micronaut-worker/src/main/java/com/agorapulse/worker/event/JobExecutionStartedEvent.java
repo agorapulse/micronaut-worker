@@ -55,4 +55,9 @@ public class JobExecutionStartedEvent {
         return Optional.ofNullable(message);
     }
 
+    @Override
+    public String toString() {
+        return "JobExecutionStartedEvent{name='%s', id='%s', message=%s}".formatted(name, id, message);
+    }
+
 }

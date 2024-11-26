@@ -17,11 +17,17 @@
  */
 package com.agorapulse.worker.console;
 
-import com.agorapulse.worker.*;
+import com.agorapulse.worker.Job;
+import com.agorapulse.worker.JobConfiguration;
+import com.agorapulse.worker.JobInfo;
+import com.agorapulse.worker.JobManager;
+import com.agorapulse.worker.JobStatus;
+import com.agorapulse.worker.configuration.MutableJobConfiguration;
 import com.agorapulse.worker.report.JobReport;
 
 import java.util.Collections;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 public class JobAccessor implements JobInfo {
 
@@ -39,6 +45,11 @@ public class JobAccessor implements JobInfo {
 
     public void enqueue(Object o) {
         jobManager.enqueue(jobName, o);
+    }
+
+    public JobAccessor reconfigure(Consumer<MutableJobConfiguration> configurator) {
+        jobManager.reconfigure(jobName, configurator);
+        return this;
     }
 
     @Override

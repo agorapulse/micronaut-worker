@@ -29,8 +29,10 @@ import io.lettuce.core.support.BoundedAsyncPool;
 import io.lettuce.core.support.BoundedPoolConfig;
 import io.micronaut.core.type.Argument;
 import io.micronaut.jackson.JacksonConfiguration;
+import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Flux;
 
 import java.time.Duration;
 import java.util.List;
@@ -61,9 +63,9 @@ public class RedisQueues implements JobQueues {
         pool = new BoundedAsyncPool<>(new ConnectionFactory(client), config);
     }
 
-    @Override
     @SuppressWarnings("unchecked")
-    public <T> void readMessages(String queueName, int maxNumberOfMessages, Duration waitTime, Argument<T> argument, Consumer<T> action) {
+    @Override
+    public <T> Publisher<T> readMessages(String queueName, int maxNumberOfMessages, Duration waitTime, Argument<T> argument) {
         TransactionResult result = withTransaction(redisCommands -> {
             String key = getKey(queueName);
             redisCommands.zrange(key, 0, maxNumberOfMessages - 1);
@@ -71,7 +73,7 @@ public class RedisQueues implements JobQueues {
         });
 
         if (result == null) {
-            return;
+            return Flux.empty();
         }
 
 
@@ -83,14 +85,14 @@ public class RedisQueues implements JobQueues {
 
         List<String> messages = (List<String>) firstResponse;
 
-        messages.forEach(body -> {
+        return Flux.fromIterable(messages).handle((body, sink) -> {
             try {
-                action.accept(objectMapper.readValue(body, JacksonConfiguration.constructType(argument, objectMapper.getTypeFactory())));
+                sink.next(objectMapper.readValue(body, JacksonConfiguration.constructType(argument, objectMapper.getTypeFactory())));
             } catch (JsonProcessingException e) {
                 if (argument.equalsType(Argument.STRING)) {
-                    action.accept((T) body);
+                    sink.next((T) body);
                 } else {
-                    throw new IllegalArgumentException("Cannot convert to " + argument + "from message\n" + body, e);
+                    sink.error(new IllegalArgumentException("Cannot convert to " + argument + "from message\n" + body, e));
                 }
             }
         });

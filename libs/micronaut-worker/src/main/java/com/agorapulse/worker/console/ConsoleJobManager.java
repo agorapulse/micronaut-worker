@@ -19,11 +19,13 @@ package com.agorapulse.worker.console;
 
 import com.agorapulse.worker.Job;
 import com.agorapulse.worker.JobManager;
+import com.agorapulse.worker.configuration.MutableJobConfiguration;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class ConsoleJobManager implements JobManager {
@@ -62,6 +64,11 @@ public class ConsoleJobManager implements JobManager {
     @JsonValue
     List<JobAccessor> getJobs() {
         return getJobNames().stream().map(name -> new JobAccessor(name, this)).collect(Collectors.toList());
+    }
+
+    @Override
+    public void reconfigure(String jobName, Consumer<MutableJobConfiguration> configuration) {
+        delegate.reconfigure(jobName, configuration);
     }
 
 }
