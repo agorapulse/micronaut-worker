@@ -17,9 +17,12 @@
  */
 package com.agorapulse.worker.annotation;
 
+import io.micronaut.context.annotation.AliasFor;
 import io.micronaut.context.annotation.Executable;
 import io.micronaut.context.annotation.Parallel;
+import io.micronaut.core.annotation.EntryPoint;
 import io.micronaut.scheduling.TaskExecutors;
+import jakarta.inject.Named;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -36,6 +39,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Target({ElementType.METHOD, ElementType.ANNOTATION_TYPE})
 @Executable(processOnStartup = true)
 @Parallel
+@EntryPoint
 public @interface Job {
 
     /**
@@ -46,6 +50,7 @@ public @interface Job {
      *
      * @return the name of the job used for configuration
      */
+    @AliasFor(annotation = Named.class, member = "value")
     String value() default "";
 
 

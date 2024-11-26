@@ -24,6 +24,8 @@ import org.slf4j.LoggerFactory;
 
 import jakarta.inject.Singleton;
 
+import java.util.Optional;
+
 @Singleton
 public class JobEventsLogger {
 
@@ -32,8 +34,9 @@ public class JobEventsLogger {
     @EventListener
     void onJobExecutionStarted(JobExecutionStartedEvent event) {
         if (LOGGER.isDebugEnabled()) {
-            if (event.getMessage().isPresent()) {
-                LOGGER.debug("Starting job {}#{} with message {}", event.getName(), event.getId(), event.getMessage().get());
+            Optional<Object> message = event.getMessage();
+            if (message.isPresent()) {
+                LOGGER.debug("Starting job {}#{} with message {}", event.getName(), event.getId(), message.get());
             } else {
                 LOGGER.debug("Starting job {}#{}", event.getName(), event.getId());
             }
@@ -55,7 +58,7 @@ public class JobEventsLogger {
     @EventListener
     void onJobExecutionFinished(JobExecutionFinishedEvent event) {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Finished executing job {}#{} in {} (some results can still be generated asynchronously later)", event.getName(), event.getStatus().getId(), event.getStatus().getDuration());
+            LOGGER.debug("Finished executing job {}#{} in {} (some results can still be generated asynchronously later)", event.getName(), event.getStatus().getId(), event.getStatus().getHumanReadableDuration());
         }
     }
 

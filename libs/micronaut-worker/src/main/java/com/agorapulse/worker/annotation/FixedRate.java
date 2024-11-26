@@ -19,6 +19,7 @@ package com.agorapulse.worker.annotation;
 
 import io.micronaut.context.annotation.AliasFor;
 import io.micronaut.scheduling.TaskExecutors;
+import jakarta.inject.Named;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -40,6 +41,7 @@ public @interface FixedRate {
     String value();
 
     @AliasFor(annotation = Job.class, member = "value")
+    @AliasFor(annotation = Named.class, member = "value")
     String name() default "";
 
     /**
