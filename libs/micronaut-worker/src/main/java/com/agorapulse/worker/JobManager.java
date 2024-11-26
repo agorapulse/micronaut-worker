@@ -99,12 +99,10 @@ public interface JobManager {
     }
 
     /**
-     * Configures the job with the given name if possible.
+     * Reconfigures the job with the given name if possible and reschedules it
      *
      * @param jobName the name of the job
      * @param configuration the configuration to be applied
      */
-    default void configure(String jobName, Consumer<MutableJobConfiguration> configuration) {
-        getJob(jobName).ifPresent(job -> job.configure(configuration));
-    }
+    void reconfigure(String jobName, Consumer<MutableJobConfiguration> configuration);
 }

@@ -28,7 +28,7 @@ import spock.lang.Specification
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 
-@MicronautTest(environments = CONSOLE_SPEC_ENVIRONMENT)
+@MicronautTest(environments = CONSOLE_SPEC_ENVIRONMENT, rebuildContext = true)
 @Property(name = 'worker.jobs.sample-job.enabled', value = 'true')
 @Property(name = 'console.enabled', value = 'true')
 class ConsoleSpec extends Specification {
@@ -89,6 +89,18 @@ class ConsoleSpec extends Specification {
                 }
                 expect {
                     text 'oneJobResponse.txt'
+                }
+            }
+    }
+
+    void 'reconfigure job'() {
+        expect:
+            gru.test {
+                post '/console/execute/result', {
+                    content('reconfigure.groovy', 'text/groovy')
+                }
+                expect {
+                    text 'reconfigureResponse.txt'
                 }
             }
     }

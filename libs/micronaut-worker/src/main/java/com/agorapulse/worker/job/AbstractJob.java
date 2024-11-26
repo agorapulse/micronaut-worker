@@ -24,10 +24,11 @@ import com.agorapulse.worker.configuration.MutableJobConfiguration;
 
 import java.util.function.Consumer;
 
-public abstract class AbstractJob implements Job {
+public abstract class AbstractJob implements MutableCancelableJob {
 
     private final JobConfiguration configuration;
     private final ConcurrentJobStatus status;
+    private Runnable cancelAction = () -> {};
 
     protected AbstractJob(JobConfiguration configuration) {
         this.configuration = configuration;
@@ -71,4 +72,19 @@ public abstract class AbstractJob implements Job {
     }
 
     protected abstract void doRun(JobRunContext context);
+
+    @Override
+    public void cancelAction(Runnable runnable) {
+        Runnable current = this.cancelAction;
+        this.cancelAction = () -> {
+            current.run();
+            runnable.run();
+        };
+    }
+
+    @Override
+    public void cancel() {
+        cancelAction.run();
+    }
+
 }

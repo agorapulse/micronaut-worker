@@ -71,7 +71,7 @@ public class JobRunner extends FunctionInitializer {
             if (!jobNames.contains(jobName)) {
                 jobManager.getJob(jobName).filter(job -> job.getConfiguration().isEnabled()).ifPresent(job -> {
                     LOGGER.warn("Job '{}' is not in the list of jobs to run, but it is enabled. Disabling it.", jobName);
-                    jobManager.configure(jobName, c -> c.setEnabled(false));
+                    jobManager.reconfigure(jobName, c -> c.setEnabled(false));
                 });
             }
         }
