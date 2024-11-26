@@ -17,7 +17,6 @@
  */
 package com.agorapulse.worker.job;
 
-import com.agorapulse.worker.Job;
 import com.agorapulse.worker.JobConfiguration;
 import com.agorapulse.worker.JobStatus;
 import com.agorapulse.worker.configuration.MutableJobConfiguration;
