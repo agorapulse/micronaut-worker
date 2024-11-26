@@ -258,13 +258,15 @@ TIP: If https://github.com/agorapulse/micronaut-snitch[Micronaut Snitch] is pres
 
 == CLI Runner
 
-You can run a single job from the command line using the `com.agorapulse.worker.runner.JobRunner` class as the main class. The arguments are the names of the jobs to run. All other jobs are disabled, even when enabled in the configuration. The application will run until all jobs are finished.
+You can run a single job from the command line using the `com.agorapulse.worker.runner.JobRunner` class as the main class. The arguments are the names of the jobs to run. All other jobs are disabled, even when enabled in the configuration (see corner cases below). The application will run until all jobs are finished.
 
 [source,shell]
 .Run Job from CLI
 ----
 java -cp myapp-shadow.jar com.agorapulse.worker.runner.JobRunner sample-job other-job
 ----
+
+WARNING: In some corner cases, some unrelated jobs can still be executed if they have a very short delay or frequency if they are manually enabled in the configuration. Please, prefer annotation driven jobs over configuring them manually in the configuration to avoid this issue.
 
 == Management
 
