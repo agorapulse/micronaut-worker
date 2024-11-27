@@ -46,8 +46,6 @@ public class RedisJobExecutor implements DistributedJobExecutor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RedisJobExecutor.class);
 
-    public static final String HOSTNAME_PARAMETER_NAME = "redis-job-executor-hostname";
-
     private static final String LIBRARY_PREFIX = "APMW::";
     private static final String PREFIX_LEADER = LIBRARY_PREFIX + "LEADER::";
     private static final String PREFIX_COUNT = LIBRARY_PREFIX + "COUNT::";
