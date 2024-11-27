@@ -21,6 +21,7 @@ import com.agorapulse.worker.Job;
 import com.agorapulse.worker.JobConfiguration;
 import com.agorapulse.worker.JobManager;
 import com.agorapulse.worker.executor.DistributedJobExecutor;
+import com.agorapulse.worker.executor.ExecutorId;
 import io.lettuce.core.ScriptOutputType;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.async.RedisAsyncCommands;
@@ -31,7 +32,6 @@ import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
@@ -45,8 +45,6 @@ import java.util.concurrent.ExecutorService;
 public class RedisJobExecutor implements DistributedJobExecutor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RedisJobExecutor.class);
-
-    public static final String HOSTNAME_PARAMETER_NAME = "redis-job-executor-hostname";
 
     private static final String LIBRARY_PREFIX = "APMW::";
     private static final String PREFIX_LEADER = LIBRARY_PREFIX + "LEADER::";
@@ -71,13 +69,13 @@ public class RedisJobExecutor implements DistributedJobExecutor {
     private static final String DECREASE_JOB_COUNT = "return redis.call('decr', KEYS[1])";
 
     private final StatefulRedisConnection<String, String> connection;
-    private final String hostname;
+    private final ExecutorId executorId;
     private final BeanContext beanContext;
     private final JobManager jobManager;
 
-    public RedisJobExecutor(StatefulRedisConnection<String, String> connection, @Named(HOSTNAME_PARAMETER_NAME) String hostname, BeanContext beanContext, JobManager jobManager) {
+    public RedisJobExecutor(StatefulRedisConnection<String, String> connection, ExecutorId executorId, BeanContext beanContext, JobManager jobManager) {
         this.connection = connection;
-        this.hostname = hostname;
+        this.executorId = executorId;
         this.beanContext = beanContext;
         this.jobManager = jobManager;
     }
@@ -87,7 +85,7 @@ public class RedisJobExecutor implements DistributedJobExecutor {
         RedisAsyncCommands<String, String> commands = connection.async();
 
         return readMasterHostname(jobName, commands).flatMap(h -> {
-            if (hostname.equals(h)) {
+            if (executorId.id().equals(h)) {
                 return Mono.fromCallable(supplier).subscribeOn(Schedulers.fromExecutorService(getExecutorService(jobName)));
             }
             return Mono.empty();
@@ -114,7 +112,7 @@ public class RedisJobExecutor implements DistributedJobExecutor {
     public <R> Publisher<R> executeOnlyOnFollower(String jobName, Callable<R> supplier) {
         RedisAsyncCommands<String, String> commands = connection.async();
         return readMasterHostname(jobName, commands).flatMap(h -> {
-            if (!"".equals(h) && h.equals(hostname)) {
+            if (!"".equals(h) && h.equals(executorId.id())) {
                 return Mono.empty();
             }
             return Mono.fromCallable(supplier).subscribeOn(Schedulers.fromExecutorService(getExecutorService(jobName)));
@@ -142,7 +140,7 @@ public class RedisJobExecutor implements DistributedJobExecutor {
         return Mono.fromFuture(commands.eval(
             LEADER_CHECK,
             ScriptOutputType.VALUE,
-            PREFIX_LEADER + jobName, hostname, String.valueOf(LEADER_INACTIVITY_TIMEOUT)
+            PREFIX_LEADER + jobName, executorId.id(), String.valueOf(LEADER_INACTIVITY_TIMEOUT)
         ).toCompletableFuture()).defaultIfEmpty("");
     }
 

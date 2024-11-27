@@ -17,9 +17,9 @@
  */
 package com.agorapulse.worker.redis
 
+import com.agorapulse.worker.executor.ExecutorId
 import com.agorapulse.worker.tck.executor.AbstractJobExecutorSpec
 import io.micronaut.context.ApplicationContext
-import io.micronaut.inject.qualifiers.Qualifiers
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.spock.Testcontainers
 import spock.lang.Retry
@@ -39,7 +39,7 @@ class RedisJobExecutorSpec extends AbstractJobExecutorSpec {
     protected ApplicationContext buildContext() {
         ApplicationContext ctx = ApplicationContext
                 .builder(
-                        'redis.uri': "redis://$redis.containerIpAddress:${redis.getMappedPort(6379)}",
+                        'redis.uri': "redis://$redis.host:${redis.getMappedPort(6379)}",
                         'worker.jobs.long-running-job-execute-producer.enabled': 'true',
                         'worker.jobs.long-running-job-execute-on-leader.enabled': 'true',
                         'worker.jobs.long-running-job-execute-on-follower.enabled': 'true',
@@ -51,7 +51,7 @@ class RedisJobExecutorSpec extends AbstractJobExecutorSpec {
                 .environments(CONCURRENT_JOB_TEST_ENVIRONMENT)
                 .build()
 
-        ctx.registerSingleton(String, UUID.randomUUID().toString(), Qualifiers.byName(RedisJobExecutor.HOSTNAME_PARAMETER_NAME))
+        ctx.registerSingleton(new ExecutorId(UUID.randomUUID().toString()))
 
         return ctx.start()
     }

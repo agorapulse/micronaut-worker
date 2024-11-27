@@ -15,28 +15,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.agorapulse.worker.redis;
+package com.agorapulse.worker.executor.ecs
 
-import io.micronaut.context.annotation.Bean;
-import io.micronaut.context.annotation.Factory;
+import com.agorapulse.worker.executor.ExecutorId
+import spock.lang.Specification
 
-import jakarta.inject.Named;
-import jakarta.inject.Singleton;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
+class EcsExecutorIdFactorySpec extends Specification {
 
-@Factory
-public class HostnameFactory {
-
-    @Bean
-    @Singleton
-    @Named(RedisJobExecutor.HOSTNAME_PARAMETER_NAME)
-    public String hostname() {
-        try {
-            return InetAddress.getLocalHost().getHostName();
-        } catch (UnknownHostException ignored) {
-            return "localhost";
-        }
+    void 'extract id'() {
+        given:
+            String id = 'http://169.254.170.2/api/c613006db31d4ac192bbb07b1577c40e-1280352332'
+        expect:
+            new EcsExecutorIdFactory().ecsExecutorId(id) == new ExecutorId('c613006db31d4ac192bbb07b1577c40e')
     }
 
 }
