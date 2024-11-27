@@ -20,7 +20,6 @@ package com.agorapulse.worker.redis
 import com.agorapulse.worker.executor.ExecutorId
 import com.agorapulse.worker.tck.executor.AbstractJobExecutorSpec
 import io.micronaut.context.ApplicationContext
-import io.micronaut.inject.qualifiers.Qualifiers
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.spock.Testcontainers
 import spock.lang.Retry
