@@ -229,7 +229,7 @@ public class MethodJobProcessor implements ExecutableMethodProcessor<Job> {
             });
 
             annotationValue.intValue("maxMessages").ifPresent(maxMessages -> {
-                if (maxMessages > 1) {
+                if (maxMessages > 0 && maxMessages != JobConfiguration.ConsumerQueueConfiguration.DEFAULT_MAX_MESSAGES) {
                     queueConfiguration.setMaxMessages(maxMessages);
                 }
             });

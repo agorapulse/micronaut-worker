@@ -81,8 +81,6 @@ public class DefaultJobConfiguration implements MutableJobConfiguration {
     @JsonInclude
     public static class DefaultConsumerQueueConfiguration extends DefaultQueueConfiguration implements MutableConsumerQueueConfiguration {
 
-        private static final int DEFAULT_MAX_MESSAGES = 10;
-
         private int maxMessages = DEFAULT_MAX_MESSAGES;
         private Duration waitingTime = Duration.ofSeconds(20);
 
