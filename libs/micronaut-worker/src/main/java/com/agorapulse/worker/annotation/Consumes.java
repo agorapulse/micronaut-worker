@@ -17,6 +17,8 @@
  */
 package com.agorapulse.worker.annotation;
 
+import com.agorapulse.worker.JobConfiguration;
+
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -45,8 +47,8 @@ public @interface Consumes {
     String waitingTime() default "";
 
     /**
-     * @return the maximum of messages consumed in a single run
+     * @return the maximum of messages consumed in a single run, defaults to {@link JobConfiguration.ConsumerQueueConfiguration#DEFAULT_MAX_MESSAGES}
      */
-    int maxMessages() default 1;
+    int maxMessages() default JobConfiguration.ConsumerQueueConfiguration.DEFAULT_MAX_MESSAGES;
 
 }

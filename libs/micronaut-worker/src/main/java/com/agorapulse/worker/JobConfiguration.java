@@ -73,8 +73,10 @@ public interface JobConfiguration {
 
     interface ConsumerQueueConfiguration extends QueueConfiguration {
 
+        int DEFAULT_MAX_MESSAGES = 10;
+
         /**
-         * @return the number of messages which are fetched from the queue in a single poll, defaults to one
+         * @return the number of messages which are fetched from the queue in a single poll, defaults to {@link #DEFAULT_MAX_MESSAGES} when set to <code>0</code>
          */
         @Min(1)
         int getMaxMessages();
