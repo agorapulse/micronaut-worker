@@ -15,27 +15,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.agorapulse.worker.redis;
+package com.agorapulse.worker.executor;
 
 import io.micronaut.context.annotation.Bean;
 import io.micronaut.context.annotation.Factory;
-
-import jakarta.inject.Named;
+import io.micronaut.context.annotation.Secondary;
 import jakarta.inject.Singleton;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 @Factory
-public class HostnameFactory {
+public class HostnameExecutorIdFactory {
 
     @Bean
     @Singleton
-    @Named(RedisJobExecutor.HOSTNAME_PARAMETER_NAME)
-    public String hostname() {
+    @Secondary
+    public ExecutorId hostname() {
         try {
-            return InetAddress.getLocalHost().getHostName();
+            return new ExecutorId(InetAddress.getLocalHost().getHostName());
         } catch (UnknownHostException ignored) {
-            return "localhost";
+            return new ExecutorId("localhost");
         }
     }
 
