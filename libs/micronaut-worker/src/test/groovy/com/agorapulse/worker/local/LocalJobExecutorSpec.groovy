@@ -20,15 +20,14 @@ package com.agorapulse.worker.local
 import com.agorapulse.worker.event.JobExecutorEvent
 import com.agorapulse.worker.executor.ExecutorId
 import com.agorapulse.worker.tck.executor.AbstractJobExecutorSpec
+import com.agorapulse.worker.tck.executor.JobExecutorEventCollector
 import io.micronaut.context.ApplicationContext
-import io.micronaut.context.event.ApplicationEventPublisher
-import spock.lang.Shared
 
 import java.util.concurrent.Executors
 
 class LocalJobExecutorSpec extends AbstractJobExecutorSpec {
 
-    @Shared ApplicationEventPublisher<JobExecutorEvent> publisher = Mock()
+    JobExecutorEventCollector publisher = new JobExecutorEventCollector()
 
     LocalJobExecutor executor = new LocalJobExecutor(
         Executors.newFixedThreadPool(10),
@@ -64,4 +63,20 @@ class LocalJobExecutorSpec extends AbstractJobExecutorSpec {
         return ctx.start()
     }
 
+    @Override
+    protected boolean verifyExecutorEvents(ApplicationContext first, ApplicationContext second, ApplicationContext third) {
+        assert publisher.events.every { it.executor == 'local' }
+
+        List<JobExecutorEvent> leaderEvents = publisher.events.findAll { it.status.name == 'long-running-job-execute-on-leader' }
+
+        assert leaderEvents.count { it.execution == JobExecutorEvent.Execution.SKIP } == 2
+        assert leaderEvents.count { it.execution == JobExecutorEvent.Execution.EXECUTE } == 1
+
+        List<JobExecutorEvent> producerEvents = publisher.events.findAll { it.status.name == 'long-running-job-execute-producer' }
+
+        assert producerEvents.count { it.execution == JobExecutorEvent.Execution.SKIP } == 2
+        assert producerEvents.count { it.execution == JobExecutorEvent.Execution.EXECUTE } == 1
+
+        return true
+    }
 }

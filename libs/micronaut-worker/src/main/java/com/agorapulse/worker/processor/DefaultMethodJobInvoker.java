@@ -19,7 +19,6 @@ package com.agorapulse.worker.processor;
 
 import com.agorapulse.worker.Job;
 import com.agorapulse.worker.JobConfiguration;
-import com.agorapulse.worker.JobConfigurationException;
 import com.agorapulse.worker.executor.DistributedJobExecutor;
 import com.agorapulse.worker.job.JobRunContext;
 import com.agorapulse.worker.queue.JobQueues;
