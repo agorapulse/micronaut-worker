@@ -59,13 +59,14 @@ class RedisJobExecutorSpec extends AbstractJobExecutorSpec {
     }
 
     @Override
+    @SuppressWarnings('UnnecessaryCollectCall')
     protected boolean verifyExecutorEvents(
         ApplicationContext first,
         ApplicationContext second,
         ApplicationContext third
     ) {
         List<JobExecutorEvent> allEvents = [first, second, third].collect { it.getBean(JobExecutorEventCollector) }.collectMany { it.events }
-        assert allEvents.every { it.executor == 'redis'}
+        assert allEvents.every { it.executor == 'redis' }
 
         List<JobExecutorEvent> leaderEvents = allEvents.findAll { it.status.name == 'long-running-job-execute-on-leader' }
 
@@ -79,4 +80,5 @@ class RedisJobExecutorSpec extends AbstractJobExecutorSpec {
 
         return true
     }
+
 }

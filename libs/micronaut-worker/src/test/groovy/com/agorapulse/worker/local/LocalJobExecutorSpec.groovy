@@ -79,4 +79,5 @@ class LocalJobExecutorSpec extends AbstractJobExecutorSpec {
 
         return true
     }
+
 }
