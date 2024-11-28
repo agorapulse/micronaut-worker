@@ -17,6 +17,7 @@
  */
 package com.agorapulse.worker.local;
 
+import com.agorapulse.worker.JobRunStatus;
 import com.agorapulse.worker.executor.DistributedJobExecutor;
 import com.agorapulse.worker.job.JobRunContext;
 import io.micronaut.context.annotation.Requires;
@@ -58,17 +59,18 @@ public class LocalJobExecutor implements DistributedJobExecutor {
     @Override
     public <R> Publisher<R> executeConcurrently(JobRunContext context, int concurrency, Callable<R> supplier) {
         return Mono.fromCallable(() -> {
-            int increasedCount = counts.computeIfAbsent(context.getStatus().getName(), s -> new AtomicInteger(0)).incrementAndGet();
-            LOGGER.trace("Increased count for job {} limited to {}: {}", context.getStatus().getName(), concurrency, increasedCount);
+            JobRunStatus status = context.getStatus();
+            int increasedCount = counts.computeIfAbsent(status.getName(), s -> new AtomicInteger(0)).incrementAndGet();
+            LOGGER.trace("Increased count for job {} limited to {}: {}", status.getName(), concurrency, increasedCount);
 
             if (increasedCount > concurrency) {
-                counts.get(context.getStatus().getName()).decrementAndGet();
+                counts.get(status.getName()).decrementAndGet();
                 return null;
             }
 
             context.onFinished(s -> {
-                int decreasedCount = counts.get(context.getStatus().getName()).decrementAndGet();
-                LOGGER.trace("Decreased count for job {} limited to {}: {}", context.getStatus().getName(), concurrency, decreasedCount);
+                int decreasedCount = counts.get(s.getName()).decrementAndGet();
+                LOGGER.trace("Decreased count for job {} limited to {}: {}", s.getName(), concurrency, decreasedCount);
             });
 
             return supplier.call();

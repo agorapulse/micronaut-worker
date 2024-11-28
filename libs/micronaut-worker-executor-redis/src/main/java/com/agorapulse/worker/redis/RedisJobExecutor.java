@@ -37,8 +37,10 @@ import jakarta.inject.Singleton;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
+import java.time.Duration;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Singleton
 @Requires(beans = {StatefulRedisConnection.class}, property = "redis.uri")
@@ -105,7 +107,9 @@ public class RedisJobExecutor implements DistributedJobExecutor {
                     return decreaseCurrentExecutionCount(context.getStatus().getName(), commands).flatMap(decreased -> Mono.empty());
                 }
 
-                return Mono.fromCallable(supplier).subscribeOn(Schedulers.fromExecutorService(getExecutorService(context.getStatus().getName()))).doFinally(signal -> decreaseCurrentExecutionCount(context.getStatus().getName(), commands).subscribe());
+                context.onFinished(s-> decreaseCurrentExecutionCount(s.getName(), commands).subscribe());
+
+                return Mono.fromCallable(supplier).subscribeOn(Schedulers.fromExecutorService(getExecutorService(context.getStatus().getName())));
             }).flux();
     }
 
@@ -138,11 +142,14 @@ public class RedisJobExecutor implements DistributedJobExecutor {
     }
 
     private Mono<Object> readMasterHostname(String jobName, RedisAsyncCommands<String, String> commands) {
-        return Mono.fromFuture(commands.eval(
-            LEADER_CHECK,
-            ScriptOutputType.VALUE,
-            PREFIX_LEADER + jobName, executorId.id(), String.valueOf(LEADER_INACTIVITY_TIMEOUT)
-        ).toCompletableFuture()).defaultIfEmpty("");
+        int randomDelay = ThreadLocalRandom.current().nextInt(1, 500);
+        return Mono.delay(Duration.ofMillis(randomDelay))
+            .flatMap(ignored -> Mono.fromFuture(commands.eval(
+                LEADER_CHECK,
+                ScriptOutputType.VALUE,
+                PREFIX_LEADER + jobName, executorId.id(), String.valueOf(LEADER_INACTIVITY_TIMEOUT)
+            ).toCompletableFuture()))
+            .defaultIfEmpty("");
     }
 
     private ExecutorService getExecutorService(String jobName) {
