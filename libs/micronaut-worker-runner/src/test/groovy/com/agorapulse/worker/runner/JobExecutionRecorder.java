@@ -20,14 +20,20 @@ package com.agorapulse.worker.runner;
 import com.agorapulse.worker.event.JobExecutionFinishedEvent;
 import com.agorapulse.worker.event.JobExecutionResultEvent;
 import com.agorapulse.worker.event.JobExecutionStartedEvent;
+import io.micronaut.core.annotation.NonNull;
+import io.micronaut.runtime.context.scope.Refreshable;
+import io.micronaut.runtime.context.scope.refresh.RefreshEvent;
+import io.micronaut.runtime.context.scope.refresh.RefreshEventListener;
 import io.micronaut.runtime.event.annotation.EventListener;
 import jakarta.inject.Singleton;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Singleton
-public class JobExecutionRecorder {
+@Refreshable
+public class JobExecutionRecorder implements RefreshEventListener {
 
     private final List<JobExecutionStartedEvent> startedEvents = new ArrayList<>();
     private final List<JobExecutionFinishedEvent> finishedEvents = new ArrayList<>();
@@ -48,16 +54,28 @@ public class JobExecutionRecorder {
         resultEvents.add(event);
     }
 
-    public final List<JobExecutionStartedEvent> getStartedEvents() {
+    public List<JobExecutionStartedEvent> getStartedEvents() {
         return List.copyOf(startedEvents);
     }
 
-    public final List<JobExecutionFinishedEvent> getFinishedEvents() {
+    public List<JobExecutionFinishedEvent> getFinishedEvents() {
         return List.copyOf(finishedEvents);
     }
 
-    public final List<JobExecutionResultEvent> getResultEvents() {
+    public List<JobExecutionResultEvent> getResultEvents() {
         return List.copyOf(resultEvents);
+    }
+
+    @Override
+    public @NonNull Set<String> getObservedConfigurationPrefixes() {
+        return Set.of();
+    }
+
+    @Override
+    public void onApplicationEvent(RefreshEvent event) {
+        startedEvents.clear();
+        finishedEvents.clear();
+        resultEvents.clear();
     }
 
     @Override
