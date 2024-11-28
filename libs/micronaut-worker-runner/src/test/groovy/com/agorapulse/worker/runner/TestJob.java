@@ -28,6 +28,11 @@ import java.util.Locale;
 @Singleton
 public class TestJob {
 
+    @Job("testJobZero")
+    public void recordingJobZero() {
+        // do nothing
+    }
+
     @Job("test-job-one")
     public void recordingJobOne() {
         // do nothing

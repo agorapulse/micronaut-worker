@@ -42,6 +42,14 @@ class JobRunnerSpec extends Specification {
             exitHandler.success
     }
 
+    void 'non-existing job will not hang forever'() {
+        when:
+            JobRunner runner = new JobRunner(context)
+            runner.run('test-job-one', 'test-job-zero', 'test-job-hundred')
+        then:
+            'test-job-one' in recorder.finishedEvents*.name
+    }
+
     void 'runner waits until all events are generated'() {
         when:
             JobRunner runner = new JobRunner(context)
@@ -105,7 +113,7 @@ class JobRunnerSpec extends Specification {
     }
 
     @Property(name = 'worker.jobs.test-job-three.enabled', value = 'true')
-    @Property(name = 'worker.jobs.test-job-three.initial-delay', value = '20ms')
+    @Property(name = 'worker.jobs.test-job-three.initial-delay', value = '5s')
     void 'only selected jobs are executed ignoring the enabled setting'() {
         when:
             JobRunner runner = new JobRunner(context)
