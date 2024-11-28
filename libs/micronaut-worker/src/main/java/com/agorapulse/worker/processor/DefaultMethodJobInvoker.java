@@ -58,22 +58,7 @@ public class DefaultMethodJobInvoker implements MethodJobInvoker {
         ExecutableMethod<B, ?> method = job.getMethod();
         JobConfiguration configuration = job.getConfiguration();
 
-        if (method.getArguments().length > 1) {
-            throw new JobConfigurationException(job, "Cannot have more than one argument in a method annotated with @Job");
-        }
-
-        boolean consumer = method.getArguments().length == 1;
-        boolean producer = !method.getReturnType().getType().equals(void.class);
-
-        boolean leaderOnly = producer && !consumer || configuration.isLeaderOnly();
-        boolean followerOnly = configuration.isFollowerOnly();
-        int concurrency = configuration.getConcurrency();
-
-        if (leaderOnly && followerOnly) {
-            throw new JobConfigurationException(job, "Cannot use @FollowerOnly on a producer method or method annotated with @LeaderOnly");
-        }
-
-        Function<Callable<Object>, Publisher<Object>> executor = executor(context, leaderOnly, followerOnly, concurrency);
+        Function<Callable<Object>, Publisher<Object>> executor = executor(context, configuration);
 
         if (method.getArguments().length == 0) {
             context.message(null);
@@ -93,19 +78,19 @@ public class DefaultMethodJobInvoker implements MethodJobInvoker {
 
             handleResult(configuration, context, results);
         } else {
-            LOGGER.error("Too many arguments for " + method + "! The job method wasn't executed!");
+            LOGGER.error("Too many arguments for {}! The job method wasn't executed!", method);
         }
     }
 
-    private <T> Function<Callable<T>, Publisher<T>> executor(JobRunContext context, boolean leaderOnly, boolean followerOnly, int concurrency) {
-        if (concurrency > 0) {
-            return s -> distributedJobExecutor.executeConcurrently(context, concurrency, s);
-        }
-        if (leaderOnly) {
+    private <T> Function<Callable<T>, Publisher<T>> executor(JobRunContext context, JobConfiguration configuration) {
+        if (configuration.isLeaderOnly()) {
             return s -> distributedJobExecutor.executeOnlyOnLeader(context, s);
         }
-        if (followerOnly) {
+        if (configuration.isFollowerOnly()) {
             return s -> distributedJobExecutor.executeOnlyOnFollower(context, s);
+        }
+        if (configuration.getConcurrency() > 0) {
+            return s -> distributedJobExecutor.executeConcurrently(context, configuration.getConcurrency(), s);
         }
         return s -> Mono.fromCallable(s).flux();
     }
