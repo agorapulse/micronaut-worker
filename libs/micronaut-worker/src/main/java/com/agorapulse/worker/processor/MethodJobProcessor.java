@@ -180,9 +180,15 @@ public class MethodJobProcessor implements ExecutableMethodProcessor<Job> {
         method.stringValue(Job.class, MEMBER_INITIAL_DELAY).ifPresent(initialDelay -> configuration.setInitialDelay(convertDuration(jobName, initialDelay, "initial delay")));
         method.stringValue(Job.class, MEMBER_SCHEDULER).ifPresent(configuration::setScheduler);
 
+        boolean consumer = method.getArguments().length == 1;
+        boolean producer = !method.getReturnType().getType().equals(void.class);
 
-        configuration.setLeaderOnly(method.findAnnotation(LeaderOnly.class).isPresent());
+        configuration.setLeaderOnly(producer && !consumer || method.findAnnotation(LeaderOnly.class).isPresent());
         configuration.setFollowerOnly(method.findAnnotation(FollowerOnly.class).isPresent());
+
+        if (configuration.isLeaderOnly() && configuration.isFollowerOnly()) {
+            throw new JobConfigurationException(com.agorapulse.worker.Job.create(configuration, () -> {}), "Cannot use @FollowerOnly on a producer method or method annotated with @LeaderOnly");
+        }
 
         method.findAnnotation(Concurrency.class).flatMap(a -> a.getValue(Integer.class)).ifPresent(configuration::setConcurrency);
         method.findAnnotation(Fork.class).flatMap(a -> a.getValue(Integer.class)).ifPresent(configuration::setFork);
@@ -198,6 +204,10 @@ public class MethodJobProcessor implements ExecutableMethodProcessor<Job> {
 
         if (configuration.getProducer().getQueueName() == null) {
             configuration.getProducer().setQueueName(extractQueueNameFromMethod(method));
+        }
+
+        if (method.getArguments().length > 1) {
+            throw new JobConfigurationException(com.agorapulse.worker.Job.create(configuration, () -> {}), "Cannot have more than one argument in a method annotated with @Job");
         }
 
         return configuration;

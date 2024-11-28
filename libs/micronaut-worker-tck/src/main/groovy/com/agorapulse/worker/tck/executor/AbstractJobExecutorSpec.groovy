@@ -77,12 +77,15 @@ abstract class AbstractJobExecutorSpec extends Specification {
                 jobs.count { it.producer.get() == 1 } == 1
             }
 
+            verifyExecutorEvents(one, two, three)
+
         cleanup:
             closeQuietly one, two, three
     }
 
     protected abstract ApplicationContext buildContext()
     protected abstract Class<?> getRequiredExecutorType()
+    protected abstract boolean verifyExecutorEvents(ApplicationContext first, ApplicationContext second, ApplicationContext third)
 
     // some implementation may not support followers, such as the local implementation
     protected int getExpectedFollowersCount() {

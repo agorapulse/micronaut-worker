@@ -19,7 +19,6 @@ package com.agorapulse.worker.processor;
 
 import com.agorapulse.worker.Job;
 import com.agorapulse.worker.JobConfiguration;
-import com.agorapulse.worker.JobConfigurationException;
 import com.agorapulse.worker.executor.DistributedJobExecutor;
 import com.agorapulse.worker.job.JobRunContext;
 import com.agorapulse.worker.queue.JobQueues;
@@ -54,30 +53,15 @@ public class DefaultMethodJobInvoker implements MethodJobInvoker {
         this.distributedJobExecutor = distributedJobExecutor;
     }
 
-    public <B> void invoke(MethodJob<B, ?> job, B bean, JobRunContext callback) {
+    public <B> void invoke(MethodJob<B, ?> job, B bean, JobRunContext context) {
         ExecutableMethod<B, ?> method = job.getMethod();
         JobConfiguration configuration = job.getConfiguration();
 
-        if (method.getArguments().length > 1) {
-            throw new JobConfigurationException(job, "Cannot have more than one argument in a method annotated with @Job");
-        }
-
-        boolean consumer = method.getArguments().length == 1;
-        boolean producer = !method.getReturnType().getType().equals(void.class);
-
-        boolean leaderOnly = producer && !consumer || configuration.isLeaderOnly();
-        boolean followerOnly = configuration.isFollowerOnly();
-        int concurrency = configuration.getConcurrency();
-
-        if (leaderOnly && followerOnly) {
-            throw new JobConfigurationException(job, "Cannot use @FollowerOnly on a producer method or method annotated with @LeaderOnly");
-        }
-
-        Function<Callable<Object>, Publisher<Object>> executor = executor(configuration.getName(), leaderOnly, followerOnly, concurrency);
+        Function<Callable<Object>, Publisher<Object>> executor = executor(context, configuration);
 
         if (method.getArguments().length == 0) {
-            callback.message(null);
-            handleResult(configuration, callback, executor.apply(() -> method.invoke(bean)));
+            context.message(null);
+            handleResult(configuration, context, executor.apply(() -> method.invoke(bean)));
         } else if (method.getArguments().length == 1) {
             JobConfiguration.ConsumerQueueConfiguration queueConfiguration = configuration.getConsumer();
             Publisher<Object> results = Flux.from(
@@ -88,24 +72,24 @@ public class DefaultMethodJobInvoker implements MethodJobInvoker {
                         method.getArguments()[0]
                     )
                 )
-                .doOnNext(callback::message)
+                .doOnNext(context::message)
                 .flatMap(message -> executor.apply(() -> method.invoke(bean, message)));
 
-            handleResult(configuration, callback, results);
+            handleResult(configuration, context, results);
         } else {
-            LOGGER.error("Too many arguments for " + method + "! The job method wasn't executed!");
+            LOGGER.error("Too many arguments for {}! The job method wasn't executed!", method);
         }
     }
 
-    private <T> Function<Callable<T>, Publisher<T>> executor(String jobName, boolean leaderOnly, boolean followerOnly, int concurrency) {
-        if (concurrency > 0) {
-            return s -> distributedJobExecutor.executeConcurrently(jobName, concurrency, s);
+    private <T> Function<Callable<T>, Publisher<T>> executor(JobRunContext context, JobConfiguration configuration) {
+        if (configuration.isLeaderOnly()) {
+            return s -> distributedJobExecutor.executeOnlyOnLeader(context, s);
         }
-        if (leaderOnly) {
-            return s -> distributedJobExecutor.executeOnlyOnLeader(jobName, s);
+        if (configuration.isFollowerOnly()) {
+            return s -> distributedJobExecutor.executeOnlyOnFollower(context, s);
         }
-        if (followerOnly) {
-            return s -> distributedJobExecutor.executeOnlyOnFollower(jobName, s);
+        if (configuration.getConcurrency() > 0) {
+            return s -> distributedJobExecutor.executeConcurrently(context, configuration.getConcurrency(), s);
         }
         return s -> Mono.fromCallable(s).flux();
     }

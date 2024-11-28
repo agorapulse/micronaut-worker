@@ -23,56 +23,26 @@ import jakarta.annotation.Nullable;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-public class JobRunContext {
-    public static JobRunContext create(JobRunStatus status) {
-        return new JobRunContext(status);
+public interface JobRunContext {
+    static JobRunContext create(JobRunStatus status) {
+        return new DefaultJobRunContext(status);
     }
 
-    private final JobRunStatus status;
+    JobRunContext onMessage(BiConsumer<JobRunStatus, Object> onMessage);
 
-    private BiConsumer<JobRunStatus, Object> onMessage = (aStatus, m) -> { };
-    private BiConsumer<JobRunStatus, Throwable> onError = (aStatus, e) -> { };
-    private Consumer<JobRunStatus> onFinished = s -> { };
-    private BiConsumer<JobRunStatus, Object> onResult = (aStatus, r) -> { };
+    JobRunContext onError(BiConsumer<JobRunStatus, Throwable> onError);
 
-    public JobRunContext(JobRunStatus status) {
-        this.status = status;
-    }
+    JobRunContext onFinished(Consumer<JobRunStatus> onFinished);
 
-    public JobRunContext onMessage(BiConsumer<JobRunStatus, Object> onMessage) {
-        this.onMessage = this.onMessage.andThen(onMessage);
-        return this;
-    }
+    JobRunContext onResult(BiConsumer<JobRunStatus, Object> onResult);
 
-    public JobRunContext onError(BiConsumer<JobRunStatus, Throwable> onError) {
-        this.onError = this.onError.andThen(onError);
-        return this;
-    }
+    void message(@Nullable Object event);
 
-    public JobRunContext onFinished(Consumer<JobRunStatus> onFinished) {
-        this.onFinished = this.onFinished.andThen(onFinished);
-        return this;
-    }
+    void error(Throwable error);
 
-    public JobRunContext onResult(BiConsumer<JobRunStatus, Object> onResult) {
-        this.onResult = this.onResult.andThen(onResult);
-        return this;
-    }
+    void finished();
 
-    public void message(@Nullable Object event) {
-        onMessage.accept(status, event);
-    }
+    void result(@Nullable Object result);
 
-    public void error(Throwable error) {
-        onError.accept(status, error);
-    }
-
-    public void finished() {
-        onFinished.accept(status);
-    }
-
-    public void result(@Nullable Object result) {
-        onResult.accept(status, result);
-    }
-
+    JobRunStatus getStatus();
 }

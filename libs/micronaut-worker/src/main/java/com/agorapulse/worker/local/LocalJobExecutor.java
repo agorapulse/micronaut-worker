@@ -17,9 +17,14 @@
  */
 package com.agorapulse.worker.local;
 
+import com.agorapulse.worker.JobRunStatus;
+import com.agorapulse.worker.event.JobExecutorEvent;
 import com.agorapulse.worker.executor.DistributedJobExecutor;
+import com.agorapulse.worker.executor.ExecutorId;
+import com.agorapulse.worker.job.JobRunContext;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Secondary;
+import io.micronaut.context.event.ApplicationEventPublisher;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,39 +46,57 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class LocalJobExecutor implements DistributedJobExecutor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LocalJobExecutor.class);
+    private static final String EXECUTOR_TYPE = "local";
 
     private final ConcurrentMap<String, AtomicInteger> counts = new ConcurrentHashMap<>();
     private final ExecutorService executorService;
+    private final ApplicationEventPublisher<JobExecutorEvent> eventPublisher;
+    private final ExecutorId executorId;
 
-    public LocalJobExecutor(@Named("local-job-executor") ExecutorService executorService) {
+    public LocalJobExecutor(@Named("local-job-executor") ExecutorService executorService, ApplicationEventPublisher<JobExecutorEvent> eventPublisher, ExecutorId executorId) {
         this.executorService = executorService;
+        this.eventPublisher = eventPublisher;
+        this.executorId = executorId;
     }
 
     @Override
-    public <R> Publisher<R> executeOnlyOnLeader(String jobName, Callable<R> supplier) {
-        return executeConcurrently(jobName, 1, supplier);
+    public <R> Publisher<R> executeOnlyOnLeader(JobRunContext context, Callable<R> supplier) {
+        return doExecuteConcurrently(JobExecutorEvent.Type.LEADER_ONLY, context, 1, supplier);
     }
 
     @Override
-    public <R> Publisher<R> executeConcurrently(String jobName, int concurrency, Callable<R> supplier) {
+    public <R> Publisher<R> executeConcurrently(JobRunContext context, int concurrency, Callable<R> supplier) {
+        return doExecuteConcurrently(JobExecutorEvent.Type.CONCURRENT, context, concurrency, supplier);
+    }
+
+    @Override
+    public <R> Publisher<R> executeOnlyOnFollower(JobRunContext context, Callable<R> supplier) {
+        return Mono.fromCallable(supplier).doFinally(ignored -> eventPublisher.publishEvent(
+            JobExecutorEvent.followerOnly(EXECUTOR_TYPE, JobExecutorEvent.Execution.EXECUTE, context.getStatus(), executorId.id())
+        )).subscribeOn(Schedulers.fromExecutor(executorService)).flux();
+    }
+
+    private  <R> Publisher<R> doExecuteConcurrently(JobExecutorEvent.Type type, JobRunContext context, int concurrency, Callable<R> supplier) {
         return Mono.fromCallable(() -> {
-            int increasedCount = counts.computeIfAbsent(jobName, s -> new AtomicInteger(0)).incrementAndGet();
-            LOGGER.trace("Increased count for job {} limited to {}: {}", jobName, concurrency, increasedCount);
+            JobRunStatus status = context.getStatus();
+            int increasedCount = counts.computeIfAbsent(status.getName(), s -> new AtomicInteger(0)).incrementAndGet();
+            LOGGER.trace("Increased count for job {} limited to {}: {}", status.getName(), concurrency, increasedCount);
+
             if (increasedCount > concurrency) {
-                counts.get(jobName).decrementAndGet();
+                counts.get(status.getName()).decrementAndGet();
+                eventPublisher.publishEvent(new JobExecutorEvent(EXECUTOR_TYPE, type, JobExecutorEvent.Execution.SKIP, status, concurrency, executorId.id()));
                 return null;
             }
 
-            R result = supplier.call();
-            int decreasedCount = counts.get(jobName).decrementAndGet();
-            LOGGER.trace("Decreased count for job {} limited to {}: {}", jobName, concurrency, decreasedCount);
-            return result;
-        }).subscribeOn(Schedulers.fromExecutor(executorService)).flux();
-    }
+            eventPublisher.publishEvent(new JobExecutorEvent(EXECUTOR_TYPE, type, JobExecutorEvent.Execution.EXECUTE, status, concurrency, executorId.id()));
 
-    @Override
-    public <R> Publisher<R> executeOnlyOnFollower(String jobName, Callable<R> supplier) {
-        return Mono.fromCallable(supplier).subscribeOn(Schedulers.fromExecutor(executorService)).flux();
+            context.onFinished(s -> {
+                int decreasedCount = counts.get(s.getName()).decrementAndGet();
+                LOGGER.trace("Decreased count for job {} limited to {}: {}", s.getName(), concurrency, decreasedCount);
+            });
+
+            return supplier.call();
+        }).subscribeOn(Schedulers.fromExecutor(executorService)).flux();
     }
 
 }
