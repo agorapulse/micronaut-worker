@@ -20,6 +20,7 @@ package com.agorapulse.worker.redis;
 import com.agorapulse.worker.Job;
 import com.agorapulse.worker.JobConfiguration;
 import com.agorapulse.worker.JobManager;
+import com.agorapulse.worker.event.JobExecutorEvent;
 import com.agorapulse.worker.executor.DistributedJobExecutor;
 import com.agorapulse.worker.executor.ExecutorId;
 import com.agorapulse.worker.job.JobRunContext;
@@ -28,6 +29,7 @@ import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.async.RedisAsyncCommands;
 import io.micronaut.context.BeanContext;
 import io.micronaut.context.annotation.Requires;
+import io.micronaut.context.event.ApplicationEventPublisher;
 import io.micronaut.inject.qualifiers.Qualifiers;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
@@ -48,6 +50,8 @@ import java.util.concurrent.ThreadLocalRandom;
 public class RedisJobExecutor implements DistributedJobExecutor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RedisJobExecutor.class);
+
+    private static final String EXECUTOR_TYPE = "redis";
 
     private static final String LIBRARY_PREFIX = "APMW::";
     private static final String PREFIX_LEADER = LIBRARY_PREFIX + "LEADER::";
@@ -75,22 +79,31 @@ public class RedisJobExecutor implements DistributedJobExecutor {
     private final ExecutorId executorId;
     private final BeanContext beanContext;
     private final JobManager jobManager;
+    private final ApplicationEventPublisher<JobExecutorEvent> eventPublisher;
 
-    public RedisJobExecutor(StatefulRedisConnection<String, String> connection, ExecutorId executorId, BeanContext beanContext, JobManager jobManager) {
+    public RedisJobExecutor(
+        StatefulRedisConnection<String, String> connection,
+        ExecutorId executorId,
+        BeanContext beanContext,
+        JobManager jobManager,
+        ApplicationEventPublisher<JobExecutorEvent> eventPublisher
+    ) {
         this.connection = connection;
         this.executorId = executorId;
         this.beanContext = beanContext;
         this.jobManager = jobManager;
+        this.eventPublisher = eventPublisher;
     }
 
     @Override
     public <R> Publisher<R> executeOnlyOnLeader(JobRunContext context, Callable<R> supplier) {
         RedisAsyncCommands<String, String> commands = connection.async();
-
         return readMasterHostname(context.getStatus().getName(), commands).flatMap(h -> {
             if (executorId.id().equals(h)) {
+                eventPublisher.publishEvent(JobExecutorEvent.leaderOnly(EXECUTOR_TYPE, JobExecutorEvent.Execution.EXECUTE, context.getStatus(), executorId.id()));
                 return Mono.fromCallable(supplier).subscribeOn(Schedulers.fromExecutorService(getExecutorService(context.getStatus().getName())));
             }
+            eventPublisher.publishEvent(JobExecutorEvent.leaderOnly(EXECUTOR_TYPE, JobExecutorEvent.Execution.SKIP, context.getStatus(), executorId.id()));
             return Mono.empty();
         }).flux();
     }
@@ -104,11 +117,12 @@ public class RedisJobExecutor implements DistributedJobExecutor {
                     if (LOGGER.isTraceEnabled()) {
                         LOGGER.trace("Skipping execution of the job {} as the concurrency level {} is already reached", context.getStatus().getName(), maxConcurrency);
                     }
+                    eventPublisher.publishEvent(JobExecutorEvent.concurrent(EXECUTOR_TYPE, JobExecutorEvent.Execution.SKIP, context.getStatus(), maxConcurrency, executorId.id()));
                     return decreaseCurrentExecutionCount(context.getStatus().getName(), commands).flatMap(decreased -> Mono.empty());
                 }
 
                 context.onFinished(s-> decreaseCurrentExecutionCount(s.getName(), commands).subscribe());
-
+                eventPublisher.publishEvent(JobExecutorEvent.concurrent(EXECUTOR_TYPE, JobExecutorEvent.Execution.EXECUTE, context.getStatus(), maxConcurrency, executorId.id()));
                 return Mono.fromCallable(supplier).subscribeOn(Schedulers.fromExecutorService(getExecutorService(context.getStatus().getName())));
             }).flux();
     }
@@ -118,8 +132,10 @@ public class RedisJobExecutor implements DistributedJobExecutor {
         RedisAsyncCommands<String, String> commands = connection.async();
         return readMasterHostname(context.getStatus().getName(), commands).flatMap(h -> {
             if (!"".equals(h) && h.equals(executorId.id())) {
+                eventPublisher.publishEvent(JobExecutorEvent.followerOnly(EXECUTOR_TYPE, JobExecutorEvent.Execution.SKIP, context.getStatus(), executorId.id()));
                 return Mono.empty();
             }
+            eventPublisher.publishEvent(JobExecutorEvent.followerOnly(EXECUTOR_TYPE, JobExecutorEvent.Execution.EXECUTE, context.getStatus(), executorId.id()));
             return Mono.fromCallable(supplier).subscribeOn(Schedulers.fromExecutorService(getExecutorService(context.getStatus().getName())));
         }).flux();
     }

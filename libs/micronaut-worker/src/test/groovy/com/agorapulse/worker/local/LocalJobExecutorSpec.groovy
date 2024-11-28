@@ -17,14 +17,24 @@
  */
 package com.agorapulse.worker.local
 
+import com.agorapulse.worker.event.JobExecutorEvent
+import com.agorapulse.worker.executor.ExecutorId
 import com.agorapulse.worker.tck.executor.AbstractJobExecutorSpec
 import io.micronaut.context.ApplicationContext
+import io.micronaut.context.event.ApplicationEventPublisher
+import spock.lang.Shared
 
 import java.util.concurrent.Executors
 
 class LocalJobExecutorSpec extends AbstractJobExecutorSpec {
 
-    LocalJobExecutor executor = new LocalJobExecutor(Executors.newFixedThreadPool(10))
+    @Shared ApplicationEventPublisher<JobExecutorEvent> publisher = Mock()
+
+    LocalJobExecutor executor = new LocalJobExecutor(
+        Executors.newFixedThreadPool(10),
+        publisher,
+        new ExecutorId('test')
+    )
 
     @Override
     @SuppressWarnings('GetterMethodCouldBeProperty')
