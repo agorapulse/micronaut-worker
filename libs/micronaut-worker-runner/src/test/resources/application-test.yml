@@ -1,0 +1,9 @@
+worker:
+  jobs:
+    test-job-zero:
+      fork: 1
+      cron: '0 0 4 * * *' #Every day at 4am
+      enabled: true
+      producer:
+        queue-name: report_FacebookCompetitorSynchronize
+        queue-type: sqs
