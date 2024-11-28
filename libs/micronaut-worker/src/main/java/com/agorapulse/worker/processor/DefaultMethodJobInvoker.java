@@ -54,7 +54,7 @@ public class DefaultMethodJobInvoker implements MethodJobInvoker {
         this.distributedJobExecutor = distributedJobExecutor;
     }
 
-    public <B> void invoke(MethodJob<B, ?> job, B bean, JobRunContext callback) {
+    public <B> void invoke(MethodJob<B, ?> job, B bean, JobRunContext context) {
         ExecutableMethod<B, ?> method = job.getMethod();
         JobConfiguration configuration = job.getConfiguration();
 
@@ -73,11 +73,11 @@ public class DefaultMethodJobInvoker implements MethodJobInvoker {
             throw new JobConfigurationException(job, "Cannot use @FollowerOnly on a producer method or method annotated with @LeaderOnly");
         }
 
-        Function<Callable<Object>, Publisher<Object>> executor = executor(configuration.getName(), leaderOnly, followerOnly, concurrency);
+        Function<Callable<Object>, Publisher<Object>> executor = executor(context, leaderOnly, followerOnly, concurrency);
 
         if (method.getArguments().length == 0) {
-            callback.message(null);
-            handleResult(configuration, callback, executor.apply(() -> method.invoke(bean)));
+            context.message(null);
+            handleResult(configuration, context, executor.apply(() -> method.invoke(bean)));
         } else if (method.getArguments().length == 1) {
             JobConfiguration.ConsumerQueueConfiguration queueConfiguration = configuration.getConsumer();
             Publisher<Object> results = Flux.from(
@@ -88,24 +88,24 @@ public class DefaultMethodJobInvoker implements MethodJobInvoker {
                         method.getArguments()[0]
                     )
                 )
-                .doOnNext(callback::message)
+                .doOnNext(context::message)
                 .flatMap(message -> executor.apply(() -> method.invoke(bean, message)));
 
-            handleResult(configuration, callback, results);
+            handleResult(configuration, context, results);
         } else {
             LOGGER.error("Too many arguments for " + method + "! The job method wasn't executed!");
         }
     }
 
-    private <T> Function<Callable<T>, Publisher<T>> executor(String jobName, boolean leaderOnly, boolean followerOnly, int concurrency) {
+    private <T> Function<Callable<T>, Publisher<T>> executor(JobRunContext context, boolean leaderOnly, boolean followerOnly, int concurrency) {
         if (concurrency > 0) {
-            return s -> distributedJobExecutor.executeConcurrently(jobName, concurrency, s);
+            return s -> distributedJobExecutor.executeConcurrently(context, concurrency, s);
         }
         if (leaderOnly) {
-            return s -> distributedJobExecutor.executeOnlyOnLeader(jobName, s);
+            return s -> distributedJobExecutor.executeOnlyOnLeader(context, s);
         }
         if (followerOnly) {
-            return s -> distributedJobExecutor.executeOnlyOnFollower(jobName, s);
+            return s -> distributedJobExecutor.executeOnlyOnFollower(context, s);
         }
         return s -> Mono.fromCallable(s).flux();
     }

@@ -22,6 +22,7 @@ import com.agorapulse.worker.JobConfiguration;
 import com.agorapulse.worker.JobManager;
 import com.agorapulse.worker.executor.DistributedJobExecutor;
 import com.agorapulse.worker.executor.ExecutorId;
+import com.agorapulse.worker.job.JobRunContext;
 import io.lettuce.core.ScriptOutputType;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.async.RedisAsyncCommands;
@@ -81,41 +82,41 @@ public class RedisJobExecutor implements DistributedJobExecutor {
     }
 
     @Override
-    public <R> Publisher<R> executeOnlyOnLeader(String jobName, Callable<R> supplier) {
+    public <R> Publisher<R> executeOnlyOnLeader(JobRunContext context, Callable<R> supplier) {
         RedisAsyncCommands<String, String> commands = connection.async();
 
-        return readMasterHostname(jobName, commands).flatMap(h -> {
+        return readMasterHostname(context.getStatus().getName(), commands).flatMap(h -> {
             if (executorId.id().equals(h)) {
-                return Mono.fromCallable(supplier).subscribeOn(Schedulers.fromExecutorService(getExecutorService(jobName)));
+                return Mono.fromCallable(supplier).subscribeOn(Schedulers.fromExecutorService(getExecutorService(context.getStatus().getName())));
             }
             return Mono.empty();
         }).flux();
     }
 
     @Override
-    public <R> Publisher<R> executeConcurrently(String jobName, int maxConcurrency, Callable<R> supplier) {
+    public <R> Publisher<R> executeConcurrently(JobRunContext context, int maxConcurrency, Callable<R> supplier) {
         RedisAsyncCommands<String, String> commands = connection.async();
-        return readAndIncreaseCurrentCount(jobName, commands, maxConcurrency <= 1 ? LOCK_TIMEOUT : COUNT_TIMEOUT)
+        return readAndIncreaseCurrentCount(context.getStatus().getName(), commands, maxConcurrency <= 1 ? LOCK_TIMEOUT : COUNT_TIMEOUT)
             .flatMap(count -> {
                 if (count > maxConcurrency) {
                     if (LOGGER.isTraceEnabled()) {
-                        LOGGER.trace("Skipping execution of the job {} as the concurrency level {} is already reached", jobName, maxConcurrency);
+                        LOGGER.trace("Skipping execution of the job {} as the concurrency level {} is already reached", context.getStatus().getName(), maxConcurrency);
                     }
-                    return decreaseCurrentExecutionCount(jobName, commands).flatMap(decreased -> Mono.empty());
+                    return decreaseCurrentExecutionCount(context.getStatus().getName(), commands).flatMap(decreased -> Mono.empty());
                 }
 
-                return Mono.fromCallable(supplier).subscribeOn(Schedulers.fromExecutorService(getExecutorService(jobName))).doFinally(signal -> decreaseCurrentExecutionCount(jobName, commands).subscribe());
+                return Mono.fromCallable(supplier).subscribeOn(Schedulers.fromExecutorService(getExecutorService(context.getStatus().getName()))).doFinally(signal -> decreaseCurrentExecutionCount(context.getStatus().getName(), commands).subscribe());
             }).flux();
     }
 
     @Override
-    public <R> Publisher<R> executeOnlyOnFollower(String jobName, Callable<R> supplier) {
+    public <R> Publisher<R> executeOnlyOnFollower(JobRunContext context, Callable<R> supplier) {
         RedisAsyncCommands<String, String> commands = connection.async();
-        return readMasterHostname(jobName, commands).flatMap(h -> {
+        return readMasterHostname(context.getStatus().getName(), commands).flatMap(h -> {
             if (!"".equals(h) && h.equals(executorId.id())) {
                 return Mono.empty();
             }
-            return Mono.fromCallable(supplier).subscribeOn(Schedulers.fromExecutorService(getExecutorService(jobName)));
+            return Mono.fromCallable(supplier).subscribeOn(Schedulers.fromExecutorService(getExecutorService(context.getStatus().getName())));
         }).flux();
     }
 

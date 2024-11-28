@@ -18,6 +18,7 @@
 package com.agorapulse.worker.local;
 
 import com.agorapulse.worker.executor.DistributedJobExecutor;
+import com.agorapulse.worker.job.JobRunContext;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Secondary;
 import org.reactivestreams.Publisher;
@@ -50,29 +51,29 @@ public class LocalJobExecutor implements DistributedJobExecutor {
     }
 
     @Override
-    public <R> Publisher<R> executeOnlyOnLeader(String jobName, Callable<R> supplier) {
-        return executeConcurrently(jobName, 1, supplier);
+    public <R> Publisher<R> executeOnlyOnLeader(JobRunContext context, Callable<R> supplier) {
+        return executeConcurrently(context, 1, supplier);
     }
 
     @Override
-    public <R> Publisher<R> executeConcurrently(String jobName, int concurrency, Callable<R> supplier) {
+    public <R> Publisher<R> executeConcurrently(JobRunContext context, int concurrency, Callable<R> supplier) {
         return Mono.fromCallable(() -> {
-            int increasedCount = counts.computeIfAbsent(jobName, s -> new AtomicInteger(0)).incrementAndGet();
-            LOGGER.trace("Increased count for job {} limited to {}: {}", jobName, concurrency, increasedCount);
+            int increasedCount = counts.computeIfAbsent(context.getStatus().getName(), s -> new AtomicInteger(0)).incrementAndGet();
+            LOGGER.trace("Increased count for job {} limited to {}: {}", context.getStatus().getName(), concurrency, increasedCount);
             if (increasedCount > concurrency) {
-                counts.get(jobName).decrementAndGet();
+                counts.get(context.getStatus().getName()).decrementAndGet();
                 return null;
             }
 
             R result = supplier.call();
-            int decreasedCount = counts.get(jobName).decrementAndGet();
-            LOGGER.trace("Decreased count for job {} limited to {}: {}", jobName, concurrency, decreasedCount);
+            int decreasedCount = counts.get(context.getStatus().getName()).decrementAndGet();
+            LOGGER.trace("Decreased count for job {} limited to {}: {}", context.getStatus().getName(), concurrency, decreasedCount);
             return result;
         }).subscribeOn(Schedulers.fromExecutor(executorService)).flux();
     }
 
     @Override
-    public <R> Publisher<R> executeOnlyOnFollower(String jobName, Callable<R> supplier) {
+    public <R> Publisher<R> executeOnlyOnFollower(JobRunContext context, Callable<R> supplier) {
         return Mono.fromCallable(supplier).subscribeOn(Schedulers.fromExecutor(executorService)).flux();
     }
 
