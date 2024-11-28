@@ -60,15 +60,18 @@ public class LocalJobExecutor implements DistributedJobExecutor {
         return Mono.fromCallable(() -> {
             int increasedCount = counts.computeIfAbsent(context.getStatus().getName(), s -> new AtomicInteger(0)).incrementAndGet();
             LOGGER.trace("Increased count for job {} limited to {}: {}", context.getStatus().getName(), concurrency, increasedCount);
+
             if (increasedCount > concurrency) {
                 counts.get(context.getStatus().getName()).decrementAndGet();
                 return null;
             }
 
-            R result = supplier.call();
-            int decreasedCount = counts.get(context.getStatus().getName()).decrementAndGet();
-            LOGGER.trace("Decreased count for job {} limited to {}: {}", context.getStatus().getName(), concurrency, decreasedCount);
-            return result;
+            context.onFinished(s -> {
+                int decreasedCount = counts.get(context.getStatus().getName()).decrementAndGet();
+                LOGGER.trace("Decreased count for job {} limited to {}: {}", context.getStatus().getName(), concurrency, decreasedCount);
+            });
+
+            return supplier.call();
         }).subscribeOn(Schedulers.fromExecutor(executorService)).flux();
     }
 
