@@ -17,6 +17,7 @@
  */
 package com.agorapulse.worker.redis
 
+import com.agorapulse.worker.event.JobExecutionFinishedEvent
 import com.agorapulse.worker.event.JobExecutorEvent
 import com.agorapulse.worker.executor.ExecutorId
 import com.agorapulse.worker.tck.executor.AbstractJobExecutorSpec
@@ -65,18 +66,29 @@ class RedisJobExecutorSpec extends AbstractJobExecutorSpec {
         ApplicationContext second,
         ApplicationContext third
     ) {
-        List<JobExecutorEvent> allEvents = [first, second, third].collect { it.getBean(JobExecutorEventCollector) }.collectMany { it.events }
+        List<JobExecutorEvent> allEvents = [first, second, third].collect {
+            it.getBean(JobExecutorEventCollector)
+        }.collectMany { it.events }
+
+        List<JobExecutionFinishedEvent> allFinishedEvents = [first, second, third].collect {
+            it.getBean(JobExecutorEventCollector)
+        }.collectMany { it.finishedEvents }
+
         assert allEvents.every { it.executor == 'redis' }
 
         List<JobExecutorEvent> leaderEvents = allEvents.findAll { it.status.name == 'long-running-job-execute-on-leader' }
+        List<JobExecutionFinishedEvent> leaderFinishedEvents = allFinishedEvents.findAll { it.status.name == 'long-running-job-execute-on-leader' }
 
         assert leaderEvents.count { it.execution == JobExecutorEvent.Execution.SKIP } == 2
         assert leaderEvents.count { it.execution == JobExecutorEvent.Execution.EXECUTE } == 1
+        assert leaderFinishedEvents.sum { it.status.executionCount } == 1
 
         List<JobExecutorEvent> producerEvents = allEvents.findAll { it.status.name == 'long-running-job-execute-producer' }
+        List<JobExecutionFinishedEvent> producerFinishedEvents = allFinishedEvents.findAll { it.status.name == 'long-running-job-execute-producer' }
 
         assert producerEvents.count { it.execution == JobExecutorEvent.Execution.SKIP } == 2
         assert producerEvents.count { it.execution == JobExecutorEvent.Execution.EXECUTE } == 1
+        assert producerFinishedEvents.sum { it.status.executionCount } == 1
 
         return true
     }

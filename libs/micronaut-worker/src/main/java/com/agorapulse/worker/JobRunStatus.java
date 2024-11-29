@@ -54,6 +54,8 @@ public interface JobRunStatus {
         return getDuration().toMillis();
     }
 
+    int getExecutionCount();
+
     @Nonnull String getName();
     @Nonnull String getId();
 

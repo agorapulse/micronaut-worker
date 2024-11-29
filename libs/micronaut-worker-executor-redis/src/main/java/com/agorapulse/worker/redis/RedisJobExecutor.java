@@ -100,6 +100,7 @@ public class RedisJobExecutor implements DistributedJobExecutor {
         RedisAsyncCommands<String, String> commands = connection.async();
         return readMasterHostname(context.getStatus().getName(), commands).flatMap(h -> {
             if (executorId.id().equals(h)) {
+                context.executed();
                 eventPublisher.publishEvent(JobExecutorEvent.leaderOnly(EXECUTOR_TYPE, JobExecutorEvent.Execution.EXECUTE, context.getStatus(), executorId.id()));
                 return Mono.fromCallable(supplier).subscribeOn(Schedulers.fromExecutorService(getExecutorService(context.getStatus().getName())));
             }
@@ -121,6 +122,7 @@ public class RedisJobExecutor implements DistributedJobExecutor {
                     return decreaseCurrentExecutionCount(context.getStatus().getName(), commands).flatMap(decreased -> Mono.empty());
                 }
 
+                context.executed();
                 context.onFinished(s-> decreaseCurrentExecutionCount(s.getName(), commands).subscribe());
                 eventPublisher.publishEvent(JobExecutorEvent.concurrent(EXECUTOR_TYPE, JobExecutorEvent.Execution.EXECUTE, context.getStatus(), maxConcurrency, executorId.id()));
                 return Mono.fromCallable(supplier).subscribeOn(Schedulers.fromExecutorService(getExecutorService(context.getStatus().getName())));
@@ -135,6 +137,7 @@ public class RedisJobExecutor implements DistributedJobExecutor {
                 eventPublisher.publishEvent(JobExecutorEvent.followerOnly(EXECUTOR_TYPE, JobExecutorEvent.Execution.SKIP, context.getStatus(), executorId.id()));
                 return Mono.empty();
             }
+            context.executed();
             eventPublisher.publishEvent(JobExecutorEvent.followerOnly(EXECUTOR_TYPE, JobExecutorEvent.Execution.EXECUTE, context.getStatus(), executorId.id()));
             return Mono.fromCallable(supplier).subscribeOn(Schedulers.fromExecutorService(getExecutorService(context.getStatus().getName())));
         }).flux();

@@ -17,6 +17,7 @@
  */
 package com.agorapulse.worker.tck.executor;
 
+import com.agorapulse.worker.event.JobExecutionFinishedEvent;
 import com.agorapulse.worker.event.JobExecutorEvent;
 import io.micronaut.context.annotation.Primary;
 import io.micronaut.context.event.ApplicationEventPublisher;
@@ -37,6 +38,7 @@ import java.util.Set;
 public class JobExecutorEventCollector implements ApplicationEventPublisher<JobExecutorEvent>, RefreshEventListener {
 
     private final List<JobExecutorEvent> events = new ArrayList<>();
+    private final List<JobExecutionFinishedEvent> finishedEvents = new ArrayList<>();
 
     /**
      * For usage from micronaut tests.
@@ -45,6 +47,11 @@ public class JobExecutorEventCollector implements ApplicationEventPublisher<JobE
     @EventListener
     void onEvent(JobExecutorEvent event) {
         events.add(event);
+    }
+
+    @EventListener
+    void onFinishedEvent(JobExecutionFinishedEvent finishedEvent) {
+        finishedEvents.add(finishedEvent);
     }
 
     /**
@@ -63,6 +70,10 @@ public class JobExecutorEventCollector implements ApplicationEventPublisher<JobE
 
     public List<JobExecutorEvent> getEvents() {
         return events;
+    }
+
+    public List<JobExecutionFinishedEvent> getFinishedEvents() {
+        return finishedEvents;
     }
 
     @Override

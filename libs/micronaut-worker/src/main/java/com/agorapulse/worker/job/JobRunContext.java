@@ -36,6 +36,8 @@ public interface JobRunContext {
 
     JobRunContext onResult(BiConsumer<JobRunStatus, Object> onResult);
 
+    JobRunContext onExecuted(Consumer<JobRunStatus> onExecuted);
+
     void message(@Nullable Object event);
 
     void error(Throwable error);
@@ -43,6 +45,8 @@ public interface JobRunContext {
     void finished();
 
     void result(@Nullable Object result);
+
+    void executed();
 
     JobRunStatus getStatus();
 }
