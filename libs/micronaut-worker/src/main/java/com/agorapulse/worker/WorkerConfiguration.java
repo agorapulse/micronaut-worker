@@ -17,7 +17,11 @@
  */
 package com.agorapulse.worker;
 
+import io.micronaut.scheduling.TaskExecutors;
+
 public interface WorkerConfiguration {
+
+    String DEFAULT_SCHEDULER = TaskExecutors.SCHEDULED;
 
     WorkerConfiguration ENABLED = new WorkerConfiguration() {
         @Override
@@ -30,6 +34,11 @@ public interface WorkerConfiguration {
             return null;
         }
 
+        @Override
+        public String getScheduler() {
+            return DEFAULT_SCHEDULER;
+        }
+
     };
 
     boolean isEnabled();
@@ -38,5 +47,7 @@ public interface WorkerConfiguration {
      * @return the default queue type such as <code>local</code> or <code>sqs</code>
      */
     String getQueueType();
+
+    String getScheduler();
 
 }

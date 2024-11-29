@@ -26,6 +26,7 @@ public class DefaultWorkerConfiguration implements WorkerConfiguration {
 
     private boolean enabled;
     private String queueType;
+    private String scheduler = WorkerConfiguration.DEFAULT_SCHEDULER;
 
     public DefaultWorkerConfiguration(Environment env) {
         // disable for tests and functions
@@ -51,4 +52,14 @@ public class DefaultWorkerConfiguration implements WorkerConfiguration {
     public void setQueueType(String queueType) {
         this.queueType = queueType;
     }
+
+    @Override
+    public String getScheduler() {
+        return scheduler;
+    }
+
+    public void setScheduler(String scheduler) {
+        this.scheduler = scheduler;
+    }
+
 }
