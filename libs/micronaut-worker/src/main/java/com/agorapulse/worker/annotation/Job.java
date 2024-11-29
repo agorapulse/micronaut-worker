@@ -17,11 +17,11 @@
  */
 package com.agorapulse.worker.annotation;
 
+import com.agorapulse.worker.WorkerConfiguration;
 import io.micronaut.context.annotation.AliasFor;
 import io.micronaut.context.annotation.Executable;
 import io.micronaut.context.annotation.Parallel;
 import io.micronaut.core.annotation.EntryPoint;
-import io.micronaut.scheduling.TaskExecutors;
 import jakarta.inject.Named;
 
 import java.lang.annotation.Documented;
@@ -45,7 +45,7 @@ public @interface Job {
     /**
      * Allows to override the default name of the job which is <code>JobClassName</code> if there is only one executable
      * method (e.g. job definition) in the class or <code>JobClassName-methodName</code> if there is more then one executable method in the class.
-     *
+     * <p>
      * Either the job name specified here or the default name is converted using {@link io.micronaut.core.naming.NameUtils#hyphenate(String)}.
      *
      * @return the name of the job used for configuration
@@ -86,6 +86,6 @@ public @interface Job {
      * @return The name of a {@link jakarta.inject.Named} bean that is a
      * {@link java.util.concurrent.ScheduledExecutorService} to use to schedule the task
      */
-    String scheduler() default TaskExecutors.SCHEDULED;
+    String scheduler() default WorkerConfiguration.DEFAULT_SCHEDULER;
 
 }

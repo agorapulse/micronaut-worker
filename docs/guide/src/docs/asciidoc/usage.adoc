@@ -210,6 +210,16 @@ You can set the default queue type using the `worker.queue-type` configuration p
 include::{root-dir}/libs/micronaut-worker/src/test/resources/application-local.yml[]
 ----
 
+You can override the default scheduler (`TaskExecutors.SCHEDULED`) by setting the `worker.scheduler` property.
+
+[source,yaml]
+.Setting the Default Scheduler
+----
+include::{root-dir}/libs/micronaut-worker/src/test/resources/application-virtual.yml[]
+----
+
+TIP: You can let your jobs executed using virtual threads by using `virtual` executor.
+
 === Job Configuration
 
 Anything you can configure using annotations can be configured externally.

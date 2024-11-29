@@ -17,8 +17,8 @@
  */
 package com.agorapulse.worker.annotation;
 
+import com.agorapulse.worker.WorkerConfiguration;
 import io.micronaut.context.annotation.AliasFor;
-import io.micronaut.scheduling.TaskExecutors;
 import jakarta.inject.Named;
 
 import java.lang.annotation.Documented;
@@ -49,6 +49,6 @@ public @interface FixedRate {
      * {@link java.util.concurrent.ScheduledExecutorService} to use to schedule the task
      */
     @AliasFor(annotation = Job.class, member = "scheduler")
-    String scheduler() default TaskExecutors.SCHEDULED;
+    String scheduler() default  WorkerConfiguration.DEFAULT_SCHEDULER;
 
 }

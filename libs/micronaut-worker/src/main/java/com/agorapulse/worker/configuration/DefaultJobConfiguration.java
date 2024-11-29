@@ -26,7 +26,6 @@ import io.micronaut.context.annotation.ConfigurationBuilder;
 import io.micronaut.context.annotation.EachProperty;
 import io.micronaut.context.annotation.Parameter;
 import io.micronaut.core.util.StringUtils;
-import io.micronaut.scheduling.TaskExecutors;
 
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.Min;
@@ -133,7 +132,7 @@ public class DefaultJobConfiguration implements MutableJobConfiguration {
     @Nullable private Duration fixedDelay;
     @Nullable private Duration initialDelay;
     @Nullable private Duration fixedRate;
-    @NotBlank private String scheduler = TaskExecutors.SCHEDULED;
+    @NotBlank private String scheduler;
 
     @Positive private int fork = 1;
 
@@ -147,6 +146,7 @@ public class DefaultJobConfiguration implements MutableJobConfiguration {
         this.enabled = workerConfiguration.isEnabled();
         this.consumer.setQueueType(workerConfiguration.getQueueType());
         this.producer.setQueueType(workerConfiguration.getQueueType());
+        this.scheduler = workerConfiguration.getScheduler();
         this.name = name;
     }
 
@@ -324,7 +324,7 @@ public class DefaultJobConfiguration implements MutableJobConfiguration {
             this.initialDelay = overrides.getInitialDelay();
         }
 
-        if (overrides.getScheduler() != null && !overrides.getScheduler().equals(TaskExecutors.SCHEDULED)) {
+        if (overrides.getScheduler() != null && !overrides.getScheduler().equals(WorkerConfiguration.DEFAULT_SCHEDULER)) {
             this.scheduler = overrides.getScheduler();
         }
 
