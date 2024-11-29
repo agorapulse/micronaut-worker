@@ -15,7 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.agorapulse.worker.annotation;
+package com.agorapulse.worker.convention;
+
+import com.agorapulse.worker.JobConfiguration;
+import com.agorapulse.worker.annotation.Consumes;
+import com.agorapulse.worker.annotation.FixedRate;
+import io.micronaut.context.annotation.AliasFor;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -25,18 +30,35 @@ import java.lang.annotation.Target;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 @Documented
+@Consumes
+@FixedRate("20s")
 @Retention(RUNTIME)
 @Target({ElementType.METHOD, ElementType.ANNOTATION_TYPE})
-public @interface Produces {
+public @interface QueueConsumer {
 
     /**
-     * @return the name of the work queue to produce items to
+     * @return the name of the work queue to consume items from
      */
-    String value() default "";
+    @AliasFor(annotation = Consumes.class, member = "value")
+    String value();
 
     /**
      * @return the preferred type of the queue implementation, such as sqs or redis
      */
+    @AliasFor(annotation = Consumes.class, member = "type")
     String type() default "";
+
+    /**
+     * @return the maximum waiting time as duration string
+     */
+    @AliasFor(annotation = Consumes.class, member = "value")
+    @AliasFor(annotation = FixedRate.class, member = "value")
+    String waitingTime() default "";
+
+    /**
+     * @return the maximum of messages consumed in a single run, defaults to {@link JobConfiguration.ConsumerQueueConfiguration#DEFAULT_MAX_MESSAGES}
+     */
+    @AliasFor(annotation = Consumes.class, member = "value")
+    int maxMessages() default JobConfiguration.ConsumerQueueConfiguration.DEFAULT_MAX_MESSAGES;
 
 }
