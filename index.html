@@ -92,7 +92,7 @@ $(addBlockSwitches);
 <h1>Micronaut Worker</h1>
 <div class="details">
 <span id="author" class="author">Vladimir Orany</span><br>
-<span id="revnumber">version 2.5.0</span>
+<span id="revnumber">version 2.5.1</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -113,8 +113,9 @@ $(addBlockSwitches);
 <li><a href="#_fork_options">3.3. Fork Options</a></li>
 <li><a href="#_distributed_jobs">3.4. Distributed Jobs</a>
 <ul class="sectlevel3">
-<li><a href="#_leaders_and_followers_jobs">3.4.1. Leaders and Followers Jobs</a></li>
-<li><a href="#_jobs_using_queue">3.4.2. Jobs using Queue</a>
+<li><a href="#_quick_start">3.4.1. Quick Start</a></li>
+<li><a href="#_leaders_and_followers_jobs">3.4.2. Leaders and Followers Jobs</a></li>
+<li><a href="#_jobs_using_queue">3.4.3. Jobs using Queue</a>
 <ul class="sectlevel4">
 <li><a href="#_producer">Producer</a></li>
 <li><a href="#_consumer">Consumer</a></li>
@@ -156,10 +157,13 @@ $(addBlockSwitches);
 <p>Runtime configuration via <code>worker.jobs</code> properties</p>
 </li>
 <li>
+<p>Queue consumers and producers via <code>@QueueConsumer</code> and <code>@QueueProducer</code> annotations</p>
+</li>
+<li>
 <p>Distributed processing support with optional queues and leader election</p>
 </li>
 <li>
-<p>Job execution events <code>JobExecutionStartedEvent</code>, <code>JobExecutionFinishedEvent</code> and <code>JobExecutionResultEvent</code></p>
+<p>Job execution events <code>JobExecutionStartedEvent</code>, <code>JobExecutionFinishedEvent</code>, <code>JobExecutionResultEvent</code> and <code>JobExecutorEvent</code></p>
 </li>
 <li>
 <p>Built in support for <a href="https://github.com/agorapulse/micronaut-snitch">Micronaut Snitch</a></p>
@@ -207,25 +211,25 @@ All jobs are disabled by default in the <code>function</code> and <code>cli</cod
 dependencies {
     // minimal dependency with local queue and executor
     // select some of the following dependencies to enable more features
-    implementation 'com.agorapulse:micronaut-worker:2.5.0'
+    implementation 'com.agorapulse:micronaut-worker:2.5.1'
 
     // to enable /jobs endpoint
-    implementation 'com.agorapulse:micronaut-worker-management:2.5.0'
+    implementation 'com.agorapulse:micronaut-worker-management:2.5.1'
 
     // to enable AWS SDK v1 SQS queues integration
-    implementation 'com.agorapulse:micronaut-worker-queues-sqs-v1:2.5.0'
+    implementation 'com.agorapulse:micronaut-worker-queues-sqs-v1:2.5.1'
 
     // to enable AWS SDK v2 SQS queues integration
-    implementation 'com.agorapulse:micronaut-worker-queues-sqs-v2:2.5.0'
+    implementation 'com.agorapulse:micronaut-worker-queues-sqs-v2:2.5.1'
 
     // to enable Redis leader/follower capabilities
-    implementation 'com.agorapulse:micronaut-worker-executor-redis:2.5.0'
+    implementation 'com.agorapulse:micronaut-worker-executor-redis:2.5.1'
 
     // to enable Redis queues integration
-    implementation 'com.agorapulse:micronaut-worker-queues-redis:2.5.0'
+    implementation 'com.agorapulse:micronaut-worker-queues-redis:2.5.1'
 
     // to enable running jobs as CLI apps
-    implementation 'com.agorapulse:micronaut-worker-runner:2.5.0'
+    implementation 'com.agorapulse:micronaut-worker-runner:2.5.1'
 
     // you also need Redis configuration on the classpath depending on your Micronaut version
     // for Micronaut 1.x
@@ -404,8 +408,62 @@ For the consumer jobs, the messages are consumed synchronously so if you want to
 </div>
 <div class="sect2">
 <h3 id="_distributed_jobs"><a class="anchor" href="#_distributed_jobs"></a>3.4. Distributed Jobs</h3>
+<div class="paragraph">
+<p>The worker library excels in the distributed jobs area. You can run jobs only on the leader server or only on the followers or with the given concurrency level.</p>
+</div>
 <div class="sect3">
-<h4 id="_leaders_and_followers_jobs"><a class="anchor" href="#_leaders_and_followers_jobs"></a>3.4.1. Leaders and Followers Jobs</h4>
+<h4 id="_quick_start"><a class="anchor" href="#_quick_start"></a>3.4.1. Quick Start</h4>
+<div class="paragraph">
+<p>You can use two conventional annotations <code>@QueueProducer</code> and <code>@QueueConsumer</code> to publish and consume messages from a queue.</p>
+</div>
+<div class="listingblock">
+<div class="title">Queue Producer and Consumer</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="java">public record Message(String message) { }                                           <i class="conum" data-value="1"></i><b>(1)</b>
+
+@Cron('0 0 0/1 ? * *')                                                              <i class="conum" data-value="2"></i><b>(2)</b>
+@QueueProducer("my-queue")                                                          <i class="conum" data-value="3"></i><b>(3)</b>
+public Flux&lt;Message&gt; produceToMyQueue() {                                           <i class="conum" data-value="4"></i><b>(4)</b>
+    return Flux.just("Hello", "World").map(Message::new);
+}
+
+@QueueConsumer("my-queue")                                                          <i class="conum" data-value="5"></i><b>(5)</b>
+public void listenToMyQueue(Message message) {                                      <i class="conum" data-value="6"></i><b>(6)</b>
+    // your code here
+}</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Two jobs will communicate to each other using the given record object</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>The producer jobs must have some scheduled trigger associated with them, for example cron or fixed rate</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>Use the <code>@QueueProducer</code> annotation with the name of the queue to publish messages</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="4"></i><b>4</b></td>
+<td>The producer job must return some value, ideally a <code>Publisher</code> of given messages</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="5"></i><b>5</b></td>
+<td>Use the <code>@QueueConsumer</code> annotation with the name of the queue to consume messages</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="6"></i><b>6</b></td>
+<td>The consumer job must have a single parameter of the same type as the producer job returns</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_leaders_and_followers_jobs"><a class="anchor" href="#_leaders_and_followers_jobs"></a>3.4.2. Leaders and Followers Jobs</h4>
 <div class="paragraph">
 <p>Micronaut Worker can help you to run jobs in distributed environments. You can choose to
 run the code only on the leader server or only on the followers.</p>
@@ -432,7 +490,7 @@ public void job() {
 </div>
 </div>
 <div class="sect3">
-<h4 id="_jobs_using_queue"><a class="anchor" href="#_jobs_using_queue"></a>3.4.2. Jobs using Queue</h4>
+<h4 id="_jobs_using_queue"><a class="anchor" href="#_jobs_using_queue"></a>3.4.3. Jobs using Queue</h4>
 <div class="paragraph">
 <p>In a distributed environment, tasks often process messages using queues. In Micronaut Worker,
 you have three type of queue related jobs - producers, consumers and pipes - depending on the number of
@@ -555,6 +613,28 @@ All jobs are disabled for the <code>test</code> and <code>function</code> enviro
 <pre class="prettyprint highlight"><code data-lang="yaml">worker:
   queue-type: local</code></pre>
 </div>
+</div>
+<div class="paragraph">
+<p>You can override the default scheduler (<code>TaskExecutors.SCHEDULED</code>) by setting the <code>worker.scheduler</code> property.</p>
+</div>
+<div class="listingblock">
+<div class="title">Setting the Default Scheduler</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="yaml">worker:
+  scheduler: virtual</code></pre>
+</div>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+You can let your jobs executed using virtual threads by using <code>virtual</code> executor.
+</td>
+</tr>
+</table>
 </div>
 </div>
 <div class="sect3">
@@ -993,8 +1073,8 @@ sampleJob.reconfigure {
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 2.5.0<br>
-Last updated 2024-11-28 16:34:18 UTC
+Version 2.5.1<br>
+Last updated 2024-11-29 16:31:49 UTC
 </div>
 </div>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.css">
