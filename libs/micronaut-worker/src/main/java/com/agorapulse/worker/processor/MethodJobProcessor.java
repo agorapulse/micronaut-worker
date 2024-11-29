@@ -26,6 +26,8 @@ import com.agorapulse.worker.annotation.*;
 import com.agorapulse.worker.annotation.Job;
 import com.agorapulse.worker.configuration.DefaultJobConfiguration;
 import com.agorapulse.worker.configuration.MutableJobConfiguration;
+import com.agorapulse.worker.convention.QueueConsumer;
+import com.agorapulse.worker.convention.QueueProducer;
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.context.BeanContext;
 import io.micronaut.context.env.Environment;
@@ -183,6 +185,19 @@ public class MethodJobProcessor implements ExecutableMethodProcessor<Job> {
         boolean consumer = method.getArguments().length == 1;
         boolean producer = !method.getReturnType().getType().equals(void.class);
 
+        if (method.hasAnnotation(QueueConsumer.class) && !consumer) {
+            throw new JobConfigurationException(com.agorapulse.worker.Job.create(configuration, () -> {}), "Method annotated with @QueueListener must have exactly one argument");
+        }
+
+        if (method.hasAnnotation(QueueProducer.class)) {
+            if (!producer) {
+                throw new JobConfigurationException(com.agorapulse.worker.Job.create(configuration, () -> {}), "Method annotated with @QueueProducer must have a return type. Use reactive type to the best performance.");
+            }
+            if (configuration.getCron() == null && configuration.getFixedDelay() == null && configuration.getInitialDelay() == null && configuration.getFixedRate() == null) {
+                throw new JobConfigurationException(com.agorapulse.worker.Job.create(configuration, () -> {}), "One of the cron, fixedDelay, initialDelay or fixedRate must be specified for a method annotated with @QueueProducer or one of @Cron, @FixedDelay, @InitialDelay or @FixedRate must be specified for the method.");
+            }
+        }
+
         configuration.setLeaderOnly(producer && !consumer || method.findAnnotation(LeaderOnly.class).isPresent());
         configuration.setFollowerOnly(method.findAnnotation(FollowerOnly.class).isPresent());
 
@@ -216,7 +231,8 @@ public class MethodJobProcessor implements ExecutableMethodProcessor<Job> {
     private <A extends Annotation> void configureQueue(Optional<AnnotationValue<A>> consumesAnnotation, MutableJobConfiguration.MutableQueueConfiguration queueConfiguration) {
         if (consumesAnnotation.isPresent()) {
             AnnotationValue<A> annotationValue = consumesAnnotation.get();
-            queueConfiguration.setQueueName(annotationValue.getRequiredValue(String.class));
+
+            annotationValue.stringValue().ifPresent(queueConfiguration::setQueueName);
 
             annotationValue.stringValue("type").ifPresent(type -> {
                 if (StringUtils.isNotEmpty(type)) {

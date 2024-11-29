@@ -34,7 +34,7 @@ public @interface Consumes {
     /**
      * @return the name of the work queue to consume items from
      */
-    String value();
+    String value() default "";
 
     /**
      * @return the preferred type of the queue implementation, such as sqs or redis
