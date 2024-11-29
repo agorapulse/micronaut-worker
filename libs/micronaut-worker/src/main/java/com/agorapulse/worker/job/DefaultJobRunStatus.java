@@ -37,6 +37,7 @@ public class DefaultJobRunStatus implements JobRunStatus {
     private final Instant started;
     private Instant finished;
     private Throwable exception;
+    private int executionCount;
 
     private DefaultJobRunStatus(String id, String name, Instant started) {
         this.id = id;
@@ -73,6 +74,11 @@ public class DefaultJobRunStatus implements JobRunStatus {
         return exception;
     }
 
+    @Override
+    public int getExecutionCount() {
+        return executionCount;
+    }
+
     public void finish() {
         finished = Instant.now();
     }
@@ -80,6 +86,10 @@ public class DefaultJobRunStatus implements JobRunStatus {
     public void fail(Throwable exception) {
         finished = Instant.now();
         this.exception = exception;
+    }
+
+    public void executed() {
+        executionCount++;
     }
 
     @Override

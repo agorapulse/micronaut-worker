@@ -71,9 +71,12 @@ public class LocalJobExecutor implements DistributedJobExecutor {
 
     @Override
     public <R> Publisher<R> executeOnlyOnFollower(JobRunContext context, Callable<R> supplier) {
-        return Mono.fromCallable(supplier).doFinally(ignored -> eventPublisher.publishEvent(
-            JobExecutorEvent.followerOnly(EXECUTOR_TYPE, JobExecutorEvent.Execution.EXECUTE, context.getStatus(), executorId.id())
-        )).subscribeOn(Schedulers.fromExecutor(executorService)).flux();
+        return Mono.fromCallable(supplier).doFinally(ignored -> {
+            context.executed();
+            eventPublisher.publishEvent(
+                JobExecutorEvent.followerOnly(EXECUTOR_TYPE, JobExecutorEvent.Execution.EXECUTE, context.getStatus(), executorId.id())
+            );
+        }).subscribeOn(Schedulers.fromExecutor(executorService)).flux();
     }
 
     private  <R> Publisher<R> doExecuteConcurrently(JobExecutorEvent.Type type, JobRunContext context, int concurrency, Callable<R> supplier) {
@@ -88,6 +91,7 @@ public class LocalJobExecutor implements DistributedJobExecutor {
                 return null;
             }
 
+            context.executed();
             eventPublisher.publishEvent(new JobExecutorEvent(EXECUTOR_TYPE, type, JobExecutorEvent.Execution.EXECUTE, status, concurrency, executorId.id()));
 
             context.onFinished(s -> {

@@ -31,6 +31,7 @@ public class DefaultJobRunContext implements JobRunContext {
     private BiConsumer<JobRunStatus, Throwable> onError = (aStatus, e) -> { };
     private Consumer<JobRunStatus> onFinished = s -> { };
     private BiConsumer<JobRunStatus, Object> onResult = (aStatus, r) -> { };
+    private Consumer<JobRunStatus> onExecuted = s -> { };
 
     public DefaultJobRunContext(JobRunStatus status) {
         this.status = status;
@@ -61,6 +62,12 @@ public class DefaultJobRunContext implements JobRunContext {
     }
 
     @Override
+    public JobRunContext onExecuted(Consumer<JobRunStatus> onExecuted) {
+        this.onExecuted = this.onExecuted.andThen(onExecuted);
+        return this;
+    }
+
+    @Override
     public void message(@Nullable Object event) {
         onMessage.accept(status, event);
     }
@@ -78,6 +85,11 @@ public class DefaultJobRunContext implements JobRunContext {
     @Override
     public void result(@Nullable Object result) {
         onResult.accept(status, result);
+    }
+
+    @Override
+    public void executed() {
+        onExecuted.accept(status);
     }
 
     @Override

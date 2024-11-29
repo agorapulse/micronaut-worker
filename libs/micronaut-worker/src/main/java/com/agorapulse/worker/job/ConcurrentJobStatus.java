@@ -93,6 +93,7 @@ public final class ConcurrentJobStatus implements JobStatus {
         lastTriggered.set(status.getStarted());
 
         JobRunContext context = JobRunContext.create(status)
+            .onExecuted(s -> status.executed())
             .onFinished(s -> {
                 status.finish();
                 recordLastStatus(s);
