@@ -7,8 +7,9 @@ Micronaut Worker is a library for advanced scheduling and work distribution in M
 
  * Custom annotations for particular use cases - `@Cron`, `@FixedDelay`, `@FixedRate`, and `@InitialDelay`
  * Runtime configuration via `worker.jobs` properties
+ * Queue consumers and producers via `@QueueConsumer` and `@QueueProducer` annotations
  * Distributed processing support with optional queues and leader election
- * Job execution events `JobExecutionStartedEvent`, `JobExecutionFinishedEvent` and `JobExecutionResultEvent`
+ * Job execution events `JobExecutionStartedEvent`, `JobExecutionFinishedEvent`, `JobExecutionResultEvent` and `JobExecutorEvent`
  * Built in support for https://github.com/agorapulse/micronaut-snitch[Micronaut Snitch]
  * Built in support for https://agorapulse.github.io/micronaut-console[Micronaut Console]
  * Ability to execute a single job from the CLI (for e.g. https://aws.amazon.com/batch/ or https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definitions.html)
