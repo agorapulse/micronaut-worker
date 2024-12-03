@@ -107,6 +107,7 @@ class LongRunningJob {
         if (FAILING_MESSAGE == message) {
             throw new IllegalStateException('Failing concurrent message')
         }
+        runLongTask()
         consumedConcurrentMessages.add(message)
     }
 
@@ -117,6 +118,7 @@ class LongRunningJob {
         if (FAILING_MESSAGE == message) {
             throw new IllegalStateException('Failing fork message')
         }
+        runLongTask()
         consumedForkMessages.add(message)
     }
 
@@ -126,6 +128,7 @@ class LongRunningJob {
         if (FAILING_MESSAGE == message) {
             throw new IllegalStateException('Failing regular message')
         }
+        runLongTask()
         consumedRegularMessages.add(message)
     }
 
