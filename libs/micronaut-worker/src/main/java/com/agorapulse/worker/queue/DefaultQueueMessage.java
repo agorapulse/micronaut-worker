@@ -19,25 +19,32 @@ package com.agorapulse.worker.queue;
 
 class DefaultQueueMessage<T> implements QueueMessage<T> {
 
-    static <T> DefaultQueueMessage<T> alwaysRequeue(T message, Runnable doDelete, Runnable doRequeue) {
-        return new DefaultQueueMessage<>(message, doDelete, doRequeue, true);
+    static <T> DefaultQueueMessage<T> alwaysRequeue(String id, T message, Runnable doDelete, Runnable doRequeue) {
+        return new DefaultQueueMessage<>(id, message, doDelete, doRequeue, true);
     }
 
-    static <T> DefaultQueueMessage<T> requeueIfDeleted(T message, Runnable doDelete, Runnable doRequeue) {
-        return new DefaultQueueMessage<>(message, doDelete, doRequeue, true);
+    static <T> DefaultQueueMessage<T> requeueIfDeleted(String id, T message, Runnable doDelete, Runnable doRequeue) {
+        return new DefaultQueueMessage<>(id, message, doDelete, doRequeue, true);
     }
 
+    private final String id;
     private final T message;
     private final Runnable doDelete;
     private final Runnable doRequeue;
     private final boolean alwaysRequeue;
     private boolean deleted;
 
-    private DefaultQueueMessage(T message, Runnable doDelete, Runnable doRequeue, boolean alwaysRequeue) {
+    private DefaultQueueMessage(String id, T message, Runnable doDelete, Runnable doRequeue, boolean alwaysRequeue) {
+        this.id = id;
         this.message = message;
         this.doDelete = doDelete;
         this.doRequeue = doRequeue;
         this.alwaysRequeue = alwaysRequeue;
+    }
+
+    @Override
+    public String getId() {
+        return id;
     }
 
     @Override

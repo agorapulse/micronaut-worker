@@ -23,28 +23,30 @@ public interface QueueMessage<T> {
      * Creates a new queue message which will be always requeued even if it was not deleted. This is suitable for
      * queue implementations that removed the message from the queue after reading.
      *
+     * @param id the id of the message
      * @param message the message
      * @param doDelete the action to delete the message
      * @param doRequeue the action to requeue the message
      * @return the queue message
      * @param <T> the type of the message
      */
-    static <T> QueueMessage<T> alwaysRequeue(T message, Runnable doDelete, Runnable doRequeue) {
-        return DefaultQueueMessage.alwaysRequeue(message, doDelete, doRequeue);
+    static <T> QueueMessage<T> alwaysRequeue(String id, T message, Runnable doDelete, Runnable doRequeue) {
+        return DefaultQueueMessage.alwaysRequeue(id, message, doDelete, doRequeue);
     }
 
     /**
      * Creates a new queue message which will be requeued only if it was deleted. This is suitable for
      * queue implementations that keep the message in the queue after reading.
      *
+     * @param id the id of the message
      * @param message the message
      * @param doDelete the action to delete the message
      * @param doRequeue the action to requeue the message
      * @return the queue message
      * @param <T> the type of the message
      */
-    static <T> QueueMessage<T> requeueIfDeleted(T message, Runnable doDelete, Runnable doRequeue) {
-        return DefaultQueueMessage.requeueIfDeleted(message, doDelete, doRequeue);
+    static <T> QueueMessage<T> requeueIfDeleted(String id, T message, Runnable doDelete, Runnable doRequeue) {
+        return DefaultQueueMessage.requeueIfDeleted(id, message, doDelete, doRequeue);
     }
 
     /**
@@ -52,6 +54,12 @@ public interface QueueMessage<T> {
      * @return the payload of the message
      */
     T getMessage();
+
+    /**
+     * Returns the id of the message.
+     * @return the id of the message
+     */
+    String getId();
 
     /**
      * Deletes the message from the queue.

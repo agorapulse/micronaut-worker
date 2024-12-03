@@ -32,6 +32,7 @@ import java.time.Duration;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentNavigableMap;
@@ -46,16 +47,18 @@ public class LocalQueues implements JobQueues {
 
     static class LocalQueue {
 
-        private final ConcurrentNavigableMap<Long, Object> messages = new ConcurrentSkipListMap<>();
+        private final ConcurrentNavigableMap<String, Object> messages = new ConcurrentSkipListMap<>();
+        private final String prefix = UUID.randomUUID() + "-";
         private final AtomicLong counter = new AtomicLong(1);
 
         void add(Object message) {
-            messages.put(counter.getAndIncrement(), message);
+            messages.put(prefix + counter.getAndIncrement(), message);
         }
 
         <T> QueueMessage<T> readMessage(Environment env, Argument<T> argument) {
-            Map.Entry<Long, Object> entry = messages.pollFirstEntry();
+            Map.Entry<String, Object> entry = messages.pollFirstEntry();
             return QueueMessage.alwaysRequeue(
+                entry.getKey(),
                 env.convertRequired(entry.getValue(), argument),
                 () -> messages.remove(entry.getKey()),
                 () -> messages.put(entry.getKey(), entry.getValue())

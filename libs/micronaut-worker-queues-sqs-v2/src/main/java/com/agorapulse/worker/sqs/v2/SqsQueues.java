@@ -49,6 +49,7 @@ public class SqsQueues implements JobQueues {
         return Flux.merge(simpleQueueService.receiveMessages(queueName, maxNumberOfMessages, 0, Math.toIntExact(waitTime.getSeconds())).stream().map(m ->
             readMessageInternal(queueName, argument, m.body(), m.receiptHandle(), true).map(
                 message -> QueueMessage.requeueIfDeleted(
+                    m.messageId(),
                     message,
                     () -> simpleQueueService.deleteMessage(queueName, m.receiptHandle()),
                     () -> simpleQueueService.sendMessage(queueName, m.body())
