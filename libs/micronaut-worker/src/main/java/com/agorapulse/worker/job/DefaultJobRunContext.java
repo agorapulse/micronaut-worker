@@ -122,7 +122,7 @@ public class DefaultJobRunContext implements JobRunContext {
 
     @Override
     public JobRunContext copy() {
-        return new DefaultJobRunContext(status, onMessage, onError, onFinished, onResult, onExecuted, onSkipped);
+        return new DefaultJobRunContext(status.copy(), onMessage, onError, onFinished, onResult, onExecuted, onSkipped);
     }
 
 }
