@@ -102,8 +102,8 @@ public class DefaultJobRunStatus implements JobRunStatus {
     }
 
     @Override
-    public DefaultJobRunStatus copy() {
-        return new DefaultJobRunStatus(id, name, started, finished, exception, executionCount);
+    public DefaultJobRunStatus copy(String idSuffix) {
+        return new DefaultJobRunStatus(id + "-" + idSuffix, name, started, finished, exception, executionCount);
     }
 
     @Override

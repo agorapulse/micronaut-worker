@@ -71,19 +71,30 @@ public class DefaultMethodJobInvoker implements MethodJobInvoker {
                             method.getArguments()[0]
                         )
                     )
-                    .doOnNext(context::message)
                     .flatMap(message -> {
-                        Object result = method.invoke(bean, message.getMessage());
+                        JobRunContext messageContext = context.createChildContext(message.getId());
+                        try {
+                            messageContext.message(message);
 
-                        if (result == null) {
+                            Object result = method.invoke(bean, message.getMessage());
+
+                            message.delete();
+
+                            if (result == null) {
+                                return Mono.empty();
+                            }
+
+                            if (result instanceof Publisher<?> p) {
+                                return Flux.from(p);
+                            }
+
+                            return Mono.just(result);
+                        } catch (Throwable e) {
+                            message.requeue();
+                            messageContext.error(e);
                             return Mono.empty();
                         }
 
-                        if (result instanceof Publisher<?> p) {
-                            return Flux.from(p);
-                        }
-
-                        return Mono.just(result);
                     });
             }));
         } else {

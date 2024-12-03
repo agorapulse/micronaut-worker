@@ -64,5 +64,5 @@ public interface JobRunStatus {
 
     @Nullable Throwable getException();
 
-    DefaultJobRunStatus copy();
+    DefaultJobRunStatus copy(String idSuffix);
 }

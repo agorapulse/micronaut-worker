@@ -72,15 +72,21 @@ abstract class AbstractJobExecutorSpec extends Specification {
                 // concurrent jobs are at most n-times
                 jobs.count { it.concurrent.get() == 1 } == 2
 
-                // concurrent consumer jobs should handle (workers * max messages) messages
                 List<String> remainingRegularMessages = queues.getMessages(LongRunningJob.REGULAR_CONSUMER_QUEUE_NAME, Argument.STRING)
-                remainingRegularMessages.size() == 1
-                jobs.consumedRegularMessages.flatten().flatten().size() == 9
+                List<String> consumedRegularMessages = jobs.consumedRegularMessages.flatten().flatten()
+
+                List<String> remainingConcurrentMessages = queues.getMessages(LongRunningJob.CONCURRENT_CONSUMER_QUEUE_NAME, Argument.STRING)
+                List<String> consumeConcurrentMessage = jobs.consumedConcurrentMessages.flatten().flatten()
+
+                // concurrent consumer jobs should handle (workers * max messages) messages
+                LongRunningJob.FAILING_MESSAGE in remainingRegularMessages
+                remainingRegularMessages.size() == 2
+                consumedRegularMessages.size() == 8
 
                 // concurrent consumer jobs should handle (concurrency * max messages) messages
-                List<String> remainingConcurrentMessages = queues.getMessages(LongRunningJob.CONCURRENT_CONSUMER_QUEUE_NAME, Argument.STRING)
-                remainingConcurrentMessages.size() == 4
-                jobs.consumedConcurrentMessages.flatten().flatten().size() == 6
+                LongRunningJob.FAILING_MESSAGE in remainingConcurrentMessages
+                remainingConcurrentMessages.size() == 5
+                consumeConcurrentMessage.size() == 5
 
                 // leader job is executed only on leader
                 jobs.count { it.leader.get() == 1 } == 1

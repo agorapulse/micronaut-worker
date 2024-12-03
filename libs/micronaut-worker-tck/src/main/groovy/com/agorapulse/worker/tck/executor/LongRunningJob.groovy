@@ -45,6 +45,7 @@ class LongRunningJob {
 
     public static final String CONCURRENT_CONSUMER_QUEUE_NAME = 'concurrent-queue'
     public static final String REGULAR_CONSUMER_QUEUE_NAME = 'normal-queue'
+    public static final String FAILING_MESSAGE = '5'
 
     final AtomicInteger producer = new AtomicInteger()
     final AtomicInteger leader = new AtomicInteger()
@@ -101,14 +102,18 @@ class LongRunningJob {
     @Job(initialDelay = JOBS_INITIAL_DELAY)
     @Consumes(value = CONCURRENT_CONSUMER_QUEUE_NAME, maxMessages = 3)
     void executeConcurrentConsumer(String message) {
-        runLongTask()
+        if (FAILING_MESSAGE == message) {
+            throw new IllegalStateException('Failing concurrent message')
+        }
         consumedConcurrentMessages.add(message)
     }
 
     @Job(initialDelay = JOBS_INITIAL_DELAY)
     @Consumes(value = REGULAR_CONSUMER_QUEUE_NAME, maxMessages = 3)
     void executeRegularConsumer(String message) {
-        runLongTask()
+        if (FAILING_MESSAGE == message) {
+            throw new IllegalStateException('Failing regular message')
+        }
         consumedRegularMessages.add(message)
     }
 
@@ -122,7 +127,7 @@ class LongRunningJob {
     @Override
     @SuppressWarnings('LineLength')
     String toString() {
-        return "LongRunningJob{producer=$producer, leader=$leader, follower=$follower, consecutive=$consecutive, unlimited=$unlimited, concurrent=$concurrent, fork=$fork}"
+        return "LongRunningJob{producer=$producer, leader=$leader, follower=$follower, consecutive=$consecutive, unlimited=$unlimited, concurrent=$concurrent, fork=$fork, consumedConcurrentMessages=$consumedConcurrentMessages, consumedRegularMessages=$consumedRegularMessages}"
     }
 
     @SuppressWarnings('Instanceof')

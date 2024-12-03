@@ -48,11 +48,11 @@ public class LocalQueues implements JobQueues {
     static class LocalQueue {
 
         private final ConcurrentNavigableMap<String, Object> messages = new ConcurrentSkipListMap<>();
-        private final String prefix = UUID.randomUUID() + "-";
+        private final String format = UUID.randomUUID() + "-%015d";
         private final AtomicLong counter = new AtomicLong(1);
 
         void add(Object message) {
-            messages.put(prefix + counter.getAndIncrement(), message);
+            messages.put(format.formatted(counter.getAndIncrement()), message);
         }
 
         <T> QueueMessage<T> readMessage(ConversionService env, Argument<T> argument) {
@@ -61,7 +61,11 @@ public class LocalQueues implements JobQueues {
                 entry.getKey(),
                 env.convertRequired(entry.getValue(), argument),
                 () -> messages.remove(entry.getKey()),
-                () -> messages.put(entry.getKey(), entry.getValue())
+                () -> {
+                    // ensure the message is removed and add it to the end of the queue
+                    messages.remove(entry.getKey());
+                    add(entry.getValue());
+                }
             );
         }
 

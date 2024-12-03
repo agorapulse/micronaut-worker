@@ -121,8 +121,8 @@ public class DefaultJobRunContext implements JobRunContext {
     }
 
     @Override
-    public JobRunContext copy() {
-        return new DefaultJobRunContext(status.copy(), onMessage, onError, onFinished, onResult, onExecuted, onSkipped);
+    public JobRunContext createChildContext(String isSuffix) {
+        return new DefaultJobRunContext(status.copy(isSuffix), onMessage, onError, onFinished, onResult, onExecuted, onSkipped);
     }
 
 }
