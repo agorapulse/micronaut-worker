@@ -65,4 +65,8 @@ class DefaultQueueMessage<T> implements QueueMessage<T> {
         }
     }
 
+    @Override
+    public String toString() {
+        return "DefaultQueueMessage{id='%s', message=%s}".formatted(id, message);
+    }
 }

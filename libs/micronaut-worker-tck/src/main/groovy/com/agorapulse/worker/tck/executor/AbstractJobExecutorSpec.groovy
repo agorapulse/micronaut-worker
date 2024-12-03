@@ -18,7 +18,11 @@
 package com.agorapulse.worker.tck.executor
 
 import com.agorapulse.worker.executor.DistributedJobExecutor
+import com.agorapulse.worker.local.LocalQueues
+import com.agorapulse.worker.queue.JobQueues
 import io.micronaut.context.ApplicationContext
+import io.micronaut.core.type.Argument
+import reactor.core.publisher.Flux
 import spock.lang.Retry
 import spock.lang.Specification
 import spock.util.concurrent.PollingConditions
@@ -38,9 +42,13 @@ abstract class AbstractJobExecutorSpec extends Specification {
     @Retry(count = 10)
     void 'jobs executed appropriate times on three servers'() {
         given:
-            ApplicationContext one = buildContext()
-            ApplicationContext two = buildContext()
-            ApplicationContext three = buildContext()
+            LocalQueues queues = LocalQueues.create().tap {
+                sendMessages(LongRunningJob.CONCURRENT_CONSUMER_QUEUE_NAME, Flux.range(1, 10).map(Object::toString))
+                sendMessages(LongRunningJob.REGULAR_CONSUMER_QUEUE_NAME, Flux.range(1, 10).map(Object::toString))
+            }
+            ApplicationContext one = buildContext(queues)
+            ApplicationContext two = buildContext(queues)
+            ApplicationContext three = buildContext(queues)
 
         expect:
             requiredExecutorType.isInstance(one.getBean(DistributedJobExecutor))
@@ -64,6 +72,16 @@ abstract class AbstractJobExecutorSpec extends Specification {
                 // concurrent jobs are at most n-times
                 jobs.count { it.concurrent.get() == 1 } == 2
 
+                // concurrent consumer jobs should handle (workers * max messages) messages
+                List<String> remainingRegularMessages = queues.getMessages(LongRunningJob.REGULAR_CONSUMER_QUEUE_NAME, Argument.STRING)
+                remainingRegularMessages.size() == 1
+                jobs.consumedRegularMessages.flatten().flatten().size() == 9
+
+                // concurrent consumer jobs should handle (concurrency * max messages) messages
+                List<String> remainingConcurrentMessages = queues.getMessages(LongRunningJob.CONCURRENT_CONSUMER_QUEUE_NAME, Argument.STRING)
+                remainingConcurrentMessages.size() == 4
+                jobs.consumedConcurrentMessages.flatten().flatten().size() == 6
+
                 // leader job is executed only on leader
                 jobs.count { it.leader.get() == 1 } == 1
 
@@ -83,7 +101,7 @@ abstract class AbstractJobExecutorSpec extends Specification {
             closeQuietly one, two, three
     }
 
-    protected abstract ApplicationContext buildContext()
+    protected abstract ApplicationContext buildContext(JobQueues queues)
     protected abstract Class<?> getRequiredExecutorType()
     protected abstract boolean verifyExecutorEvents(ApplicationContext first, ApplicationContext second, ApplicationContext third)
 

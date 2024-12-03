@@ -19,6 +19,7 @@ package com.agorapulse.worker.tck.executor
 
 import com.agorapulse.worker.annotation.Concurrency
 import com.agorapulse.worker.annotation.Consecutive
+import com.agorapulse.worker.annotation.Consumes
 import com.agorapulse.worker.annotation.FollowerOnly
 import com.agorapulse.worker.annotation.Fork
 import com.agorapulse.worker.annotation.Job
@@ -31,6 +32,7 @@ import org.reactivestreams.Publisher
 import jakarta.inject.Singleton
 import reactor.core.publisher.Flux
 
+import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicInteger
 
 import static AbstractJobExecutorSpec.JOBS_INITIAL_DELAY
@@ -41,12 +43,17 @@ import static AbstractJobExecutorSpec.LONG_RUNNING_JOB_DURATION
 @Requires(env = AbstractJobExecutorSpec.CONCURRENT_JOB_TEST_ENVIRONMENT)
 class LongRunningJob {
 
+    public static final String CONCURRENT_CONSUMER_QUEUE_NAME = 'concurrent-queue'
+    public static final String REGULAR_CONSUMER_QUEUE_NAME = 'normal-queue'
+
     final AtomicInteger producer = new AtomicInteger()
     final AtomicInteger leader = new AtomicInteger()
     final AtomicInteger follower = new AtomicInteger()
     final AtomicInteger consecutive = new AtomicInteger()
     final AtomicInteger unlimited = new AtomicInteger()
     final AtomicInteger concurrent = new AtomicInteger()
+    final Queue<String> consumedConcurrentMessages = new ConcurrentLinkedQueue()
+    final Queue<String> consumedRegularMessages = new ConcurrentLinkedQueue()
     final AtomicInteger fork = new AtomicInteger()
 
     @Job(initialDelay = JOBS_INITIAL_DELAY)
@@ -88,6 +95,21 @@ class LongRunningJob {
     void executeConcurrent() {
         runLongTask()
         concurrent.incrementAndGet()
+    }
+
+    @Concurrency(2)
+    @Job(initialDelay = JOBS_INITIAL_DELAY)
+    @Consumes(value = CONCURRENT_CONSUMER_QUEUE_NAME, maxMessages = 3)
+    void executeConcurrentConsumer(String message) {
+        runLongTask()
+        consumedConcurrentMessages.add(message)
+    }
+
+    @Job(initialDelay = JOBS_INITIAL_DELAY)
+    @Consumes(value = REGULAR_CONSUMER_QUEUE_NAME, maxMessages = 3)
+    void executeRegularConsumer(String message) {
+        runLongTask()
+        consumedRegularMessages.add(message)
     }
 
     @Fork(2)

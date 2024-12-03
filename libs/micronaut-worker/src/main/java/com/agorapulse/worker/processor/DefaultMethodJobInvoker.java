@@ -61,22 +61,31 @@ public class DefaultMethodJobInvoker implements MethodJobInvoker {
             context.message(null);
             handleResult(configuration, context, executor(context, configuration).apply(() -> method.invoke(bean)));
         } else if (method.getArguments().length == 1) {
-            JobConfiguration.ConsumerQueueConfiguration queueConfiguration = configuration.getConsumer();
-            Publisher<Object> results = Flux.from(
-                    queues(queueConfiguration.getQueueType()).readMessages(
-                        queueConfiguration.getQueueName(),
-                        queueConfiguration.getMaxMessages() < 1 ? 1 : queueConfiguration.getMaxMessages(),
-                        Optional.ofNullable(queueConfiguration.getWaitingTime()).orElse(Duration.ZERO),
-                        method.getArguments()[0]
+            handleResult(configuration, context, executor(context, configuration).apply(() -> {
+                JobConfiguration.ConsumerQueueConfiguration queueConfiguration = configuration.getConsumer();
+                return Flux.from(
+                        queues(queueConfiguration.getQueueType()).readMessages(
+                            queueConfiguration.getQueueName(),
+                            queueConfiguration.getMaxMessages() < 1 ? 1 : queueConfiguration.getMaxMessages(),
+                            Optional.ofNullable(queueConfiguration.getWaitingTime()).orElse(Duration.ZERO),
+                            method.getArguments()[0]
+                        )
                     )
-                )
-                .doOnNext(context::message)
-                .flatMap(message -> {
-                    JobRunContext local = context.copy().onExecuted(s -> message.delete()).onSkipped(s -> message.requeue());
-                    return executor(local, configuration).apply(() -> method.invoke(bean, message.getMessage()));
-                });
+                    .doOnNext(context::message)
+                    .flatMap(message -> {
+                        Object result = method.invoke(bean, message.getMessage());
 
-            handleResult(configuration, context, results);
+                        if (result == null) {
+                            return Mono.empty();
+                        }
+
+                        if (result instanceof Publisher<?> p) {
+                            return Flux.from(p);
+                        }
+
+                        return Mono.just(result);
+                    });
+            }));
         } else {
             LOGGER.error("Too many arguments for {}! The job method wasn't executed!", method);
         }

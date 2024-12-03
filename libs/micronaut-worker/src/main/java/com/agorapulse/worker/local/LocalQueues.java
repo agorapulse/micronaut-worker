@@ -21,7 +21,7 @@ import com.agorapulse.worker.queue.JobQueues;
 import com.agorapulse.worker.queue.QueueMessage;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Secondary;
-import io.micronaut.context.env.Environment;
+import io.micronaut.core.convert.ConversionService;
 import io.micronaut.core.type.Argument;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
@@ -55,7 +55,7 @@ public class LocalQueues implements JobQueues {
             messages.put(prefix + counter.getAndIncrement(), message);
         }
 
-        <T> QueueMessage<T> readMessage(Environment env, Argument<T> argument) {
+        <T> QueueMessage<T> readMessage(ConversionService env, Argument<T> argument) {
             Map.Entry<String, Object> entry = messages.pollFirstEntry();
             return QueueMessage.alwaysRequeue(
                 entry.getKey(),
@@ -75,11 +75,19 @@ public class LocalQueues implements JobQueues {
 
     }
 
-    private final ConcurrentMap<String, LocalQueue> queues = new ConcurrentHashMap<>();
-    private final Environment environment;
+    public static LocalQueues create() {
+        return create(ConversionService.SHARED);
+    }
 
-    public LocalQueues(Environment environment) {
-        this.environment = environment;
+    public static LocalQueues create(ConversionService conversionService) {
+        return new LocalQueues(conversionService);
+    }
+
+    private final ConcurrentMap<String, LocalQueue> queues = new ConcurrentHashMap<>();
+    private final ConversionService conversionService;
+
+    public LocalQueues(ConversionService conversionService) {
+        this.conversionService = conversionService;
     }
 
     @Override
@@ -91,13 +99,20 @@ public class LocalQueues implements JobQueues {
         }
 
         return Flux.generate(() -> maxNumberOfMessages, (state, sink) -> {
-            if (state > 0 && !queue.isEmpty()) {
-                sink.next(queue.readMessage(environment, argument));
-                return state - 1;
-            } else {
+            if (queue.isEmpty()) {
                 sink.complete();
                 return 0;
             }
+
+            if (state > 0) {
+                sink.next(queue.readMessage(conversionService, argument));
+            }
+
+            if (state == 1) {
+                sink.complete();
+            }
+
+            return state - 1;
         });
     }
 
@@ -107,7 +122,7 @@ public class LocalQueues implements JobQueues {
     }
 
     public <T> List<T> getMessages(String queueName, Argument<T> type) {
-        return List.copyOf(queues.get(queueName).getMessages().stream().map(o -> environment.convertRequired(o, type)).toList());
+        return List.copyOf(queues.get(queueName).getMessages().stream().map(o -> conversionService.convertRequired(o, type)).toList());
     }
 
 }
