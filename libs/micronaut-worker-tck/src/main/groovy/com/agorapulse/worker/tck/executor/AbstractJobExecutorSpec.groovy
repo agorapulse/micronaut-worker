@@ -39,12 +39,14 @@ abstract class AbstractJobExecutorSpec extends Specification {
         initialDelay: 5
     )
 
-    @Retry(count = 10)
+    @SuppressWarnings('AbcMetric')
+    @Retry(count = 10, condition = { System.getenv('CI') })
     void 'jobs executed appropriate times on three servers'() {
         given:
             LocalQueues queues = LocalQueues.create().tap {
                 sendMessages(LongRunningJob.CONCURRENT_CONSUMER_QUEUE_NAME, Flux.range(1, 10).map(Object::toString))
                 sendMessages(LongRunningJob.REGULAR_CONSUMER_QUEUE_NAME, Flux.range(1, 10).map(Object::toString))
+                sendMessages(LongRunningJob.FORKED_CONSUMER_QUEUE_NAME, Flux.range(1, 15).map(Object::toString))
             }
             ApplicationContext one = buildContext(queues)
             ApplicationContext two = buildContext(queues)
@@ -72,18 +74,30 @@ abstract class AbstractJobExecutorSpec extends Specification {
                 // concurrent jobs are at most n-times
                 jobs.count { it.concurrent.get() == 1 } == 2
 
+                // forked consumer jobs should handle (workers * fork * max messages) messages
+                List<String> remainingForkMessages = queues.getMessages(LongRunningJob.FORKED_CONSUMER_QUEUE_NAME, Argument.STRING)
+                List<String> consumedForkMessages = jobs.consumedForkMessages.flatten().flatten()
+
+                LongRunningJob.FAILING_MESSAGE in remainingForkMessages
+                remainingForkMessages.size() == 4
+                consumedForkMessages.size() == 11
+
+                jobOne.consumedForkMessages
+                jobTwo.consumedForkMessages
+                jobThree.consumedForkMessages
+
+                // concurrent consumer jobs should handle (workers * max messages) messages
                 List<String> remainingRegularMessages = queues.getMessages(LongRunningJob.REGULAR_CONSUMER_QUEUE_NAME, Argument.STRING)
                 List<String> consumedRegularMessages = jobs.consumedRegularMessages.flatten().flatten()
 
-                List<String> remainingConcurrentMessages = queues.getMessages(LongRunningJob.CONCURRENT_CONSUMER_QUEUE_NAME, Argument.STRING)
-                List<String> consumeConcurrentMessage = jobs.consumedConcurrentMessages.flatten().flatten()
-
-                // concurrent consumer jobs should handle (workers * max messages) messages
                 LongRunningJob.FAILING_MESSAGE in remainingRegularMessages
                 remainingRegularMessages.size() == 2
                 consumedRegularMessages.size() == 8
 
                 // concurrent consumer jobs should handle (concurrency * max messages) messages
+                List<String> remainingConcurrentMessages = queues.getMessages(LongRunningJob.CONCURRENT_CONSUMER_QUEUE_NAME, Argument.STRING)
+                List<String> consumeConcurrentMessage = jobs.consumedConcurrentMessages.flatten().flatten()
+
                 LongRunningJob.FAILING_MESSAGE in remainingConcurrentMessages
                 remainingConcurrentMessages.size() == 5
                 consumeConcurrentMessage.size() == 5

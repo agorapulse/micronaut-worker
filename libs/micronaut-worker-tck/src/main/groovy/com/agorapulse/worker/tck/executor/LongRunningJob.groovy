@@ -45,6 +45,7 @@ class LongRunningJob {
 
     public static final String CONCURRENT_CONSUMER_QUEUE_NAME = 'concurrent-queue'
     public static final String REGULAR_CONSUMER_QUEUE_NAME = 'normal-queue'
+    public static final String FORKED_CONSUMER_QUEUE_NAME = 'fork-queue'
     public static final String FAILING_MESSAGE = '5'
 
     final AtomicInteger producer = new AtomicInteger()
@@ -55,6 +56,7 @@ class LongRunningJob {
     final AtomicInteger concurrent = new AtomicInteger()
     final Queue<String> consumedConcurrentMessages = new ConcurrentLinkedQueue()
     final Queue<String> consumedRegularMessages = new ConcurrentLinkedQueue()
+    final Queue<String> consumedForkMessages = new ConcurrentLinkedQueue()
     final AtomicInteger fork = new AtomicInteger()
 
     @Job(initialDelay = JOBS_INITIAL_DELAY)
@@ -108,6 +110,16 @@ class LongRunningJob {
         consumedConcurrentMessages.add(message)
     }
 
+    @Fork(2)
+    @Job(initialDelay = JOBS_INITIAL_DELAY)
+    @Consumes(value = FORKED_CONSUMER_QUEUE_NAME, maxMessages = 4)
+    void executeForkConsumer(String message) {
+        if (FAILING_MESSAGE == message) {
+            throw new IllegalStateException('Failing fork message')
+        }
+        consumedForkMessages.add(message)
+    }
+
     @Job(initialDelay = JOBS_INITIAL_DELAY)
     @Consumes(value = REGULAR_CONSUMER_QUEUE_NAME, maxMessages = 3)
     void executeRegularConsumer(String message) {
@@ -127,7 +139,7 @@ class LongRunningJob {
     @Override
     @SuppressWarnings('LineLength')
     String toString() {
-        return "LongRunningJob{producer=$producer, leader=$leader, follower=$follower, consecutive=$consecutive, unlimited=$unlimited, concurrent=$concurrent, fork=$fork, consumedConcurrentMessages=$consumedConcurrentMessages, consumedRegularMessages=$consumedRegularMessages}"
+        return "LongRunningJob{producer=$producer, leader=$leader, follower=$follower, consecutive=$consecutive, unlimited=$unlimited, concurrent=$concurrent, fork=$fork, consumedConcurrentMessages=$consumedConcurrentMessages, consumedRegularMessages=$consumedRegularMessages, consumedForkMessages=$consumedForkMessages}"
     }
 
     @SuppressWarnings('Instanceof')
