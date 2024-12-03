@@ -47,8 +47,20 @@ public interface QueueMessage<T> {
         return DefaultQueueMessage.requeueIfDeleted(message, doDelete, doRequeue);
     }
 
+    /**
+     * Returns the payload of the message.
+     * @return the payload of the message
+     */
     T getMessage();
+
+    /**
+     * Deletes the message from the queue.
+     */
     void delete();
+
+    /**
+     * Requeues the message. Depending on the type of the message it might not be requeued if it was not deleted.
+     */
     void requeue();
 
 }
