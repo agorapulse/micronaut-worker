@@ -57,11 +57,9 @@ public class DefaultMethodJobInvoker implements MethodJobInvoker {
         ExecutableMethod<B, ?> method = job.getMethod();
         JobConfiguration configuration = job.getConfiguration();
 
-        Function<Callable<Object>, Publisher<Object>> executor = executor(context, configuration);
-
         if (method.getArguments().length == 0) {
             context.message(null);
-            handleResult(configuration, context, executor.apply(() -> method.invoke(bean)));
+            handleResult(configuration, context, executor(context, configuration).apply(() -> method.invoke(bean)));
         } else if (method.getArguments().length == 1) {
             JobConfiguration.ConsumerQueueConfiguration queueConfiguration = configuration.getConsumer();
             Publisher<Object> results = Flux.from(
@@ -73,7 +71,10 @@ public class DefaultMethodJobInvoker implements MethodJobInvoker {
                     )
                 )
                 .doOnNext(context::message)
-                .flatMap(message -> executor.apply(() -> method.invoke(bean, message)));
+                .flatMap(message -> {
+                    JobRunContext local = context.copy().onExecuted(s -> message.delete()).onSkipped(s -> message.requeue());
+                    return executor(local, configuration).apply(() -> method.invoke(bean, message.getMessage()));
+                });
 
             handleResult(configuration, context, results);
         } else {

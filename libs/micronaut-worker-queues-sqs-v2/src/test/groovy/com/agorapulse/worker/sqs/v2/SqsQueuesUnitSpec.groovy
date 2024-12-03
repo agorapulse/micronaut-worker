@@ -19,6 +19,7 @@ package com.agorapulse.worker.sqs.v2
 
 import com.agorapulse.micronaut.amazon.awssdk.sqs.SimpleQueueService
 import com.agorapulse.worker.queue.JobQueues
+import com.agorapulse.worker.queue.QueueMessage
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.micronaut.core.type.Argument
 import reactor.core.publisher.Flux
@@ -45,7 +46,7 @@ class SqsQueuesUnitSpec extends Specification {
         when:
             List<Map<String, String>> values = Flux.from(
                 sqsQueues.readMessages(QUEUE_NAME, MAX_MESSAGES, WAIT_TIME, Argument.mapOf(String, String))
-            ).collectList().block()
+            ).map(QueueMessage::getMessage).collectList().block()
         then:
             values
             values.size() == 2
@@ -73,7 +74,7 @@ class SqsQueuesUnitSpec extends Specification {
         when:
             List<List<Long>> values = Flux.from(
                 sqsQueues.readMessages(QUEUE_NAME, MAX_MESSAGES, WAIT_TIME, Argument.listOf(Long))
-            ).collectList().block()
+            ).map(QueueMessage::getMessage).collectList().block()
         then:
             values
             values.size() == 2
@@ -102,7 +103,7 @@ class SqsQueuesUnitSpec extends Specification {
         when:
             List<List<String>> values = Flux.from(
                 sqsQueues.readMessages(QUEUE_NAME, MAX_MESSAGES, WAIT_TIME, Argument.listOf(String))
-            ).collectList().block()
+            ).map(QueueMessage::getMessage).collectList().block()
         then:
             values
             values.size() == 2
@@ -131,7 +132,7 @@ class SqsQueuesUnitSpec extends Specification {
         when:
             Flux.from(
                 sqsQueues.readMessages(QUEUE_NAME, MAX_MESSAGES, WAIT_TIME, Argument.mapOf(String, String))
-            ).collectList().block()
+            ).map(QueueMessage::getMessage).collectList().block()
         then:
             thrown IllegalArgumentException
 

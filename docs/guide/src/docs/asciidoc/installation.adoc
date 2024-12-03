@@ -19,25 +19,13 @@ dependencies {
     // to enable /jobs endpoint
     implementation 'com.agorapulse:micronaut-worker-management:{project-version}'
 
-    // to enable AWS SDK v1 SQS queues integration
-    implementation 'com.agorapulse:micronaut-worker-queues-sqs-v1:{project-version}'
-
     // to enable AWS SDK v2 SQS queues integration
     implementation 'com.agorapulse:micronaut-worker-queues-sqs-v2:{project-version}'
-
-    // to enable Redis leader/follower capabilities
-    implementation 'com.agorapulse:micronaut-worker-executor-redis:{project-version}'
-
-    // to enable Redis queues integration
-    implementation 'com.agorapulse:micronaut-worker-queues-redis:{project-version}'
 
     // to enable running jobs as CLI apps
     implementation 'com.agorapulse:micronaut-worker-runner:{project-version}'
 
-    // you also need Redis configuration on the classpath depending on your Micronaut version
-    // for Micronaut 1.x
-    implementation 'io.micronaut.configuration:micronaut-redis-lettuce'
-    // for Micronaut 2.x+
-    implementation 'io.micronaut.redis:micronaut-redis-lettuce'
+    // to enable Redis leader/follower capabilities
+    implementation 'com.agorapulse:micronaut-worker-executor-redis:{project-version}'
 }
 ----

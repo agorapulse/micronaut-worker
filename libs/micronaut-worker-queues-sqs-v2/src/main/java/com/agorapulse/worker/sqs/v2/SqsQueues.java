@@ -19,6 +19,7 @@ package com.agorapulse.worker.sqs.v2;
 
 import com.agorapulse.micronaut.amazon.awssdk.sqs.SimpleQueueService;
 import com.agorapulse.worker.queue.JobQueues;
+import com.agorapulse.worker.queue.QueueMessage;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micronaut.core.type.Argument;
@@ -44,9 +45,15 @@ public class SqsQueues implements JobQueues {
     }
 
     @Override
-    public <T> Publisher<T> readMessages(String queueName, int maxNumberOfMessages, Duration waitTime, Argument<T> argument) {
+    public <T> Publisher<QueueMessage<T>> readMessages(String queueName, int maxNumberOfMessages, Duration waitTime, Argument<T> argument) {
         return Flux.merge(simpleQueueService.receiveMessages(queueName, maxNumberOfMessages, 0, Math.toIntExact(waitTime.getSeconds())).stream().map(m ->
-            readMessageInternal(queueName, argument, m.body(), m.receiptHandle(), true)
+            readMessageInternal(queueName, argument, m.body(), m.receiptHandle(), true).map(
+                message -> QueueMessage.requeueIfDeleted(
+                    message,
+                    () -> simpleQueueService.deleteMessage(queueName, m.receiptHandle()),
+                    () -> simpleQueueService.sendMessage(queueName, m.body())
+                )
+            )
         ).toList());
     }
 

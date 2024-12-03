@@ -1,0 +1,5 @@
+== 3.0.0
+* removed Redis Queue implementation due the minimal use and complexity of the implementation
+* removed AWS SDK v1 implementation as it has been superseded by AWS SDK v2 one
+* removed deprecated `JobQueue#readMessages(String, int, Duration, Argument<T>, Consumer<T>)` method
+* reading queues returns `QueueMessage` instead of the message itself and the underlying implementation must properly call `delete` or `requeue` on the message to either remove it from the queue or return it back to the queue for processing

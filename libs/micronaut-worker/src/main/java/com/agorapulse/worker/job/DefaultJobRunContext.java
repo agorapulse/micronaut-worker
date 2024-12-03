@@ -18,6 +18,7 @@
 package com.agorapulse.worker.job;
 
 import com.agorapulse.worker.JobRunStatus;
+import com.agorapulse.worker.queue.QueueMessage;
 import jakarta.annotation.Nullable;
 
 import java.util.function.BiConsumer;
@@ -27,18 +28,29 @@ public class DefaultJobRunContext implements JobRunContext {
 
     private final JobRunStatus status;
 
-    private BiConsumer<JobRunStatus, Object> onMessage = (aStatus, m) -> { };
+    private BiConsumer<JobRunStatus, QueueMessage<?>> onMessage = (aStatus, m) -> { };
     private BiConsumer<JobRunStatus, Throwable> onError = (aStatus, e) -> { };
     private Consumer<JobRunStatus> onFinished = s -> { };
     private BiConsumer<JobRunStatus, Object> onResult = (aStatus, r) -> { };
     private Consumer<JobRunStatus> onExecuted = s -> { };
+    private Consumer<JobRunStatus> onSkipped = s -> { };
 
     public DefaultJobRunContext(JobRunStatus status) {
         this.status = status;
     }
 
+    private DefaultJobRunContext(JobRunStatus status, BiConsumer<JobRunStatus, QueueMessage<?>> onMessage, BiConsumer<JobRunStatus, Throwable> onError, Consumer<JobRunStatus> onFinished, BiConsumer<JobRunStatus, Object> onResult, Consumer<JobRunStatus> onExecuted, Consumer<JobRunStatus> onSkipped) {
+        this.status = status;
+        this.onMessage = onMessage;
+        this.onError = onError;
+        this.onFinished = onFinished;
+        this.onResult = onResult;
+        this.onExecuted = onExecuted;
+        this.onSkipped = onSkipped;
+    }
+
     @Override
-    public JobRunContext onMessage(BiConsumer<JobRunStatus, Object> onMessage) {
+    public JobRunContext onMessage(BiConsumer<JobRunStatus, QueueMessage<?>> onMessage) {
         this.onMessage = this.onMessage.andThen(onMessage);
         return this;
     }
@@ -68,7 +80,13 @@ public class DefaultJobRunContext implements JobRunContext {
     }
 
     @Override
-    public void message(@Nullable Object event) {
+    public JobRunContext onSkipped(Consumer<JobRunStatus> onSkipped) {
+        this.onSkipped = this.onSkipped.andThen(onSkipped);
+        return this;
+    }
+
+    @Override
+    public void message(@Nullable QueueMessage<?> event) {
         onMessage.accept(status, event);
     }
 
@@ -93,8 +111,18 @@ public class DefaultJobRunContext implements JobRunContext {
     }
 
     @Override
+    public void skipped() {
+        onSkipped.accept(status);
+    }
+
+    @Override
     public JobRunStatus getStatus() {
         return status;
+    }
+
+    @Override
+    public JobRunContext copy() {
+        return new DefaultJobRunContext(status, onMessage, onError, onFinished, onResult, onExecuted, onSkipped);
     }
 
 }

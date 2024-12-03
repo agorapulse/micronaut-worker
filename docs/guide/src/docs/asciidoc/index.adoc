@@ -17,6 +17,9 @@ include::{includedir}/introduction.adoc[]
 include::{includedir}/installation.adoc[]
 include::{includedir}/usage.adoc[]
 
+= Breaking Changes
+include::{includedir}/breaking-changes.adoc[]
+
 = Links
 
 link:api/index.html[Javadoc, window="_blank"]

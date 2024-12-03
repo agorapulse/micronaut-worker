@@ -18,6 +18,7 @@
 package com.agorapulse.worker.job;
 
 import com.agorapulse.worker.JobRunStatus;
+import com.agorapulse.worker.queue.QueueMessage;
 import jakarta.annotation.Nullable;
 
 import java.util.function.BiConsumer;
@@ -28,7 +29,7 @@ public interface JobRunContext {
         return new DefaultJobRunContext(status);
     }
 
-    JobRunContext onMessage(BiConsumer<JobRunStatus, Object> onMessage);
+    JobRunContext onMessage(BiConsumer<JobRunStatus, QueueMessage<?>> onMessage);
 
     JobRunContext onError(BiConsumer<JobRunStatus, Throwable> onError);
 
@@ -38,7 +39,9 @@ public interface JobRunContext {
 
     JobRunContext onExecuted(Consumer<JobRunStatus> onExecuted);
 
-    void message(@Nullable Object event);
+    JobRunContext onSkipped(Consumer<JobRunStatus> onSkipped);
+
+    void message(@Nullable QueueMessage<?> event);
 
     void error(Throwable error);
 
@@ -48,5 +51,9 @@ public interface JobRunContext {
 
     void executed();
 
+    void skipped();
+
     JobRunStatus getStatus();
+
+    JobRunContext copy();
 }

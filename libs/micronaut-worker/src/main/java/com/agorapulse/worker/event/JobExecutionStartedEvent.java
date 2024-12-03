@@ -17,6 +17,7 @@
  */
 package com.agorapulse.worker.event;
 
+import com.agorapulse.worker.queue.QueueMessage;
 import io.micronaut.core.annotation.Introspected;
 
 import java.util.Optional;
@@ -29,7 +30,7 @@ public class JobExecutionStartedEvent {
 
     private final String name;
     private final String id;
-    private final Object message;
+    private final QueueMessage<?> message;
 
     public JobExecutionStartedEvent(String name, String id) {
         this.name = name;
@@ -37,7 +38,7 @@ public class JobExecutionStartedEvent {
         this.message = null;
     }
 
-    public JobExecutionStartedEvent(String name, String id, Object message) {
+    public JobExecutionStartedEvent(String name, String id, QueueMessage<?> message) {
         this.name = name;
         this.id = id;
         this.message = message;
@@ -52,7 +53,7 @@ public class JobExecutionStartedEvent {
     }
 
     public Optional<Object> getMessage() {
-        return Optional.ofNullable(message);
+        return Optional.ofNullable(message).map(QueueMessage::getMessage);
     }
 
     @Override
