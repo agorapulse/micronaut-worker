@@ -14,18 +14,18 @@ repositories {
 dependencies {
     // minimal dependency with local queue and executor
     // select some of the following dependencies to enable more features
-    implementation 'com.agorapulse:micronaut-worker:{project-version}'
+    implementation("com.agorapulse:micronaut-worker:{project-version}")
 
     // to enable /jobs endpoint
-    implementation 'com.agorapulse:micronaut-worker-management:{project-version}'
+    implementation("com.agorapulse:micronaut-worker-management:{project-version}")
 
     // to enable AWS SDK v2 SQS queues integration
-    implementation 'com.agorapulse:micronaut-worker-queues-sqs-v2:{project-version}'
+    implementation("com.agorapulse:micronaut-worker-queues-sqs-v2:{project-version}")
 
     // to enable running jobs as CLI apps
-    implementation 'com.agorapulse:micronaut-worker-runner:{project-version}'
+    implementation("com.agorapulse:micronaut-worker-runner:{project-version}")
 
     // to enable Redis leader/follower capabilities
-    implementation 'com.agorapulse:micronaut-worker-executor-redis:{project-version}'
+    implementation("com.agorapulse:micronaut-worker-executor-redis:{project-version}")
 }
 ----
