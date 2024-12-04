@@ -97,22 +97,6 @@ WARNING: For the consumer jobs, the messages are consumed synchronously so if yo
 
 The worker library excels in the distributed jobs area. You can run jobs only on the leader server or only on the followers or with the given concurrency level.
 
-=== Quick Start
-
-You can use two conventional annotations `@QueueProducer` and `@QueueConsumer` to publish and consume messages from a queue.
-
-[source,java]
-.Queue Producer and Consumer
-----
-include::{root-dir}/libs/micronaut-worker/src/test/groovy/com/agorapulse/worker/convention/QueueListenerAndProducerSpec.groovy[tag=quickstart,indent=0]
-----
-<1> Two jobs will communicate to each other using the given record object
-<2> The producer jobs must have some scheduled trigger associated with them, for example cron or fixed rate
-<3> Use the `@QueueProducer` annotation with the name of the queue to publish messages
-<4> The producer job must return some value, ideally a `Publisher` of given messages
-<5> Use the `@QueueConsumer` annotation with the name of the queue to consume messages
-<6> The consumer job must have a single parameter of the same type as the producer job returns
-
 === Leaders and Followers Jobs
 
 Micronaut Worker can help you to run jobs in distributed environments. You can choose to
@@ -137,6 +121,24 @@ include::{root-dir}/libs/micronaut-worker/src/test/groovy/com/agorapulse/worker/
 In a distributed environment, tasks often process messages using queues. In Micronaut Worker,
 you have three type of queue related jobs - producers, consumers and pipes - depending on the number of
 arguments they have and their return value.
+
+==== Quick Start
+
+You can use two conventional annotations `@QueueProducer` and `@QueueConsumer` to publish and consume messages from a queue.
+
+[source,java]
+.Queue Producer and Consumer
+----
+include::{root-dir}/libs/micronaut-worker/src/test/groovy/com/agorapulse/worker/convention/QueueListenerAndProducerSpec.groovy[tag=quickstart,indent=0]
+----
+<1> Two jobs will communicate to each other using the given record object
+<2> The producer jobs must have some scheduled trigger associated with them, for example cron or fixed rate
+<3> Use the `@QueueProducer` annotation with the name of the queue to publish messages
+<4> The producer job must return some value, ideally a `Publisher` of given messages
+<5> Use the `@QueueConsumer` annotation with the name of the queue to consume messages
+<6> The consumer job must have a single parameter of the same type as the producer job returns
+
+==== Advanced Usage
 
 The name of the queue can be customised using `@Consumes` and `@Produces`
 annotations, otherwise the name is derived from the simple name of the class with any `Job`, `Consumer`, or `Producer`
