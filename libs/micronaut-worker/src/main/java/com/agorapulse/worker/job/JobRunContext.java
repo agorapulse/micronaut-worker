@@ -83,15 +83,6 @@ public interface JobRunContext {
 
 
     /**
-     * Registers a listener for the skipped event. The listener is called when the job execution is skipped because
-     * there are restrictions that prevents the execution e.g. concurrency limit or leader/follower restrictions.
-     *
-     * @param onSkipped the listener to be called when the job execution is skipped
-     * @return this context
-     */
-    JobRunContext onSkipped(Consumer<JobRunStatus> onSkipped);
-
-    /**
      * Signals new incoming message.
      * @param event the message or <code>null</code> if the job is not a consumer
      */
@@ -118,11 +109,6 @@ public interface JobRunContext {
      * Signals the job is executed.
      */
     void executed();
-
-    /**
-     * Signals the job is skipped.
-     */
-    void skipped();
 
     /**
      * Returns the status of the job.

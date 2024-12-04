@@ -33,20 +33,18 @@ public class DefaultJobRunContext implements JobRunContext {
     private Consumer<JobRunStatus> onFinished = s -> { };
     private BiConsumer<JobRunStatus, Object> onResult = (aStatus, r) -> { };
     private Consumer<JobRunStatus> onExecuted = s -> { };
-    private Consumer<JobRunStatus> onSkipped = s -> { };
 
     public DefaultJobRunContext(JobRunStatus status) {
         this.status = status;
     }
 
-    private DefaultJobRunContext(JobRunStatus status, BiConsumer<JobRunStatus, QueueMessage<?>> onMessage, BiConsumer<JobRunStatus, Throwable> onError, Consumer<JobRunStatus> onFinished, BiConsumer<JobRunStatus, Object> onResult, Consumer<JobRunStatus> onExecuted, Consumer<JobRunStatus> onSkipped) {
+    private DefaultJobRunContext(JobRunStatus status, BiConsumer<JobRunStatus, QueueMessage<?>> onMessage, BiConsumer<JobRunStatus, Throwable> onError, Consumer<JobRunStatus> onFinished, BiConsumer<JobRunStatus, Object> onResult, Consumer<JobRunStatus> onExecuted) {
         this.status = status;
         this.onMessage = onMessage;
         this.onError = onError;
         this.onFinished = onFinished;
         this.onResult = onResult;
         this.onExecuted = onExecuted;
-        this.onSkipped = onSkipped;
     }
 
     @Override
@@ -80,12 +78,6 @@ public class DefaultJobRunContext implements JobRunContext {
     }
 
     @Override
-    public JobRunContext onSkipped(Consumer<JobRunStatus> onSkipped) {
-        this.onSkipped = this.onSkipped.andThen(onSkipped);
-        return this;
-    }
-
-    @Override
     public void message(@Nullable QueueMessage<?> event) {
         onMessage.accept(status, event);
     }
@@ -111,18 +103,13 @@ public class DefaultJobRunContext implements JobRunContext {
     }
 
     @Override
-    public void skipped() {
-        onSkipped.accept(status);
-    }
-
-    @Override
     public JobRunStatus getStatus() {
         return status;
     }
 
     @Override
     public JobRunContext createChildContext(String isSuffix) {
-        return new DefaultJobRunContext(status.copy(isSuffix), onMessage, onError, onFinished, onResult, onExecuted, onSkipped);
+        return new DefaultJobRunContext(status.copy(isSuffix), onMessage, onError, onFinished, onResult, onExecuted);
     }
 
 }

@@ -88,7 +88,6 @@ public class LocalJobExecutor implements DistributedJobExecutor {
             if (increasedCount > concurrency) {
                 counts.get(status.getName()).decrementAndGet();
                 eventPublisher.publishEvent(new JobExecutorEvent(EXECUTOR_TYPE, type, JobExecutorEvent.Execution.SKIP, status, concurrency, executorId.id()));
-                context.skipped();
                 return null;
             }
 

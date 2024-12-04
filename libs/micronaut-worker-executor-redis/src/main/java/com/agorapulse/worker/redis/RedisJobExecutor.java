@@ -105,7 +105,6 @@ public class RedisJobExecutor implements DistributedJobExecutor {
                 return Mono.fromCallable(supplier).subscribeOn(Schedulers.fromExecutorService(getExecutorService(context.getStatus().getName())));
             }
             eventPublisher.publishEvent(JobExecutorEvent.leaderOnly(EXECUTOR_TYPE, JobExecutorEvent.Execution.SKIP, context.getStatus(), executorId.id()));
-            context.skipped();
             return Mono.empty();
         }).flux();
     }
@@ -120,7 +119,6 @@ public class RedisJobExecutor implements DistributedJobExecutor {
                         LOGGER.trace("Skipping execution of the job {} as the concurrency level {} is already reached", context.getStatus().getName(), maxConcurrency);
                     }
                     eventPublisher.publishEvent(JobExecutorEvent.concurrent(EXECUTOR_TYPE, JobExecutorEvent.Execution.SKIP, context.getStatus(), maxConcurrency, executorId.id()));
-                    context.skipped();
                     return decreaseCurrentExecutionCount(context.getStatus().getName(), commands).flatMap(decreased -> Mono.empty());
                 }
 
@@ -137,7 +135,6 @@ public class RedisJobExecutor implements DistributedJobExecutor {
         return readMasterHostname(context.getStatus().getName(), commands).flatMap(h -> {
             if (!"".equals(h) && h.equals(executorId.id())) {
                 eventPublisher.publishEvent(JobExecutorEvent.followerOnly(EXECUTOR_TYPE, JobExecutorEvent.Execution.SKIP, context.getStatus(), executorId.id()));
-                context.skipped();
                 return Mono.empty();
             }
             context.executed();
