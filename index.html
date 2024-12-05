@@ -92,7 +92,7 @@ $(addBlockSwitches);
 <h1>Micronaut Worker</h1>
 <div class="details">
 <span id="author" class="author">Vladimir Orany</span><br>
-<span id="revnumber">version 2.5.1</span>
+<span id="revnumber">version 2.6.0</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -113,10 +113,11 @@ $(addBlockSwitches);
 <li><a href="#_fork_options">3.3. Fork Options</a></li>
 <li><a href="#_distributed_jobs">3.4. Distributed Jobs</a>
 <ul class="sectlevel3">
-<li><a href="#_quick_start">3.4.1. Quick Start</a></li>
-<li><a href="#_leaders_and_followers_jobs">3.4.2. Leaders and Followers Jobs</a></li>
-<li><a href="#_jobs_using_queue">3.4.3. Jobs using Queue</a>
+<li><a href="#_leaders_and_followers_jobs">3.4.1. Leaders and Followers Jobs</a></li>
+<li><a href="#_jobs_using_queue">3.4.2. Jobs using Queue</a>
 <ul class="sectlevel4">
+<li><a href="#_quick_start">Quick Start</a></li>
+<li><a href="#_advanced_usage">Advanced Usage</a></li>
 <li><a href="#_producer">Producer</a></li>
 <li><a href="#_consumer">Consumer</a></li>
 <li><a href="#_pipe">Pipe</a></li>
@@ -211,31 +212,25 @@ All jobs are disabled by default in the <code>function</code> and <code>cli</cod
 dependencies {
     // minimal dependency with local queue and executor
     // select some of the following dependencies to enable more features
-    implementation 'com.agorapulse:micronaut-worker:2.5.1'
+    implementation("com.agorapulse:micronaut-worker:2.6.0")
 
     // to enable /jobs endpoint
-    implementation 'com.agorapulse:micronaut-worker-management:2.5.1'
+    implementation("com.agorapulse:micronaut-worker-management:2.6.0")
 
     // to enable AWS SDK v1 SQS queues integration
-    implementation 'com.agorapulse:micronaut-worker-queues-sqs-v1:2.5.1'
+    implementation("com.agorapulse:micronaut-worker-queues-sqs-v1:2.6.0")
 
     // to enable AWS SDK v2 SQS queues integration
-    implementation 'com.agorapulse:micronaut-worker-queues-sqs-v2:2.5.1'
-
-    // to enable Redis leader/follower capabilities
-    implementation 'com.agorapulse:micronaut-worker-executor-redis:2.5.1'
-
-    // to enable Redis queues integration
-    implementation 'com.agorapulse:micronaut-worker-queues-redis:2.5.1'
+    implementation("com.agorapulse:micronaut-worker-queues-sqs-v2:2.6.0")
 
     // to enable running jobs as CLI apps
-    implementation 'com.agorapulse:micronaut-worker-runner:2.5.1'
+    implementation("com.agorapulse:micronaut-worker-runner:2.6.0")
 
-    // you also need Redis configuration on the classpath depending on your Micronaut version
-    // for Micronaut 1.x
-    implementation 'io.micronaut.configuration:micronaut-redis-lettuce'
-    // for Micronaut 2.x+
-    implementation 'io.micronaut.redis:micronaut-redis-lettuce'
+    // to enable Redis leader/follower capabilities
+    implementation("com.agorapulse:micronaut-worker-executor-redis:2.6.0")
+
+    // to enable Redis queues integration
+    implementation("com.agorapulse:micronaut-worker-queues-redis:2.6.0")
 }</code></pre>
 </div>
 </div>
@@ -412,7 +407,41 @@ For the consumer jobs, the messages are consumed synchronously so if you want to
 <p>The worker library excels in the distributed jobs area. You can run jobs only on the leader server or only on the followers or with the given concurrency level.</p>
 </div>
 <div class="sect3">
-<h4 id="_quick_start"><a class="anchor" href="#_quick_start"></a>3.4.1. Quick Start</h4>
+<h4 id="_leaders_and_followers_jobs"><a class="anchor" href="#_leaders_and_followers_jobs"></a>3.4.1. Leaders and Followers Jobs</h4>
+<div class="paragraph">
+<p>Micronaut Worker can help you to run jobs in distributed environments. You can choose to
+run the code only on the leader server or only on the followers.</p>
+</div>
+<div class="listingblock">
+<div class="title">Leader Only Job</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="java">@LeaderOnly
+@Cron('0 0 0/1 ? * *')
+public void job() {
+    // your code here
+}</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Follower Only Job</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="java">@FollowerOnly
+@FixedRate('10m')
+public void job() {
+    // your code here
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_jobs_using_queue"><a class="anchor" href="#_jobs_using_queue"></a>3.4.2. Jobs using Queue</h4>
+<div class="paragraph">
+<p>In a distributed environment, tasks often process messages using queues. In Micronaut Worker,
+you have three type of queue related jobs - producers, consumers and pipes - depending on the number of
+arguments they have and their return value.</p>
+</div>
+<div class="sect4">
+<h5 id="_quick_start"><a class="anchor" href="#_quick_start"></a>Quick Start</h5>
 <div class="paragraph">
 <p>You can use two conventional annotations <code>@QueueProducer</code> and <code>@QueueConsumer</code> to publish and consume messages from a queue.</p>
 </div>
@@ -462,40 +491,8 @@ public void listenToMyQueue(Message message) {                                  
 </table>
 </div>
 </div>
-<div class="sect3">
-<h4 id="_leaders_and_followers_jobs"><a class="anchor" href="#_leaders_and_followers_jobs"></a>3.4.2. Leaders and Followers Jobs</h4>
-<div class="paragraph">
-<p>Micronaut Worker can help you to run jobs in distributed environments. You can choose to
-run the code only on the leader server or only on the followers.</p>
-</div>
-<div class="listingblock">
-<div class="title">Leader Only Job</div>
-<div class="content">
-<pre class="prettyprint highlight"><code data-lang="java">@LeaderOnly
-@Cron('0 0 0/1 ? * *')
-public void job() {
-    // your code here
-}</code></pre>
-</div>
-</div>
-<div class="listingblock">
-<div class="title">Follower Only Job</div>
-<div class="content">
-<pre class="prettyprint highlight"><code data-lang="java">@FollowerOnly
-@FixedRate('10m')
-public void job() {
-    // your code here
-}</code></pre>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_jobs_using_queue"><a class="anchor" href="#_jobs_using_queue"></a>3.4.3. Jobs using Queue</h4>
-<div class="paragraph">
-<p>In a distributed environment, tasks often process messages using queues. In Micronaut Worker,
-you have three type of queue related jobs - producers, consumers and pipes - depending on the number of
-arguments they have and their return value.</p>
-</div>
+<div class="sect4">
+<h5 id="_advanced_usage"><a class="anchor" href="#_advanced_usage"></a>Advanced Usage</h5>
 <div class="paragraph">
 <p>The name of the queue can be customised using <code>@Consumes</code> and <code>@Produces</code>
 annotations, otherwise the name is derived from the simple name of the class with any <code>Job</code>, <code>Consumer</code>, or <code>Producer</code>
@@ -503,6 +500,7 @@ suffix (in this order recursively). If the <code>micronaut.application.name</cod
 extracted name is prefixed with the application name followed by an underscore. For example,
 with <code>micronaut.application.name</code> set to <code>myapp</code>, <code>MyOwnConsumerJob</code> will have the
 default queue name <code>myapp_MyOwn</code>.</p>
+</div>
 </div>
 <div class="sect4">
 <h5 id="_producer"><a class="anchor" href="#_producer"></a>Producer</h5>
@@ -1073,8 +1071,8 @@ sampleJob.reconfigure {
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 2.5.1<br>
-Last updated 2024-11-29 16:31:49 UTC
+Version 2.6.0<br>
+Last updated 2024-12-05 09:54:20 UTC
 </div>
 </div>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.css">
