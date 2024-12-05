@@ -19,6 +19,7 @@ package com.agorapulse.worker.tck.executor
 
 import com.agorapulse.worker.annotation.Concurrency
 import com.agorapulse.worker.annotation.Consecutive
+import com.agorapulse.worker.annotation.Consumes
 import com.agorapulse.worker.annotation.FollowerOnly
 import com.agorapulse.worker.annotation.Fork
 import com.agorapulse.worker.annotation.Job
@@ -31,6 +32,7 @@ import org.reactivestreams.Publisher
 import jakarta.inject.Singleton
 import reactor.core.publisher.Flux
 
+import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicInteger
 
 import static AbstractJobExecutorSpec.JOBS_INITIAL_DELAY
@@ -41,12 +43,20 @@ import static AbstractJobExecutorSpec.LONG_RUNNING_JOB_DURATION
 @Requires(env = AbstractJobExecutorSpec.CONCURRENT_JOB_TEST_ENVIRONMENT)
 class LongRunningJob {
 
+    public static final String CONCURRENT_CONSUMER_QUEUE_NAME = 'concurrent-queue'
+    public static final String REGULAR_CONSUMER_QUEUE_NAME = 'normal-queue'
+    public static final String FORKED_CONSUMER_QUEUE_NAME = 'fork-queue'
+    public static final String FAILING_MESSAGE = '5'
+
     final AtomicInteger producer = new AtomicInteger()
     final AtomicInteger leader = new AtomicInteger()
     final AtomicInteger follower = new AtomicInteger()
     final AtomicInteger consecutive = new AtomicInteger()
     final AtomicInteger unlimited = new AtomicInteger()
     final AtomicInteger concurrent = new AtomicInteger()
+    final Queue<String> consumedConcurrentMessages = new ConcurrentLinkedQueue()
+    final Queue<String> consumedRegularMessages = new ConcurrentLinkedQueue()
+    final Queue<String> consumedForkMessages = new ConcurrentLinkedQueue()
     final AtomicInteger fork = new AtomicInteger()
 
     @Job(initialDelay = JOBS_INITIAL_DELAY)
@@ -90,6 +100,38 @@ class LongRunningJob {
         concurrent.incrementAndGet()
     }
 
+    @Concurrency(2)
+    @Job(initialDelay = JOBS_INITIAL_DELAY)
+    @Consumes(value = CONCURRENT_CONSUMER_QUEUE_NAME, maxMessages = 3)
+    void executeConcurrentConsumer(String message) {
+        if (FAILING_MESSAGE == message) {
+            throw new IllegalStateException('Failing concurrent message')
+        }
+        runLongTask()
+        consumedConcurrentMessages.add(message)
+    }
+
+    @Fork(2)
+    @Job(initialDelay = JOBS_INITIAL_DELAY)
+    @Consumes(value = FORKED_CONSUMER_QUEUE_NAME, maxMessages = 4)
+    void executeForkConsumer(String message) {
+        if (FAILING_MESSAGE == message) {
+            throw new IllegalStateException('Failing fork message')
+        }
+        runLongTask()
+        consumedForkMessages.add(message)
+    }
+
+    @Job(initialDelay = JOBS_INITIAL_DELAY)
+    @Consumes(value = REGULAR_CONSUMER_QUEUE_NAME, maxMessages = 3)
+    void executeRegularConsumer(String message) {
+        if (FAILING_MESSAGE == message) {
+            throw new IllegalStateException('Failing regular message')
+        }
+        runLongTask()
+        consumedRegularMessages.add(message)
+    }
+
     @Fork(2)
     @Job(initialDelay = JOBS_INITIAL_DELAY)
     void executeFork() {
@@ -100,7 +142,7 @@ class LongRunningJob {
     @Override
     @SuppressWarnings('LineLength')
     String toString() {
-        return "LongRunningJob{producer=$producer, leader=$leader, follower=$follower, consecutive=$consecutive, unlimited=$unlimited, concurrent=$concurrent, fork=$fork}"
+        return "LongRunningJob{producer=$producer, leader=$leader, follower=$follower, consecutive=$consecutive, unlimited=$unlimited, concurrent=$concurrent, fork=$fork, consumedConcurrentMessages=$consumedConcurrentMessages, consumedRegularMessages=$consumedRegularMessages, consumedForkMessages=$consumedForkMessages}"
     }
 
     @SuppressWarnings('Instanceof')

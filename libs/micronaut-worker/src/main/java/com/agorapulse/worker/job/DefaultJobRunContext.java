@@ -18,6 +18,7 @@
 package com.agorapulse.worker.job;
 
 import com.agorapulse.worker.JobRunStatus;
+import com.agorapulse.worker.queue.QueueMessage;
 import jakarta.annotation.Nullable;
 
 import java.util.function.BiConsumer;
@@ -27,7 +28,7 @@ public class DefaultJobRunContext implements JobRunContext {
 
     private final JobRunStatus status;
 
-    private BiConsumer<JobRunStatus, Object> onMessage = (aStatus, m) -> { };
+    private BiConsumer<JobRunStatus, QueueMessage<?>> onMessage = (aStatus, m) -> { };
     private BiConsumer<JobRunStatus, Throwable> onError = (aStatus, e) -> { };
     private Consumer<JobRunStatus> onFinished = s -> { };
     private BiConsumer<JobRunStatus, Object> onResult = (aStatus, r) -> { };
@@ -37,8 +38,17 @@ public class DefaultJobRunContext implements JobRunContext {
         this.status = status;
     }
 
+    private DefaultJobRunContext(JobRunStatus status, BiConsumer<JobRunStatus, QueueMessage<?>> onMessage, BiConsumer<JobRunStatus, Throwable> onError, Consumer<JobRunStatus> onFinished, BiConsumer<JobRunStatus, Object> onResult, Consumer<JobRunStatus> onExecuted) {
+        this.status = status;
+        this.onMessage = onMessage;
+        this.onError = onError;
+        this.onFinished = onFinished;
+        this.onResult = onResult;
+        this.onExecuted = onExecuted;
+    }
+
     @Override
-    public JobRunContext onMessage(BiConsumer<JobRunStatus, Object> onMessage) {
+    public JobRunContext onMessage(BiConsumer<JobRunStatus, QueueMessage<?>> onMessage) {
         this.onMessage = this.onMessage.andThen(onMessage);
         return this;
     }
@@ -68,7 +78,7 @@ public class DefaultJobRunContext implements JobRunContext {
     }
 
     @Override
-    public void message(@Nullable Object event) {
+    public void message(@Nullable QueueMessage<?> event) {
         onMessage.accept(status, event);
     }
 
@@ -95,6 +105,11 @@ public class DefaultJobRunContext implements JobRunContext {
     @Override
     public JobRunStatus getStatus() {
         return status;
+    }
+
+    @Override
+    public JobRunContext createChildContext(String isSuffix) {
+        return new DefaultJobRunContext(status.copy(isSuffix), onMessage, onError, onFinished, onResult, onExecuted);
     }
 
 }

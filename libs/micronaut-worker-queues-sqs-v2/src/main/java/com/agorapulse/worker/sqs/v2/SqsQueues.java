@@ -19,6 +19,7 @@ package com.agorapulse.worker.sqs.v2;
 
 import com.agorapulse.micronaut.amazon.awssdk.sqs.SimpleQueueService;
 import com.agorapulse.worker.queue.JobQueues;
+import com.agorapulse.worker.queue.QueueMessage;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micronaut.core.type.Argument;
@@ -44,9 +45,16 @@ public class SqsQueues implements JobQueues {
     }
 
     @Override
-    public <T> Publisher<T> readMessages(String queueName, int maxNumberOfMessages, Duration waitTime, Argument<T> argument) {
+    public <T> Publisher<QueueMessage<T>> readMessages(String queueName, int maxNumberOfMessages, Duration waitTime, Argument<T> argument) {
         return Flux.merge(simpleQueueService.receiveMessages(queueName, maxNumberOfMessages, 0, Math.toIntExact(waitTime.getSeconds())).stream().map(m ->
-            readMessageInternal(queueName, argument, m.body(), m.receiptHandle(), true)
+            readMessageInternal(queueName, argument, m.body(), true).map(
+                message -> QueueMessage.requeueIfDeleted(
+                    m.messageId(),
+                    message,
+                    () -> simpleQueueService.deleteMessage(queueName, m.receiptHandle()),
+                    () -> simpleQueueService.sendMessage(queueName, m.body())
+                )
+            )
         ).toList());
     }
 
@@ -78,24 +86,20 @@ public class SqsQueues implements JobQueues {
         Flux.from(simpleQueueService.sendMessages(queueName, Flux.from(result).map(String::valueOf))).subscribe();
     }
 
-    private <T> Mono<T> readMessageInternal(String queueName, Argument<T> argument, String body, String handle, boolean tryReformat) {
+    private <T> Mono<T> readMessageInternal(String queueName, Argument<T> argument, String body, boolean tryReformat) {
         try {
-            Mono<T> result = Mono.just(objectMapper.readValue(body, JacksonConfiguration.constructType(argument, objectMapper.getTypeFactory())));
-            simpleQueueService.deleteMessage(queueName, handle);
-            return result;
+            return Mono.just(objectMapper.readValue(body, JacksonConfiguration.constructType(argument, objectMapper.getTypeFactory())));
         } catch (JsonProcessingException e) {
             if (tryReformat) {
                 if (String.class.isAssignableFrom(argument.getType())) {
-                    Mono<T> result = Mono.just(argument.getType().cast(body));
-                    simpleQueueService.deleteMessage(queueName, handle);
-                    return result;
+                    return Mono.just(argument.getType().cast(body));
                 }
                 if (Collection.class.isAssignableFrom(argument.getType())) {
                     if (argument.getTypeParameters().length > 0 && CharSequence.class.isAssignableFrom(argument.getTypeParameters()[0].getType())) {
                         String quoted = Arrays.stream(body.split(",\\s*")).map(s -> "\"" + s + "\"").collect(Collectors.joining(","));
-                        return readMessageInternal(queueName, argument, "[" + quoted + "]", handle, false);
+                        return readMessageInternal(queueName, argument, "[" + quoted + "]", false);
                     }
-                    return readMessageInternal(queueName, argument, "[" + body + "]", handle, false);
+                    return readMessageInternal(queueName, argument, "[" + body + "]", false);
                 }
             }
             return Mono.error(new IllegalArgumentException("Cannot convert to " + argument + "from message\n" + body, e));

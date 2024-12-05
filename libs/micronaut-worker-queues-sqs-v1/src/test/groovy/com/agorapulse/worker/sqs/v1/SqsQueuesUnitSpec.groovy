@@ -19,6 +19,7 @@ package com.agorapulse.worker.sqs.v1
 
 import com.agorapulse.micronaut.aws.sqs.SimpleQueueService
 import com.agorapulse.worker.queue.JobQueues
+import com.agorapulse.worker.queue.QueueMessage
 import com.amazonaws.services.sqs.model.AmazonSQSException
 import com.amazonaws.services.sqs.model.Message
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -41,39 +42,11 @@ class SqsQueuesUnitSpec extends Specification {
 
     JobQueues sqsQueues = new SqsQueues(simpleQueueService, mapper)
 
-    void 'message is deleted once read'() {
-        when:
-            List<Map<String, String>> values = Flux.from(
-                sqsQueues.readMessages(QUEUE_NAME, MAX_MESSAGES, WAIT_TIME, Argument.mapOf(String, String))
-            ).collectList().block()
-        then:
-            values
-            values.size() == 2
-            values.first() instanceof Map
-            values.first().one == '1'
-            values.last().two == '2'
-
-            1 * simpleQueueService.receiveMessages(QUEUE_NAME, MAX_MESSAGES, 0, WAIT_TIME.seconds) >> {
-                [
-                    new Message(
-                        body: mapper.writeValueAsString(one: '1'),
-                        receiptHandle: 'one'
-                    ),
-                    new Message(
-                        body: mapper.writeValueAsString(two: '2'),
-                        receiptHandle: 'two'
-                    ),
-                ]
-            }
-            1 * simpleQueueService.deleteMessage(QUEUE_NAME, 'one')
-            1 * simpleQueueService.deleteMessage(QUEUE_NAME, 'two')
-    }
-
     void 'can read legacy messages'() {
         when:
             List<List<Long>> values = Flux.from(
                 sqsQueues.readMessages(QUEUE_NAME, MAX_MESSAGES, WAIT_TIME, Argument.listOf(Long))
-            ).collectList().block()
+            ).map(QueueMessage::getMessage).collectList().block()
         then:
             values
             values.size() == 2
@@ -94,15 +67,13 @@ class SqsQueuesUnitSpec extends Specification {
                     ),
                 ]
             }
-            1 * simpleQueueService.deleteMessage(QUEUE_NAME, 'one')
-            1 * simpleQueueService.deleteMessage(QUEUE_NAME, 'two')
     }
 
     void 'can read legacy string messages'() {
         when:
             List<List<String>> values = Flux.from(
                 sqsQueues.readMessages(QUEUE_NAME, MAX_MESSAGES, WAIT_TIME, Argument.listOf(String))
-            ).collectList().block()
+            ).map(QueueMessage::getMessage).collectList().block()
         then:
             values
             values.size() == 2
@@ -123,15 +94,13 @@ class SqsQueuesUnitSpec extends Specification {
                     ),
                 ]
             }
-            1 * simpleQueueService.deleteMessage(QUEUE_NAME, 'one')
-            1 * simpleQueueService.deleteMessage(QUEUE_NAME, 'two')
     }
 
     void 'message not deleted on error'() {
         when:
             Flux.from(
                 sqsQueues.readMessages(QUEUE_NAME, MAX_MESSAGES, WAIT_TIME, Argument.mapOf(String, String))
-            ).collectList().block()
+            ).map(QueueMessage::getMessage).collectList().block()
         then:
             thrown IllegalArgumentException
 

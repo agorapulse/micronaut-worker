@@ -18,6 +18,7 @@
 package com.agorapulse.worker.tck.queue
 
 import com.agorapulse.worker.queue.JobQueues
+import com.agorapulse.worker.queue.QueueMessage
 import io.micronaut.context.ApplicationContext
 import io.micronaut.core.async.publisher.Publishers
 import io.micronaut.core.type.Argument
@@ -60,7 +61,9 @@ abstract class AbstractQueuesSpec extends Specification {
             queues.sendRawMessage('foo', 'one')
             queues.sendRawMessages('foo', Publishers.just('two'))
         and:
-            List<String> messages = Flux.from(queues.readMessages('foo', 2, Duration.ofSeconds(1), Argument.STRING)).collectList().block()
+            List<String> messages = Flux.from(queues.readMessages('foo', 2, Duration.ofSeconds(1), Argument.STRING))
+                .map(QueueMessage::getMessage)
+                .collectList().block()
         then:
             messages == ['one', 'two']
     }

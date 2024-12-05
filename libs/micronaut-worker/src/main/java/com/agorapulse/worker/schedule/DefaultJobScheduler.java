@@ -34,8 +34,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -75,27 +73,20 @@ public class DefaultJobScheduler implements JobScheduler, Closeable {
         JobConfiguration configuration = job.getConfiguration();
         TaskScheduler taskScheduler = getTaskScheduler(job);
 
-        List<ScheduledFuture<?>> scheduled = new ArrayList<>();
-
-        for (int i = 0; i < configuration.getFork(); i++) {
-            scheduled.addAll(doSchedule(job, configuration, taskScheduler));
-        }
+        ScheduledFuture<?> scheduled = doSchedule(job, configuration, taskScheduler);
 
         if (job instanceof MutableCancelableJob mj) {
             mj.cancelAction(() -> {
-                for (ScheduledFuture<?> scheduledTask : scheduled) {
-                    if (!scheduledTask.isCancelled()) {
-                        scheduledTask.cancel(false);
-                    }
+                if (!scheduled.isCancelled()) {
+                    scheduled.cancel(false);
                 }
             });
         }
 
-        scheduledTasks.addAll(scheduled);
+        scheduledTasks.add(scheduled);
     }
 
-    private List<ScheduledFuture<?>> doSchedule(Job job, JobConfiguration configuration, TaskScheduler taskScheduler) {
-        List<ScheduledFuture<?>> scheduled = new ArrayList<>();
+    private ScheduledFuture<?> doSchedule(Job job, JobConfiguration configuration, TaskScheduler taskScheduler) {
         Duration initialDelay = configuration.getInitialDelay();
 
         if (StringUtils.isNotEmpty(configuration.getCron())) {
@@ -106,35 +97,36 @@ public class DefaultJobScheduler implements JobScheduler, Closeable {
                 LOG.debug("Scheduling cron job {} [{}] for {}", configuration.getName(), configuration.getCron(), job.getSource());
             }
             try {
-                ScheduledFuture<?> scheduledFuture = taskScheduler.schedule(configuration.getCron(), job);
-                scheduled.add(scheduledFuture);
+                return taskScheduler.schedule(configuration.getCron(), job);
             } catch (IllegalArgumentException e) {
                 throw new JobConfigurationException(job, "Failed to schedule job " + configuration.getName() + " declared in " + job.getSource() + ". Invalid CRON expression: " + configuration.getCron(), e);
             }
-        } else if (configuration.getFixedRate() != null) {
+        }
+
+        if (configuration.getFixedRate() != null) {
             Duration duration = configuration.getFixedRate();
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Scheduling fixed rate job {} [{}] for {}", configuration.getName(), duration, job.getSource());
             }
 
-            ScheduledFuture<?> scheduledFuture = taskScheduler.scheduleAtFixedRate(initialDelay, duration, job);
-            scheduled.add(scheduledFuture);
-        } else if (configuration.getFixedDelay() != null) {
+            return taskScheduler.scheduleAtFixedRate(initialDelay, duration, job);
+        }
+
+        if (configuration.getFixedDelay() != null) {
             Duration duration = configuration.getFixedDelay();
 
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Scheduling fixed delay task {} [{}] for {}", configuration.getName(), duration, job.getSource());
             }
 
-            ScheduledFuture<?> scheduledFuture = taskScheduler.scheduleWithFixedDelay(initialDelay, duration, job);
-            scheduled.add(scheduledFuture);
-        } else if (initialDelay != null) {
-            ScheduledFuture<?> scheduledFuture = taskScheduler.schedule(initialDelay, job);
-            scheduled.add(scheduledFuture);
-        } else {
-            throw new JobConfigurationException(job, "Failed to schedule job " + configuration.getName() + " declared in " + job.getSource() + ". Invalid definition");
+            return taskScheduler.scheduleWithFixedDelay(initialDelay, duration, job);
         }
-        return scheduled;
+
+        if (initialDelay != null) {
+            return taskScheduler.schedule(initialDelay, job);
+        }
+
+        throw new JobConfigurationException(job, "Failed to schedule job " + configuration.getName() + " declared in " + job.getSource() + ". Invalid definition");
     }
 
     private TaskScheduler getTaskScheduler(com.agorapulse.worker.Job job) {

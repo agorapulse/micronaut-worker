@@ -35,7 +35,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-class MethodJob<B, R> extends AbstractJob {
+public class MethodJob<B, R> extends AbstractJob {
 
     private final ExecutableMethod<B, R> method;
 

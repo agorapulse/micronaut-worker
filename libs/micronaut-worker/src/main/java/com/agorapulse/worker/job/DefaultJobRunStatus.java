@@ -45,6 +45,15 @@ public class DefaultJobRunStatus implements JobRunStatus {
         this.started = started;
     }
 
+    private DefaultJobRunStatus(String id, String name, Instant started, Instant finished, Throwable exception, int executionCount) {
+        this.id = id;
+        this.name = name;
+        this.started = started;
+        this.finished = finished;
+        this.exception = exception;
+        this.executionCount = executionCount;
+    }
+
     @Override @Nonnull
     public String getId() {
         return id;
@@ -90,6 +99,11 @@ public class DefaultJobRunStatus implements JobRunStatus {
 
     public void executed() {
         executionCount++;
+    }
+
+    @Override
+    public DefaultJobRunStatus copy(String idSuffix) {
+        return new DefaultJobRunStatus(id + "-" + idSuffix, name, started, finished, exception, executionCount);
     }
 
     @Override

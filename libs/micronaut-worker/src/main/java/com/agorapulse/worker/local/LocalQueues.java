@@ -18,9 +18,10 @@
 package com.agorapulse.worker.local;
 
 import com.agorapulse.worker.queue.JobQueues;
+import com.agorapulse.worker.queue.QueueMessage;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Secondary;
-import io.micronaut.context.env.Environment;
+import io.micronaut.core.convert.ConversionService;
 import io.micronaut.core.type.Argument;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
@@ -28,11 +29,15 @@ import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 
 import java.time.Duration;
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ConcurrentNavigableMap;
+import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Secondary
 @Singleton
@@ -40,35 +45,88 @@ import java.util.concurrent.ConcurrentMap;
 @Requires(property = "worker.queues.local.enabled", value = "true", defaultValue = "true")
 public class LocalQueues implements JobQueues {
 
-    private final ConcurrentMap<String, ConcurrentLinkedDeque<Object>> queues = new ConcurrentHashMap<>();
-    private final Environment environment;
+    static class LocalQueue {
 
-    public LocalQueues(Environment environment) {
-        this.environment = environment;
+        private final ConcurrentNavigableMap<String, Object> messages = new ConcurrentSkipListMap<>();
+        private final String format = UUID.randomUUID() + "-%015d";
+        private final AtomicLong counter = new AtomicLong(1);
+
+        void add(Object message) {
+            messages.put(format.formatted(counter.getAndIncrement()), message);
+        }
+
+        <T> QueueMessage<T> readMessage(ConversionService env, Argument<T> argument) {
+            Map.Entry<String, Object> entry = messages.pollFirstEntry();
+            return QueueMessage.alwaysRequeue(
+                entry.getKey(),
+                env.convertRequired(entry.getValue(), argument),
+                () -> messages.remove(entry.getKey()),
+                () -> {
+                    // ensure the message is removed and add it to the end of the queue
+                    messages.remove(entry.getKey());
+                    add(entry.getValue());
+                }
+            );
+        }
+
+        boolean isEmpty() {
+            return messages.isEmpty();
+        }
+
+        Collection<Object> getMessages() {
+            return messages.values();
+        }
+
+    }
+
+    public static LocalQueues create() {
+        return create(ConversionService.SHARED);
+    }
+
+    public static LocalQueues create(ConversionService conversionService) {
+        return new LocalQueues(conversionService);
+    }
+
+    private final ConcurrentMap<String, LocalQueue> queues = new ConcurrentHashMap<>();
+    private final ConversionService conversionService;
+
+    public LocalQueues(ConversionService conversionService) {
+        this.conversionService = conversionService;
     }
 
     @Override
-    public <T> Publisher<T> readMessages(String queueName, int maxNumberOfMessages, Duration waitTime, Argument<T> argument) {
-        ConcurrentLinkedDeque<Object> objects = queues.get(queueName);
-        if (objects == null) {
+    public <T> Publisher<QueueMessage<T>> readMessages(String queueName, int maxNumberOfMessages, Duration waitTime, Argument<T> argument) {
+        LocalQueue queue = queues.get(queueName);
+
+        if (queue == null || queue.isEmpty()) {
             return Flux.empty();
         }
 
-        List<T> results = new ArrayList<>();
+        return Flux.generate(() -> maxNumberOfMessages, (state, sink) -> {
+            if (queue.isEmpty()) {
+                sink.complete();
+                return 0;
+            }
 
-        for (int i = 0; i < maxNumberOfMessages && !objects.isEmpty(); i++) {
-            results.add(environment.convertRequired(objects.removeFirst(), argument));
-        }
+            if (state > 0) {
+                sink.next(queue.readMessage(conversionService, argument));
+            }
 
-        return Flux.fromIterable(results);
+            if (state == 1) {
+                sink.complete();
+            }
+
+            return state - 1;
+        });
     }
 
     @Override
     public void sendRawMessage(String queueName, Object result) {
-        queues.computeIfAbsent(queueName, key -> new ConcurrentLinkedDeque<>()).addLast(result);
+        queues.computeIfAbsent(queueName, key -> new LocalQueue()).add(result);
     }
 
     public <T> List<T> getMessages(String queueName, Argument<T> type) {
-        return List.copyOf(queues.get(queueName).stream().map(o -> environment.convertRequired(o, type)).toList());
+        return List.copyOf(queues.get(queueName).getMessages().stream().map(o -> conversionService.convertRequired(o, type)).toList());
     }
+
 }

@@ -18,6 +18,7 @@
 package com.agorapulse.worker.queues.redis;
 
 import com.agorapulse.worker.queue.JobQueues;
+import com.agorapulse.worker.queue.QueueMessage;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.lettuce.core.RedisClient;
@@ -36,6 +37,7 @@ import reactor.core.publisher.Flux;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
@@ -65,11 +67,11 @@ public class RedisQueues implements JobQueues {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T> Publisher<T> readMessages(String queueName, int maxNumberOfMessages, Duration waitTime, Argument<T> argument) {
+    public <T> Publisher<QueueMessage<T>> readMessages(String queueName, int maxNumberOfMessages, Duration waitTime, Argument<T> argument) {
         TransactionResult result = withTransaction(redisCommands -> {
             String key = getKey(queueName);
-            redisCommands.zrange(key, 0, maxNumberOfMessages - 1);
-            redisCommands.zremrangebyrank(key, 0, maxNumberOfMessages - 1);
+            redisCommands.zrange(key, 0, maxNumberOfMessages - 1L);
+            redisCommands.zremrangebyrank(key, 0, maxNumberOfMessages - 1L);
         });
 
         if (result == null) {
@@ -87,10 +89,23 @@ public class RedisQueues implements JobQueues {
 
         return Flux.fromIterable(messages).handle((body, sink) -> {
             try {
-                sink.next(objectMapper.readValue(body, JacksonConfiguration.constructType(argument, objectMapper.getTypeFactory())));
+                T message = objectMapper.readValue(body, JacksonConfiguration.constructType(argument, objectMapper.getTypeFactory()));
+                QueueMessage<T> queueMessage = QueueMessage.alwaysRequeue(
+                    UUID.randomUUID().toString(),
+                    message,
+                    () -> {},
+                    () -> sendRawMessage(queueName, body)
+                );
+                sink.next(queueMessage);
             } catch (JsonProcessingException e) {
                 if (argument.equalsType(Argument.STRING)) {
-                    sink.next((T) body);
+                    QueueMessage<T> queueMessage = QueueMessage.alwaysRequeue(
+                        UUID.randomUUID().toString(),
+                        (T) body,
+                        () -> {},
+                        () -> sendRawMessage(queueName, body)
+                    );
+                    sink.next(queueMessage);
                 } else {
                     sink.error(new IllegalArgumentException("Cannot convert to " + argument + "from message\n" + body, e));
                 }
