@@ -15,16 +15,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.agorapulse.worker.sqs.v2
+package com.agorapulse.worker.sqs.v1
 
-import com.agorapulse.micronaut.amazon.awssdk.sqs.SimpleQueueService
+import com.agorapulse.micronaut.aws.sqs.SimpleQueueService
 import com.agorapulse.worker.queue.JobQueues
 import com.agorapulse.worker.queue.QueueMessage
+import com.amazonaws.services.sqs.model.AmazonSQSException
+import com.amazonaws.services.sqs.model.Message
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.micronaut.core.type.Argument
 import reactor.core.publisher.Flux
-import software.amazon.awssdk.services.sqs.model.Message
-import software.amazon.awssdk.services.sqs.model.SqsException
 import spock.lang.Shared
 import spock.lang.Specification
 
@@ -57,14 +57,14 @@ class SqsQueuesUnitSpec extends Specification {
 
             1 * simpleQueueService.receiveMessages(QUEUE_NAME, MAX_MESSAGES, 0, WAIT_TIME.seconds) >> {
                 [
-                    Message.builder()
-                        .body('1,2,3')
-                        .receiptHandle('one')
-                        .build(),
-                    Message.builder()
-                        .body('3,2,1')
-                        .receiptHandle('two')
-                        .build(),
+                    new Message(
+                        body: '1,2,3',
+                        receiptHandle: 'one'
+                    ),
+                    new Message(
+                        body: '3,2,1',
+                        receiptHandle: 'two'
+                    ),
                 ]
             }
     }
@@ -84,14 +84,14 @@ class SqsQueuesUnitSpec extends Specification {
 
             1 * simpleQueueService.receiveMessages(QUEUE_NAME, MAX_MESSAGES, 0, WAIT_TIME.seconds) >> {
                 [
-                    Message.builder()
-                        .body('one,two,three')
-                        .receiptHandle('one')
-                        .build(),
-                    Message.builder()
-                        .body('three,two,one')
-                        .receiptHandle('two')
-                        .build(),
+                    new Message(
+                        body: 'one,two,three',
+                        receiptHandle: 'one'
+                    ),
+                    new Message(
+                        body: 'three,two,one',
+                        receiptHandle: 'two'
+                    ),
                 ]
             }
     }
@@ -106,10 +106,10 @@ class SqsQueuesUnitSpec extends Specification {
 
             1 * simpleQueueService.receiveMessages(QUEUE_NAME, MAX_MESSAGES, 0, WAIT_TIME.seconds) >> {
                 [
-                    Message.builder()
-                        .body('this is not JSON')
-                        .receiptHandle('one')
-                        .build(),
+                    new Message(
+                        body: 'this is not JSON',
+                        receiptHandle: 'one'
+                    )
                 ]
             }
 
@@ -130,7 +130,7 @@ class SqsQueuesUnitSpec extends Specification {
 
         then:
             1 * simpleQueueService.sendMessage(QUEUE_NAME, _) >> {
-                throw SqsException.builder().message('Concurrent access: Queue already exists').build()
+                throw new AmazonSQSException('Concurrent access: Queue already exists')
             }
 
             1 * simpleQueueService.sendMessage(QUEUE_NAME, _)
@@ -144,9 +144,9 @@ class SqsQueuesUnitSpec extends Specification {
             sqsQueues.sendMessage(QUEUE_NAME, [one: '1'])
 
         then:
-            thrown SqsException
+            thrown AmazonSQSException
             1 * simpleQueueService.sendMessage(QUEUE_NAME, json) >> {
-                throw SqsException.builder().message('Something wrong with the queue').build()
+                throw new AmazonSQSException('Something wrong with the queue')
             }
     }
 
