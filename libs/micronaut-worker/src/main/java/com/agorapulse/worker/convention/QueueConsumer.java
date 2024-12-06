@@ -18,9 +18,12 @@
 package com.agorapulse.worker.convention;
 
 import com.agorapulse.worker.JobConfiguration;
+import com.agorapulse.worker.WorkerConfiguration;
 import com.agorapulse.worker.annotation.Consumes;
 import com.agorapulse.worker.annotation.FixedRate;
+import com.agorapulse.worker.annotation.Job;
 import io.micronaut.context.annotation.AliasFor;
+import jakarta.inject.Named;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -60,5 +63,12 @@ public @interface QueueConsumer {
      */
     @AliasFor(annotation = Consumes.class, member = "value")
     int maxMessages() default JobConfiguration.ConsumerQueueConfiguration.DEFAULT_MAX_MESSAGES;
+
+    /**
+     * @return The name of a {@link Named} bean that is a
+     * {@link java.util.concurrent.ScheduledExecutorService} to use to schedule the task
+     */
+    @AliasFor(annotation = Job.class, member = "scheduler")
+    String scheduler() default WorkerConfiguration.DEFAULT_SCHEDULER;
 
 }

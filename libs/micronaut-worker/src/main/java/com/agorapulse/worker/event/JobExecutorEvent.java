@@ -26,7 +26,7 @@ public class JobExecutorEvent {
     }
 
     public enum Type {
-        LEADER_ONLY, FOLLOWER_ONLY, CONCURRENT
+        LEADER_ONLY, FOLLOWER_ONLY, CONCURRENT, ALWAYS
     }
 
     public static JobExecutorEvent leaderOnly(String executor, Execution outcome, JobRunStatus status, String executorId) {

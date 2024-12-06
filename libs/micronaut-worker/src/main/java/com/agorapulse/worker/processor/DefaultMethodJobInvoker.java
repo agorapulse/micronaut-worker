@@ -167,7 +167,7 @@ public class DefaultMethodJobInvoker implements MethodJobInvoker, ApplicationEve
         if (configuration.getConcurrency() > 0) {
             return s -> distributedJobExecutor.executeConcurrently(context, configuration.getConcurrency(), s);
         }
-        return s -> Mono.fromCallable(s).flux();
+        return s -> distributedJobExecutor.execute(context, s);
     }
 
     protected void handleResult(JobConfiguration configuration, JobRunContext callback, Publisher<Object> resultPublisher) {

@@ -57,4 +57,14 @@ public interface DistributedJobExecutor {
      */
     <R> Publisher<R> executeOnlyOnFollower(JobRunContext context, Callable<R> task);
 
+    /**
+     * Always executes the task.
+     *
+     * @param context       the execution context
+     * @param task          the task to be performed
+     * @param <R>           the type of the task's result
+     * @return publisher which calls the original supplier
+     */
+    <R> Publisher<R> execute(JobRunContext context, Callable<R> task);
+
 }
