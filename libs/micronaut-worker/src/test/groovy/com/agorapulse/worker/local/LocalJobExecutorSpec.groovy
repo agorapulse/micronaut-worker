@@ -82,6 +82,11 @@ class LocalJobExecutorSpec extends AbstractJobExecutorSpec {
         assert producerEvents.count { it.execution == JobExecutorEvent.Execution.SKIP } == 2
         assert producerEvents.count { it.execution == JobExecutorEvent.Execution.EXECUTE } == 1
 
+        List<JobExecutorEvent> consumerEvents = publisher.events.findAll { it.status.name == 'long-running-job-execute-regular-consumer' }
+
+        assert consumerEvents.count { it.execution == JobExecutorEvent.Execution.SKIP } == 0
+        assert consumerEvents.count { it.execution == JobExecutorEvent.Execution.EXECUTE } == 3
+
         return true
     }
 
