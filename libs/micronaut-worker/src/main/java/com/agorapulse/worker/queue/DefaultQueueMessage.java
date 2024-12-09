@@ -17,6 +17,8 @@
  */
 package com.agorapulse.worker.queue;
 
+import java.lang.ref.WeakReference;
+
 class DefaultQueueMessage<T> implements QueueMessage<T> {
 
     static <T> DefaultQueueMessage<T> alwaysRequeue(String id, T message, Runnable doDelete, Runnable doRequeue) {
@@ -28,7 +30,7 @@ class DefaultQueueMessage<T> implements QueueMessage<T> {
     }
 
     private final String id;
-    private final T message;
+    private final WeakReference<T> message;
     private final Runnable doDelete;
     private final Runnable doRequeue;
     private final boolean alwaysRequeue;
@@ -36,7 +38,7 @@ class DefaultQueueMessage<T> implements QueueMessage<T> {
 
     private DefaultQueueMessage(String id, T message, Runnable doDelete, Runnable doRequeue, boolean alwaysRequeue) {
         this.id = id;
-        this.message = message;
+        this.message = new WeakReference<>(message);
         this.doDelete = doDelete;
         this.doRequeue = doRequeue;
         this.alwaysRequeue = alwaysRequeue;
@@ -49,7 +51,7 @@ class DefaultQueueMessage<T> implements QueueMessage<T> {
 
     @Override
     public T getMessage() {
-        return message;
+        return message.get();
     }
 
     @Override
