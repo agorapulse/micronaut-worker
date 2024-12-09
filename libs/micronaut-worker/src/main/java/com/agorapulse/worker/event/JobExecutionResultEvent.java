@@ -19,6 +19,8 @@ package com.agorapulse.worker.event;
 
 import io.micronaut.core.annotation.Introspected;
 
+import java.lang.ref.WeakReference;
+
 /**
  * Event dispatched after successful job execution.
  */
@@ -27,16 +29,16 @@ public class JobExecutionResultEvent {
 
     private final String name;
     private final String id;
-    private final Object result;
+    private final WeakReference<Object> result;
 
     public JobExecutionResultEvent(String name, String id, Object result) {
         this.name = name;
         this.id = id;
-        this.result = result;
+        this.result = new WeakReference<>(result);
     }
 
     public Object getResult() {
-        return result;
+        return result.get();
     }
 
     public String getId() {
@@ -49,6 +51,6 @@ public class JobExecutionResultEvent {
 
     @Override
     public String toString() {
-        return "JobExecutionResultEvent{name='%s', id='%s', result=%s}".formatted(name, id, result);
+        return "JobExecutionResultEvent{name='%s', id='%s', result=%s}".formatted(name, id, result.get());
     }
 }
