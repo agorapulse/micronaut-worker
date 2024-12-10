@@ -21,6 +21,7 @@ import com.agorapulse.worker.JobConfiguration;
 import com.agorapulse.worker.WorkerConfiguration;
 import com.agorapulse.worker.annotation.Consumes;
 import com.agorapulse.worker.annotation.FixedRate;
+import com.agorapulse.worker.annotation.Fork;
 import com.agorapulse.worker.annotation.Job;
 import io.micronaut.context.annotation.AliasFor;
 import jakarta.inject.Named;
@@ -34,6 +35,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 @Documented
 @Consumes
+@Fork(JobConfiguration.ConsumerQueueConfiguration.DEFAULT_MAX_MESSAGES)
 @FixedRate("20s")
 @Retention(RUNTIME)
 @Target({ElementType.METHOD, ElementType.ANNOTATION_TYPE})
@@ -61,7 +63,8 @@ public @interface QueueConsumer {
     /**
      * @return the maximum of messages consumed in a single run, defaults to {@link JobConfiguration.ConsumerQueueConfiguration#DEFAULT_MAX_MESSAGES}
      */
-    @AliasFor(annotation = Consumes.class, member = "value")
+    @AliasFor(annotation = Fork.class, member = "value")
+    @AliasFor(annotation = Consumes.class, member = "maxMessages")
     int maxMessages() default JobConfiguration.ConsumerQueueConfiguration.DEFAULT_MAX_MESSAGES;
 
     /**
