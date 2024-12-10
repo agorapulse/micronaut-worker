@@ -75,6 +75,11 @@ public class DefaultJobConfiguration implements MutableJobConfiguration {
                 this.queueType = overrides.getQueueType();
             }
         }
+
+        @Override
+        public String toString() {
+            return "DefaultQueueConfiguration{queueName='%s', queueType='%s'}".formatted(queueName, queueType);
+        }
     }
 
     @JsonInclude
@@ -117,6 +122,12 @@ public class DefaultJobConfiguration implements MutableJobConfiguration {
             if (overrides.getWaitingTime() != null && !overrides.getWaitingTime().isZero() && overrides.getWaitingTime() != this.waitingTime) {
                 this.waitingTime = overrides.getWaitingTime();
             }
+        }
+
+        @Override
+        public String toString() {
+            return "DefaultConsumerQueueConfiguration{queueName='%s', queueType='%s', maxMessages=%d, waitingTime=%s}"
+                .formatted(getQueueName(), getQueueType(), maxMessages, waitingTime);
         }
     }
 
@@ -336,5 +347,11 @@ public class DefaultJobConfiguration implements MutableJobConfiguration {
         producer.mergeWith(overrides.getProducer());
 
         return this;
+    }
+
+    @Override
+    public String toString() {
+        return "DefaultJobConfiguration{name='%s', enabled=%s, concurrency=%d, leaderOnly=%s, followerOnly=%s, cron='%s', fixedDelay=%s, initialDelay=%s, fixedRate=%s, scheduler='%s', fork=%d, consumer=%s, producer=%s}"
+            .formatted(name, enabled, concurrency, leaderOnly, followerOnly, cron, fixedDelay, initialDelay, fixedRate, scheduler, fork, consumer, producer);
     }
 }
