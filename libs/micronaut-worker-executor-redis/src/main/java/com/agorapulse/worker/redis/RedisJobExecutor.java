@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
 
 import jakarta.inject.Singleton;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
 
 import java.time.Duration;
@@ -143,6 +144,22 @@ public class RedisJobExecutor implements DistributedJobExecutor {
         }).flux();
     }
 
+    @Override
+    public <R> Publisher<R> execute(JobRunContext context, Callable<R> supplier) {
+        return Mono.fromCallable(supplier).doFinally(ignored -> {
+            context.executed();
+            eventPublisher.publishEvent(
+                new JobExecutorEvent(
+                    EXECUTOR_TYPE,
+                    JobExecutorEvent.Type.ALWAYS,
+                    JobExecutorEvent.Execution.EXECUTE,
+                    context.getStatus(),
+                    0,
+                    executorId.id()
+                )
+            );
+        }).subscribeOn(getScheduler(context)).flux();
+    }
 
     private static Mono<Long> readAndIncreaseCurrentCount(String jobName, RedisAsyncCommands<String, String> commands, int timeout) {
         return Mono.fromFuture(commands.eval(
@@ -170,6 +187,11 @@ public class RedisJobExecutor implements DistributedJobExecutor {
             ).toCompletableFuture()))
             .defaultIfEmpty("");
     }
+
+    private Scheduler getScheduler(JobRunContext context) {
+        return Schedulers.fromExecutor(getExecutorService(context.getStatus().getName()));
+    }
+
 
     private ExecutorService getExecutorService(String jobName) {
         return jobManager
