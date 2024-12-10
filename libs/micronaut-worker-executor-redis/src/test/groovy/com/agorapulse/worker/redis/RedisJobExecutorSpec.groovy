@@ -25,12 +25,10 @@ import com.agorapulse.worker.tck.executor.AbstractJobExecutorSpec
 import com.agorapulse.worker.tck.executor.JobExecutorEventCollector
 import io.micronaut.context.ApplicationContext
 import org.testcontainers.containers.GenericContainer
-import org.testcontainers.spock.Testcontainers
 import spock.lang.Retry
 import spock.lang.Shared
 
 @Retry(delay = 500)
-@Testcontainers
 class RedisJobExecutorSpec extends AbstractJobExecutorSpec {
 
     @Shared
@@ -41,6 +39,10 @@ class RedisJobExecutorSpec extends AbstractJobExecutorSpec {
 
     @SuppressWarnings('FactoryMethodName')
     protected ApplicationContext buildContext(JobQueues queues) {
+        if (!redis.running) {
+            redis.start()
+        }
+
         ApplicationContext ctx = ApplicationContext
                 .builder(
                         'redis.uri': "redis://$redis.host:${redis.getMappedPort(6379)}",

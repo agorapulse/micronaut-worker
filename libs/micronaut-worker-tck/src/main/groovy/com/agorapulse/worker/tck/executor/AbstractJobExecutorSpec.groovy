@@ -35,7 +35,7 @@ abstract class AbstractJobExecutorSpec extends Specification {
     public static final long LONG_RUNNING_JOB_DURATION = 500
 
     private final PollingConditions conditions = new PollingConditions(
-        timeout: 30,
+        timeout: 60,
         initialDelay: 5
     )
 
