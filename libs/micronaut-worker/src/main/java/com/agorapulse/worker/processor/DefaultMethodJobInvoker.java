@@ -19,8 +19,8 @@ package com.agorapulse.worker.processor;
 
 import com.agorapulse.worker.Job;
 import com.agorapulse.worker.JobConfiguration;
-import com.agorapulse.worker.JobConfigurationException;
 import com.agorapulse.worker.executor.DistributedJobExecutor;
+import com.agorapulse.worker.executor.ExecutorServiceProvider;
 import com.agorapulse.worker.job.JobRunContext;
 import com.agorapulse.worker.queue.JobQueues;
 import com.agorapulse.worker.queue.QueueMessage;
@@ -44,7 +44,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 
 @Singleton
@@ -56,13 +55,15 @@ public class DefaultMethodJobInvoker implements MethodJobInvoker, ApplicationEve
     private final Map<String, Scheduler> schedulersCache = new ConcurrentHashMap<>();
 
     private final BeanContext context;
+    private final ExecutorServiceProvider executorServiceProvider;
     private final DistributedJobExecutor distributedJobExecutor;
 
     public DefaultMethodJobInvoker(
-        BeanContext context,
+        BeanContext context, ExecutorServiceProvider executorServiceProvider,
         DistributedJobExecutor distributedJobExecutor
     ) {
         this.context = context;
+        this.executorServiceProvider = executorServiceProvider;
         this.distributedJobExecutor = distributedJobExecutor;
     }
 
@@ -202,7 +203,7 @@ public class DefaultMethodJobInvoker implements MethodJobInvoker, ApplicationEve
     }
 
     private <B> Scheduler getScheduler(MethodJob<B, ?> job) {
-        return schedulersCache.computeIfAbsent(job.getConfiguration().getScheduler(), s -> Schedulers.fromExecutor(getExecutor(job)));
+        return schedulersCache.computeIfAbsent(ExecutorServiceProvider.getSchedulerName(job.getConfiguration()), s -> Schedulers.fromExecutor(executorServiceProvider.getExecutorService(job)));
     }
 
     private JobQueues queues(String qualifier) {
@@ -211,14 +212,6 @@ public class DefaultMethodJobInvoker implements MethodJobInvoker, ApplicationEve
                 qualifier == null ? null : Qualifiers.byName(qualifier)
             )
             .orElseGet(() -> context.getBean(JobQueues.class));
-    }
-
-    private ExecutorService getExecutor(Job job) {
-        JobConfiguration configuration = job.getConfiguration();
-
-        return context
-            .findBean(ExecutorService.class, Qualifiers.byName(configuration.getScheduler()))
-            .orElseThrow(() -> new JobConfigurationException(job, "No scheduler of type TaskScheduler configured for name: " + configuration.getScheduler()));
     }
 
 }

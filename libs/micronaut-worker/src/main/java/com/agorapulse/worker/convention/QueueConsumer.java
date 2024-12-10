@@ -54,6 +54,7 @@ public @interface QueueConsumer {
     String type() default "";
 
     /**
+     * The time to wait for the next message to be available and also the time to wait for the next run.
      * @return the maximum waiting time as duration string
      */
     @AliasFor(annotation = Consumes.class, member = "value")
@@ -61,6 +62,7 @@ public @interface QueueConsumer {
     String waitingTime() default "";
 
     /**
+     * The number of messages to consume and also the number of threads to use to consume the messages.
      * @return the maximum of messages consumed in a single run, defaults to {@link JobConfiguration.ConsumerQueueConfiguration#DEFAULT_MAX_MESSAGES}
      */
     @AliasFor(annotation = Fork.class, member = "value")

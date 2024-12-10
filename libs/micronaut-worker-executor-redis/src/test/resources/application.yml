@@ -4,54 +4,21 @@ worker:
   jobs:
     long-running-job-execute-producer:
       enabled: true
-      scheduler: long-running-job-execute-producer
     long-running-job-execute-on-leader:
       enabled: true
-      scheduler: long-running-job-execute-on-leader
     long-running-job-execute-on-follower:
       enabled: true
-      scheduler: long-running-job-execute-on-follower
     long-running-job-execute-consecutive:
       enabled: true
-      scheduler: long-running-job-execute-consecutive
     long-running-job-execute-unlimited:
       enabled: true
-      scheduler: long-running-job-execute-unlimited
     long-running-job-execute-concurrent:
       enabled: true
-      scheduler: long-running-job-execute-concurrent
     long-running-job-execute-concurrent-consumer:
       enabled: true
-      scheduler: long-running-job-execute-concurrent-consumer
     long-running-job-execute-fork-consumer:
       enabled: true
-      scheduler: long-running-job-execute-fork-consumer
     long-running-job-execute-regular-consumer:
       enabled: true
-      scheduler: long-running-job-execute-regular-consumer
     long-running-job-execute-fork:
       enabled: true
-      scheduler: long-running-job-execute-fork
-
-micronaut:
-  executors:
-    long-running-job-execute-producer:
-      number-of-threads: 1
-    long-running-job-execute-on-leader:
-        number-of-threads: 1
-    long-running-job-execute-on-follower:
-        number-of-threads: 1
-    long-running-job-execute-consecutive:
-        number-of-threads: 1
-    long-running-job-execute-unlimited:
-        number-of-threads: 1
-    long-running-job-execute-concurrent:
-        number-of-threads: 1
-    long-running-job-execute-concurrent-consumer:
-        number-of-threads: 1
-    long-running-job-execute-fork-consumer:
-        number-of-threads: 2
-    long-running-job-execute-regular-consumer:
-        number-of-threads: 1
-    long-running-job-execute-fork:
-        number-of-threads: 2
