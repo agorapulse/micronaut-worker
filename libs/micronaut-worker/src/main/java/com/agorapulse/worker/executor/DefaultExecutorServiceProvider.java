@@ -20,15 +20,16 @@ package com.agorapulse.worker.executor;
 import com.agorapulse.worker.Job;
 import com.agorapulse.worker.JobConfiguration;
 import io.micronaut.context.BeanContext;
+import io.micronaut.context.Qualifier;
 import io.micronaut.inject.qualifiers.Qualifiers;
 import io.micronaut.scheduling.ScheduledExecutorTaskScheduler;
 import io.micronaut.scheduling.TaskScheduler;
 import jakarta.inject.Singleton;
 
 import java.io.Closeable;
-import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -36,7 +37,7 @@ import java.util.concurrent.ScheduledExecutorService;
 @Singleton
 public class DefaultExecutorServiceProvider implements ExecutorServiceProvider, Closeable {
 
-    private final List<ExecutorService> createdExecutors = new CopyOnWriteArrayList<>();
+    private final Map<String, ExecutorService> createdExecutors = new ConcurrentHashMap<>();
 
     private final BeanContext beanContext;
 
@@ -46,7 +47,7 @@ public class DefaultExecutorServiceProvider implements ExecutorServiceProvider, 
 
     @Override
     public void close() {
-        for (ExecutorService executor : createdExecutors) {
+        for (ExecutorService executor : createdExecutors.values()) {
             executor.shutdown();
         }
     }
@@ -79,14 +80,23 @@ public class DefaultExecutorServiceProvider implements ExecutorServiceProvider, 
     }
 
     private ExecutorService getExecutor(String schedulerName, int fork) {
+        if (createdExecutors.containsKey(schedulerName)) {
+            return createdExecutors.get(schedulerName);
+        }
+
+        Qualifier<ExecutorService> byName = Qualifiers.byName(schedulerName);
+
         return beanContext
-            .findBean(ExecutorService.class, Qualifiers.byName(schedulerName))
+            .findBean(ExecutorService.class, byName)
+            .filter(ScheduledExecutorService.class::isInstance)
             .orElseGet(() -> {
                 ExecutorService service = Executors.newScheduledThreadPool(fork, new NamedThreadFactory(schedulerName));
 
-                createdExecutors.add(service);
+                createdExecutors.put(schedulerName, service);
 
-                beanContext.registerSingleton(ExecutorService.class, service, Qualifiers.byName(schedulerName));
+                if (beanContext.findBean(ExecutorService.class, byName).isEmpty()) {
+                    beanContext.registerSingleton(ExecutorService.class, service, byName);
+                }
 
                 return service;
             });
