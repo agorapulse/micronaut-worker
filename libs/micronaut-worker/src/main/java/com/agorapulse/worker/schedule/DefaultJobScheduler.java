@@ -126,7 +126,7 @@ public class DefaultJobScheduler implements JobScheduler, Closeable {
             return taskScheduler.schedule(initialDelay, job);
         }
 
-        throw new JobConfigurationException(job, "Failed to schedule job " + configuration.getName() + " declared in " + job.getSource() + ". Invalid definition");
+        throw new JobConfigurationException(job, "Failed to schedule job " + configuration.getName() + " declared in " + job.getSource() + ". Invalid definition: " + configuration);
     }
 
     private TaskScheduler getTaskScheduler(com.agorapulse.worker.Job job) {
