@@ -45,17 +45,7 @@ class RedisJobExecutorSpec extends AbstractJobExecutorSpec {
 
         ApplicationContext ctx = ApplicationContext
                 .builder(
-                        'redis.uri': "redis://$redis.host:${redis.getMappedPort(6379)}",
-                        'worker.jobs.long-running-job-execute-producer.enabled': 'true',
-                        'worker.jobs.long-running-job-execute-on-leader.enabled': 'true',
-                        'worker.jobs.long-running-job-execute-on-follower.enabled': 'true',
-                        'worker.jobs.long-running-job-execute-consecutive.enabled': 'true',
-                        'worker.jobs.long-running-job-execute-unlimited.enabled': 'true',
-                        'worker.jobs.long-running-job-execute-concurrent.enabled': 'true',
-                        'worker.jobs.long-running-job-execute-concurrent-consumer.enabled': 'true',
-                        'worker.jobs.long-running-job-execute-fork-consumer.enabled': 'true',
-                        'worker.jobs.long-running-job-execute-regular-consumer.enabled': 'true',
-                        'worker.jobs.long-running-job-execute-fork.enabled': 'true'
+                        'redis.uri': "redis://$redis.host:${redis.getMappedPort(6379)}"
                 )
                 .environments(CONCURRENT_JOB_TEST_ENVIRONMENT)
                 .build()

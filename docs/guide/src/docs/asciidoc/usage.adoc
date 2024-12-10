@@ -138,6 +138,8 @@ include::{root-dir}/libs/micronaut-worker/src/test/groovy/com/agorapulse/worker/
 <5> Use the `@QueueConsumer` annotation with the name of the queue to consume messages
 <6> The consumer job must have a single parameter of the same type as the producer job returns
 
+TIP: The value for `@Fork` is the same as the number of `maxMessages` for `@QueueConsumer` annotation. The value of `waitingTime` in `@QueueConsumer` is the same as the associated `@FixedRate` value.
+
 ==== Advanced Usage
 
 The name of the queue can be customised using `@Consumes` and `@Produces`
