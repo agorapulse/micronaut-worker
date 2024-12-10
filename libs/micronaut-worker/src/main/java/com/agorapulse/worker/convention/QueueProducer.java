@@ -21,7 +21,6 @@ import com.agorapulse.worker.WorkerConfiguration;
 import com.agorapulse.worker.annotation.Job;
 import com.agorapulse.worker.annotation.Produces;
 import io.micronaut.context.annotation.AliasFor;
-import jakarta.inject.Named;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -94,7 +93,10 @@ public @interface QueueProducer {
     String fixedRate() default "";
 
     /**
-     * @return The name of a {@link Named} bean that is a
+     * The name of the task executor to use to execute the job. If default value is usd then new scheduled executor
+     * is created for each job with the number of threads equal to the fork value.
+     *
+     * @return The name of a {@link jakarta.inject.Named} bean that is a
      * {@link java.util.concurrent.ScheduledExecutorService} to use to schedule the task
      */
     @AliasFor(annotation = Job.class, member = "scheduler")

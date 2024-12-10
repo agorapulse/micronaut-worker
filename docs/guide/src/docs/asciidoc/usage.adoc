@@ -91,6 +91,8 @@ worker:
 <4> The scheduler definition using the name of the executor declared above
 ====
 
+TIP: Each job can define it's owns scheduler name using `scheduler` annotation or configuration value but to prevent multiple jobs blocking each others execution, it's recommended to keep the default value. Keeping the default value will create separate executor for each job.
+
 WARNING: For the consumer jobs, the messages are consumed synchronously so if you want to benefit from `@Fork` execution then keep the number of `maxMessages` to  the default value `1`.
 
 == Distributed Jobs

@@ -45,6 +45,9 @@ public @interface InitialDelay {
     String name() default "";
 
     /**
+     * The name of the task executor to use to execute the job. If default value is usd then new scheduled executor
+     * is created for each job with the number of threads equal to the fork value.
+     *
      * @return The name of a {@link jakarta.inject.Named} bean that is a
      * {@link java.util.concurrent.ScheduledExecutorService} to use to schedule the task
      */

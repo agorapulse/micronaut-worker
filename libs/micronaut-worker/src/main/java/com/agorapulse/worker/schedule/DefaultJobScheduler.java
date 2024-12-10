@@ -21,12 +21,10 @@ import com.agorapulse.worker.Job;
 import com.agorapulse.worker.JobConfiguration;
 import com.agorapulse.worker.JobConfigurationException;
 import com.agorapulse.worker.JobScheduler;
+import com.agorapulse.worker.executor.ExecutorServiceProvider;
 import com.agorapulse.worker.job.MutableCancelableJob;
-import io.micronaut.context.BeanContext;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.core.util.StringUtils;
-import io.micronaut.inject.qualifiers.Qualifiers;
-import io.micronaut.scheduling.ScheduledExecutorTaskScheduler;
 import io.micronaut.scheduling.TaskScheduler;
 import jakarta.inject.Singleton;
 import org.slf4j.Logger;
@@ -34,11 +32,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.time.Duration;
-import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 
 @Singleton
@@ -47,16 +42,15 @@ public class DefaultJobScheduler implements JobScheduler, Closeable {
 
     private static final Logger LOG = LoggerFactory.getLogger(DefaultJobScheduler.class);
 
-    private final BeanContext beanContext;
     private final Queue<ScheduledFuture<?>> scheduledTasks = new ConcurrentLinkedDeque<>();
+    private final ExecutorServiceProvider executorServiceProvider;
 
     /**
-     * @param beanContext The bean context for DI of beans annotated with {@link jakarta.inject.Inject}
      */
     public DefaultJobScheduler(
-        BeanContext beanContext
+        ExecutorServiceProvider executorServiceProvider
     ) {
-        this.beanContext = beanContext;
+        this.executorServiceProvider = executorServiceProvider;
     }
 
     @Override
@@ -71,7 +65,7 @@ public class DefaultJobScheduler implements JobScheduler, Closeable {
     @Override
     public void schedule(com.agorapulse.worker.Job job) {
         JobConfiguration configuration = job.getConfiguration();
-        TaskScheduler taskScheduler = getTaskScheduler(job);
+        TaskScheduler taskScheduler = executorServiceProvider.getTaskScheduler(job);
 
         ScheduledFuture<?> scheduled = doSchedule(job, configuration, taskScheduler);
 
@@ -129,16 +123,4 @@ public class DefaultJobScheduler implements JobScheduler, Closeable {
         throw new JobConfigurationException(job, "Failed to schedule job " + configuration.getName() + " declared in " + job.getSource() + ". Invalid definition: " + configuration);
     }
 
-    private TaskScheduler getTaskScheduler(com.agorapulse.worker.Job job) {
-        JobConfiguration configuration = job.getConfiguration();
-        Optional<TaskScheduler> optionalTaskScheduler = beanContext.findBean(TaskScheduler.class, Qualifiers.byName(configuration.getScheduler()));
-
-        if (!optionalTaskScheduler.isPresent()) {
-            optionalTaskScheduler = beanContext.findBean(ExecutorService.class, Qualifiers.byName(configuration.getScheduler()))
-                .filter(ScheduledExecutorService.class::isInstance)
-                .map(ScheduledExecutorTaskScheduler::new);
-        }
-
-        return optionalTaskScheduler.orElseThrow(() -> new JobConfigurationException(job, "No scheduler of type TaskScheduler configured for name: " + configuration.getScheduler()));
-    }
 }
