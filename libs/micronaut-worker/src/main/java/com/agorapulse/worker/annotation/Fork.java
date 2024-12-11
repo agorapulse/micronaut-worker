@@ -17,6 +17,8 @@
  */
 package com.agorapulse.worker.annotation;
 
+import com.agorapulse.worker.WorkerConfiguration;
+
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -35,4 +37,9 @@ public @interface Fork {
      * @return the number of jobs running in parallel on a one server
      */
     int value();
+
+    /**
+     * @return whether the job contains code that can be executed on virtual threads, e.g. there is no use of <code>synchronized</code> keyword anywhere in the code
+     */
+    boolean virtualThreadCompatible() default WorkerConfiguration.DEFAULT_VIRTUAL_THREAD_COMPATIBLE;
 }

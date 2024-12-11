@@ -126,7 +126,8 @@ public class MethodJobProcessor implements ExecutableMethodProcessor<Job> {
         InitialDelay.class.getName(), MEMBER_VIRTUAL_THREADS_COMPATIBLE,
         FixedDelay.class.getName(), MEMBER_VIRTUAL_THREADS_COMPATIBLE,
         QueueConsumer.class.getName(), MEMBER_VIRTUAL_THREADS_COMPATIBLE,
-        QueueProducer.class.getName(), MEMBER_VIRTUAL_THREADS_COMPATIBLE
+        QueueProducer.class.getName(), MEMBER_VIRTUAL_THREADS_COMPATIBLE,
+        Fork.class.getName(), MEMBER_VIRTUAL_THREADS_COMPATIBLE
     );
 
     private static final Map<String, String> ANNOTATION_TO_FORK_MAP = Map.of(
