@@ -21,6 +21,7 @@ import com.agorapulse.worker.WorkerConfiguration;
 import com.agorapulse.worker.annotation.Job;
 import com.agorapulse.worker.annotation.Produces;
 import io.micronaut.context.annotation.AliasFor;
+import jakarta.inject.Named;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -49,6 +50,12 @@ public @interface QueueProducer {
      * Either the job name specified here or the default name is converted using {@link io.micronaut.core.naming.NameUtils#hyphenate(String)}.
      *
      * @return the name of the job used for configuration
+     */
+    @AliasFor(annotation = Named.class, member = "value")
+    String name() default "";
+
+    /**
+     * @return the name of the work queue to produce items to
      */
     @AliasFor(annotation = Produces.class, member = "value")
     String value() default "";

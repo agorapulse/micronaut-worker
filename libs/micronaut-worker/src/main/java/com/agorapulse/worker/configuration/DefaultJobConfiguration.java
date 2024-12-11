@@ -119,7 +119,11 @@ public class DefaultJobConfiguration implements MutableJobConfiguration {
                 this.maxMessages = overrides.getMaxMessages();
             }
 
-            if (overrides.getWaitingTime() != null && !overrides.getWaitingTime().isZero() && overrides.getWaitingTime() != this.waitingTime) {
+            if (overrides.getWaitingTime() != null
+                && !overrides.getWaitingTime().isZero()
+                && !overrides.getWaitingTime().equals(this.waitingTime)
+                && !overrides.getWaitingTime().equals(DEFAULT_WAITING_TIME)
+            ) {
                 this.waitingTime = overrides.getWaitingTime();
             }
         }

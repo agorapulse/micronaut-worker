@@ -36,10 +36,21 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Documented
 @Consumes
 @Fork(JobConfiguration.ConsumerQueueConfiguration.DEFAULT_MAX_MESSAGES)
-@FixedRate("20s")
+@FixedRate(JobConfiguration.ConsumerQueueConfiguration.DEFAULT_WAITING_TIME_STRING)
 @Retention(RUNTIME)
 @Target({ElementType.METHOD, ElementType.ANNOTATION_TYPE})
 public @interface QueueConsumer {
+
+    /**
+     * Allows to override the default name of the job which is <code>JobClassName</code> if there is only one executable
+     * method (e.g. job definition) in the class or <code>JobClassName-methodName</code> if there is more then one executable method in the class.
+     * <p>
+     * Either the job name specified here or the default name is converted using {@link io.micronaut.core.naming.NameUtils#hyphenate(String)}.
+     *
+     * @return the name of the job used for configuration
+     */
+    @AliasFor(annotation = Named.class, member = "value")
+    String name() default "";
 
     /**
      * @return the name of the work queue to consume items from
@@ -57,9 +68,9 @@ public @interface QueueConsumer {
      * The time to wait for the next message to be available and also the time to wait for the next run.
      * @return the maximum waiting time as duration string
      */
-    @AliasFor(annotation = Consumes.class, member = "value")
+    @AliasFor(annotation = Consumes.class, member = "waitingTime")
     @AliasFor(annotation = FixedRate.class, member = "value")
-    String waitingTime() default "";
+    String waitingTime() default JobConfiguration.ConsumerQueueConfiguration.DEFAULT_WAITING_TIME_STRING;
 
     /**
      * The number of messages to consume and also the number of threads to use to consume the messages.
@@ -70,7 +81,10 @@ public @interface QueueConsumer {
     int maxMessages() default JobConfiguration.ConsumerQueueConfiguration.DEFAULT_MAX_MESSAGES;
 
     /**
-     * @return The name of a {@link Named} bean that is a
+     * The name of the task executor to use to execute the job. If default value is usd then new scheduled executor
+     * is created for each job with the number of threads equal to the fork value.
+     *
+     * @return The name of a {@link jakarta.inject.Named} bean that is a
      * {@link java.util.concurrent.ScheduledExecutorService} to use to schedule the task
      */
     @AliasFor(annotation = Job.class, member = "scheduler")

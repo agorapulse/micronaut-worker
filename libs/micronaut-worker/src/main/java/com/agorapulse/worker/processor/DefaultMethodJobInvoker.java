@@ -36,6 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.ParallelFlux;
 import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
 
@@ -74,13 +75,14 @@ public class DefaultMethodJobInvoker implements MethodJobInvoker, ApplicationEve
 
     public <B> void invoke(MethodJob<B, ?> job, B bean, JobRunContext context) {
         ExecutableMethod<B, ?> method = job.getMethod();
+        boolean producer = !method.getReturnType().isVoid();
         JobConfiguration configuration = job.getConfiguration();
 
         if (method.getArguments().length == 0) {
             context.message(null);
-            handleResult(configuration, context, executor(context, configuration).apply(() -> {
+            handleResult(producer, configuration, context, executor(context, configuration).apply(() -> {
                 if (configuration.getFork() > 1) {
-                    return Flux.range(0, configuration.getFork())
+                    ParallelFlux<Object> resultsOfParallelExecution = Flux.range(0, configuration.getFork())
                         .parallel(configuration.getFork())
                         .runOn(getScheduler(job))
                         .flatMap(i -> {
@@ -102,12 +104,18 @@ public class DefaultMethodJobInvoker implements MethodJobInvoker, ApplicationEve
                                 return Mono.empty();
                             }
                         });
+
+                    if (producer) {
+                        return resultsOfParallelExecution.sequential(configuration.getFork());
+                    }
+
+                    return resultsOfParallelExecution.then();
                 }
 
                 return method.invoke(bean);
             }));
         } else if (method.getArguments().length == 1) {
-            handleResult(configuration, context, executor(context, configuration).apply(() -> {
+            handleResult(producer, configuration, context, executor(context, configuration).apply(() -> {
                 JobConfiguration.ConsumerQueueConfiguration queueConfiguration = configuration.getConsumer();
                 Flux<? extends QueueMessage<?>> messages = Flux.from(
                     queues(queueConfiguration.getQueueType()).readMessages(
@@ -145,10 +153,16 @@ public class DefaultMethodJobInvoker implements MethodJobInvoker, ApplicationEve
                 };
 
                 if (configuration.getFork() > 1) {
-                    return messages
+                    ParallelFlux<Object> parallelFlux = messages
                         .parallel(configuration.getFork())
                         .runOn(getScheduler(job))
                         .flatMap(messageProcessor);
+
+                    if (producer) {
+                        return parallelFlux.sequential(configuration.getFork());
+                    }
+
+                    return parallelFlux.then();
                 }
 
                 return messages.flatMap(messageProcessor);
@@ -171,13 +185,24 @@ public class DefaultMethodJobInvoker implements MethodJobInvoker, ApplicationEve
         return s -> distributedJobExecutor.execute(context, s);
     }
 
-    protected void handleResult(JobConfiguration configuration, JobRunContext callback, Publisher<Object> resultPublisher) {
+    protected void handleResult(boolean producer, JobConfiguration configuration, JobRunContext callback, Publisher<Object> resultPublisher) {
         Object result = Flux.from(resultPublisher).blockFirst();
 
         if (result == null) {
             callback.finished();
             return;
         }
+
+        if (!producer && result instanceof Publisher<?> p) {
+            Mono.from(p)
+                .doOnNext(callback::result)
+                .doOnError(callback::error)
+                .doFinally(signalType -> callback.finished())
+                .block();
+
+            return;
+        }
+
 
         String queueName = configuration.getProducer().getQueueName();
 
