@@ -221,10 +221,16 @@ You can override the default scheduler (`TaskExecutors.SCHEDULED`) by setting th
 [source,yaml]
 .Setting the Default Scheduler
 ----
-include::{root-dir}/libs/micronaut-worker/src/test/resources/application-virtual.yml[]
+include::{root-dir}/libs/micronaut-worker/src/test/resources/application-scheduler.yml[]
 ----
 
-TIP: You can let your jobs executed using virtual threads by using `virtual` executor.
+You can use virtual thread factory with all the implicit executor services by setting the `worker.virtual-threads-compatible` property to `true`. Implicit executor services are created for every job that does not customize its own `scheudler` configuration property.
+
+[source,yaml]
+.Enabling Virtual Threads for Implicit Executors
+----
+include::{root-dir}/libs/micronaut-worker/src/test/resources/application-virtual-threads.yml[]
+----
 
 === Job Configuration
 

@@ -46,6 +46,8 @@ public interface MutableJobConfiguration extends JobConfiguration {
 
     void setLeaderOnly(boolean leaderOnly);
 
+    void setVirtualThreadsCompatible(boolean leaderOnly);
+
     void setFollowerOnly(boolean followerOnly);
 
     void setCron(@Nullable String cron);

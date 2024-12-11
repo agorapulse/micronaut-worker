@@ -101,7 +101,7 @@ class LongRunningJob {
     }
 
     @Concurrency(2)
-    @Job(initialDelay = JOBS_INITIAL_DELAY)
+    @Job(initialDelay = JOBS_INITIAL_DELAY, virtualThreadCompatible = true)
     @Consumes(value = CONCURRENT_CONSUMER_QUEUE_NAME, maxMessages = 3)
     void executeConcurrentConsumer(String message) {
         if (FAILING_MESSAGE == message) {
@@ -112,7 +112,7 @@ class LongRunningJob {
     }
 
     @Fork(2)
-    @Job(initialDelay = JOBS_INITIAL_DELAY)
+    @Job(initialDelay = JOBS_INITIAL_DELAY, virtualThreadCompatible = true)
     @Consumes(value = FORKED_CONSUMER_QUEUE_NAME, maxMessages = 4)
     void executeForkConsumer(String message) {
         if (FAILING_MESSAGE == message) {
@@ -122,7 +122,7 @@ class LongRunningJob {
         consumedForkMessages.add(message)
     }
 
-    @Job(initialDelay = JOBS_INITIAL_DELAY)
+    @Job(initialDelay = JOBS_INITIAL_DELAY, virtualThreadCompatible = true)
     @Consumes(value = REGULAR_CONSUMER_QUEUE_NAME, maxMessages = 3)
     void executeRegularConsumer(String message) {
         if (FAILING_MESSAGE == message) {

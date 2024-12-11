@@ -171,6 +171,8 @@ public interface JobConfiguration {
     @Positive
     int getFork();
 
+    boolean isVirtualThreadsCompatible();
+
     /**
      * @param overrides the configuration which non-default values will override the values in this configuration
      * @return self with the values overridden from the other configuration object

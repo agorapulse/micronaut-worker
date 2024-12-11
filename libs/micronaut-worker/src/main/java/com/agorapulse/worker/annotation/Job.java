@@ -91,4 +91,9 @@ public @interface Job {
      */
     String scheduler() default WorkerConfiguration.DEFAULT_SCHEDULER;
 
+    /**
+     * @return whether the job contains code that can be executed on virtual threads, e.g. there is no use of <code>synchronized</code> keyword anywhere in the code
+     */
+    boolean virtualThreadCompatible() default WorkerConfiguration.DEFAULT_VIRTUAL_THREAD_COMPATIBLE;
+
 }

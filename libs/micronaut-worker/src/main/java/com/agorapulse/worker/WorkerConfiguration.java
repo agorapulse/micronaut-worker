@@ -22,6 +22,7 @@ import io.micronaut.scheduling.TaskExecutors;
 public interface WorkerConfiguration {
 
     String DEFAULT_SCHEDULER = TaskExecutors.SCHEDULED;
+    boolean DEFAULT_VIRTUAL_THREAD_COMPATIBLE = false;
 
     WorkerConfiguration ENABLED = new WorkerConfiguration() {
         @Override
@@ -39,6 +40,11 @@ public interface WorkerConfiguration {
             return DEFAULT_SCHEDULER;
         }
 
+        @Override
+        public boolean isVirtualThreadsCompatible() {
+            return DEFAULT_VIRTUAL_THREAD_COMPATIBLE;
+        }
+
     };
 
     boolean isEnabled();
@@ -49,5 +55,7 @@ public interface WorkerConfiguration {
     String getQueueType();
 
     String getScheduler();
+
+    boolean isVirtualThreadsCompatible();
 
 }

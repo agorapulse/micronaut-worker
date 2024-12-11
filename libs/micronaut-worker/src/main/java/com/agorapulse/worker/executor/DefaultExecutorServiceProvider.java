@@ -22,6 +22,7 @@ import com.agorapulse.worker.JobConfiguration;
 import io.micronaut.context.BeanContext;
 import io.micronaut.context.Qualifier;
 import io.micronaut.inject.qualifiers.Qualifiers;
+import io.micronaut.scheduling.LoomSupport;
 import io.micronaut.scheduling.ScheduledExecutorTaskScheduler;
 import io.micronaut.scheduling.TaskScheduler;
 import jakarta.inject.Singleton;
@@ -54,7 +55,7 @@ public class DefaultExecutorServiceProvider implements ExecutorServiceProvider, 
 
     @Override
     public ExecutorService getExecutorService(Job job) {
-        return getExecutor(ExecutorServiceProvider.getSchedulerName(job.getConfiguration()), job.getConfiguration().getFork());
+        return getExecutor(ExecutorServiceProvider.getSchedulerName(job.getConfiguration()), job.getConfiguration().getFork(), job.getConfiguration().isVirtualThreadsCompatible());
     }
 
     @Override
@@ -72,25 +73,30 @@ public class DefaultExecutorServiceProvider implements ExecutorServiceProvider, 
         }
 
         return optionalTaskScheduler.orElseGet(() -> {
-            ExecutorService executor = getExecutor(schedulerName, configuration.getFork());
+            ExecutorService executor = getExecutor(schedulerName, configuration.getFork(), configuration.isVirtualThreadsCompatible());
             ScheduledExecutorTaskScheduler scheduler = new ScheduledExecutorTaskScheduler(executor);
             beanContext.registerSingleton(TaskScheduler.class, scheduler, Qualifiers.byName(schedulerName));
             return scheduler;
         });
     }
 
-    private ExecutorService getExecutor(String schedulerName, int fork) {
+    private ExecutorService getExecutor(String schedulerName, int fork, boolean virtualThreadsCompatible) {
         if (createdExecutors.containsKey(schedulerName)) {
             return createdExecutors.get(schedulerName);
         }
 
         Qualifier<ExecutorService> byName = Qualifiers.byName(schedulerName);
 
+        boolean useVirtualThreads = LoomSupport.isSupported() && virtualThreadsCompatible;
+
         return beanContext
             .findBean(ExecutorService.class, byName)
             .filter(ScheduledExecutorService.class::isInstance)
             .orElseGet(() -> {
-                ExecutorService service = Executors.newScheduledThreadPool(fork, new NamedThreadFactory(schedulerName));
+                ExecutorService service = Executors.newScheduledThreadPool(
+                        useVirtualThreads ? 0 : fork,
+                        useVirtualThreads ? LoomSupport.newVirtualThreadFactory(schedulerName) : new NamedThreadFactory(schedulerName)
+                );
 
                 createdExecutors.put(schedulerName, service);
 
