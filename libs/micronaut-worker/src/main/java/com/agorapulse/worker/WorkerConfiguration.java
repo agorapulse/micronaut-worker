@@ -41,7 +41,7 @@ public interface WorkerConfiguration {
         }
 
         @Override
-        public boolean isVirtualThreadCompatible() {
+        public boolean isVirtualThreadsCompatible() {
             return DEFAULT_VIRTUAL_THREAD_COMPATIBLE;
         }
 
@@ -56,6 +56,6 @@ public interface WorkerConfiguration {
 
     String getScheduler();
 
-    boolean isVirtualThreadCompatible();
+    boolean isVirtualThreadsCompatible();
 
 }

@@ -25,6 +25,7 @@ import io.micronaut.context.env.Environment;
 public class DefaultWorkerConfiguration implements WorkerConfiguration {
 
     private boolean enabled;
+    private boolean virtualThreadsCompatible = WorkerConfiguration.DEFAULT_VIRTUAL_THREAD_COMPATIBLE;
     private String queueType;
     private String scheduler = WorkerConfiguration.DEFAULT_SCHEDULER;
 
@@ -60,6 +61,15 @@ public class DefaultWorkerConfiguration implements WorkerConfiguration {
 
     public void setScheduler(String scheduler) {
         this.scheduler = scheduler;
+    }
+
+    @Override
+    public boolean isVirtualThreadsCompatible() {
+        return virtualThreadsCompatible;
+    }
+
+    public void setVirtualThreadsCompatible(boolean virtualThreadsCompatible) {
+        this.virtualThreadsCompatible = virtualThreadsCompatible;
     }
 
 }
