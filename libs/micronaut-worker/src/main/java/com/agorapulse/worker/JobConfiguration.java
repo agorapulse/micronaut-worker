@@ -74,6 +74,8 @@ public interface JobConfiguration {
     interface ConsumerQueueConfiguration extends QueueConfiguration {
 
         int DEFAULT_MAX_MESSAGES = 10;
+        Duration DEFAULT_WAITING_TIME = Duration.ofSeconds(20);
+        String DEFAULT_WAITING_TIME_STRING = "20s";
 
         /**
          * @return the number of messages which are fetched from the queue in a single poll, defaults to {@link #DEFAULT_MAX_MESSAGES} when set to <code>0</code>

@@ -36,7 +36,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Documented
 @Consumes
 @Fork(JobConfiguration.ConsumerQueueConfiguration.DEFAULT_MAX_MESSAGES)
-@FixedRate("20s")
+@FixedRate(JobConfiguration.ConsumerQueueConfiguration.DEFAULT_WAITING_TIME_STRING)
 @Retention(RUNTIME)
 @Target({ElementType.METHOD, ElementType.ANNOTATION_TYPE})
 public @interface QueueConsumer {
@@ -70,7 +70,7 @@ public @interface QueueConsumer {
      */
     @AliasFor(annotation = Consumes.class, member = "waitingTime")
     @AliasFor(annotation = FixedRate.class, member = "value")
-    String waitingTime() default "";
+    String waitingTime() default JobConfiguration.ConsumerQueueConfiguration.DEFAULT_WAITING_TIME_STRING;
 
     /**
      * The number of messages to consume and also the number of threads to use to consume the messages.

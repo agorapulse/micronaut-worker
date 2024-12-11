@@ -22,6 +22,7 @@ import com.agorapulse.worker.JobManager
 import com.agorapulse.worker.annotation.Cron
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import jakarta.inject.Inject
+import jakarta.inject.Named
 import reactor.core.publisher.Flux
 import spock.lang.Specification
 
@@ -45,6 +46,31 @@ class QueueListenerAndProducerSpec extends Specification {
         // your code here
     }
     // end::quickstart[]
+
+    @com.agorapulse.worker.annotation.Job('queue-listener-job')
+    @QueueConsumer(value = 'my-queue', maxMessages = 5, waitingTime = '10s')
+    public void listenToMyQueueMultiple(Message message) {
+        // your code here
+    }
+
+    @Named('queue-producer-job')
+    @Cron('0 0 0/4 ? * *')
+    @QueueProducer('my-queue')
+    public Flux<Message> produceToMyQueueMultiple() {
+        return Flux.just("Hello", "World").map(Message::new);
+    }
+
+    @Named('not-a-consumer-job')
+    @QueueConsumer('my-queue')
+    public void notAConsumer() {
+        // your code here
+    }
+
+    @Named('not-a-producer')
+    @QueueProducer('my-queue')
+    public void notAProducer() {
+        // your code here
+    }
 
     @Inject JobManager jobManager
 
@@ -73,6 +99,50 @@ class QueueListenerAndProducerSpec extends Specification {
         then:
             job.configuration.producer.queueName == 'my-queue'
             job.configuration.cron == '0 0 0/1 ? * *'
+    }
+
+    void 'multiple annotations are composed for consumer'() {
+        given:
+            String jobName = 'queue-listener-job'
+        expect:
+            jobName in jobManager.jobNames
+
+        when:
+            Job job = jobManager.getJob(jobName).get()
+        then:
+            verifyAll(job.configuration) {
+                fixedRate == Duration.ofSeconds(10)
+                consumer.queueName == 'my-queue'
+                consumer.maxMessages == 5
+                consumer.waitingTime == Duration.ofSeconds(10)
+                fork == 5
+            }
+
+    }
+
+    void 'multiple annotations are composed for producer'() {
+        given:
+            String jobName = 'queue-producer-job'
+        expect:
+            jobName in jobManager.jobNames
+
+        when:
+            Job job = jobManager.getJob(jobName).get()
+        then:
+            verifyAll(job.configuration) {
+                cron == '0 0 0/4 ? * *'
+                producer.queueName == 'my-queue'
+            }
+    }
+
+    void 'not a consumer job fails to be configured'() {
+        expect:
+            jobManager.getJob('not-a-consumer-job').empty
+    }
+
+    void 'not a producer job fails to be configured'() {
+        expect:
+            jobManager.getJob('not-a-producer').empty
     }
 
 }
