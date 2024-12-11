@@ -57,7 +57,7 @@ public @interface FixedRate {
     /**
      * @return whether the job contains code that can be executed on virtual threads, e.g. there is no use of <code>synchronized</code> keyword anywhere in the code
      */
-    @AliasFor(annotation = Job.class, member = "isVirtualThreadCompatible")
-    boolean isVirtualThreadCompatible() default WorkerConfiguration.DEFAULT_VIRTUAL_THREAD_COMPATIBLE;
+    @AliasFor(annotation = Job.class, member = "virtualThreadCompatible")
+    boolean virtualThreadCompatible() default WorkerConfiguration.DEFAULT_VIRTUAL_THREAD_COMPATIBLE;
 
 }

@@ -18,7 +18,8 @@
             "producer": {
                 "queueName": null,
                 "queueType": null
-            }
+            },
+            "virtualThreadsCompatible": false
         },
         "status": {
             "executionCount": 0,

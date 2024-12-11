@@ -371,7 +371,7 @@ public class DefaultJobConfiguration implements MutableJobConfiguration {
 
     @Override
     public String toString() {
-        return "DefaultJobConfiguration{name='%s', enabled=%s, concurrency=%d, leaderOnly=%s, followerOnly=%s, cron=%s, fixedDelay=%s, initialDelay=%s, fixedRate=%s, scheduler='%s', fork=%d, consumer=%s, producer=%s}"
-            .formatted(name, enabled, concurrency, leaderOnly, followerOnly, cron, fixedDelay, initialDelay, fixedRate, scheduler, fork, consumer, producer);
+        return "DefaultJobConfiguration{name='%s', enabled=%s, concurrency=%d, leaderOnly=%s, followerOnly=%s, cron=%s, fixedDelay=%s, initialDelay=%s, fixedRate=%s, scheduler='%s', fork=%d, consumer=%s, producer=%s, virtualThreadsCompatible=%s}"
+            .formatted(name, enabled, concurrency, leaderOnly, followerOnly, cron, fixedDelay, initialDelay, fixedRate, scheduler, fork, consumer, producer, virtualThreadsCompatible);
     }
 }

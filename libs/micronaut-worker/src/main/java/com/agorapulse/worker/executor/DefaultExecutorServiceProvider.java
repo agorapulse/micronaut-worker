@@ -19,7 +19,6 @@ package com.agorapulse.worker.executor;
 
 import com.agorapulse.worker.Job;
 import com.agorapulse.worker.JobConfiguration;
-import com.agorapulse.worker.WorkerConfiguration;
 import io.micronaut.context.BeanContext;
 import io.micronaut.context.Qualifier;
 import io.micronaut.inject.qualifiers.Qualifiers;
@@ -42,11 +41,9 @@ public class DefaultExecutorServiceProvider implements ExecutorServiceProvider, 
     private final Map<String, ExecutorService> createdExecutors = new ConcurrentHashMap<>();
 
     private final BeanContext beanContext;
-    private final WorkerConfiguration workerConfiguration;
 
-    public DefaultExecutorServiceProvider(BeanContext beanContext, WorkerConfiguration workerConfiguration) {
+    public DefaultExecutorServiceProvider(BeanContext beanContext) {
         this.beanContext = beanContext;
-        this.workerConfiguration = workerConfiguration;
     }
 
     @Override
@@ -58,7 +55,7 @@ public class DefaultExecutorServiceProvider implements ExecutorServiceProvider, 
 
     @Override
     public ExecutorService getExecutorService(Job job) {
-        return getExecutor(ExecutorServiceProvider.getSchedulerName(job.getConfiguration()), job.getConfiguration().getFork(), workerConfiguration.isVirtualThreadsCompatible() || job.getConfiguration().isVirtualThreadsCompatible());
+        return getExecutor(ExecutorServiceProvider.getSchedulerName(job.getConfiguration()), job.getConfiguration().getFork(), job.getConfiguration().isVirtualThreadsCompatible());
     }
 
     @Override
@@ -76,7 +73,7 @@ public class DefaultExecutorServiceProvider implements ExecutorServiceProvider, 
         }
 
         return optionalTaskScheduler.orElseGet(() -> {
-            ExecutorService executor = getExecutor(schedulerName, configuration.getFork(), workerConfiguration.isVirtualThreadsCompatible() || configuration.isVirtualThreadsCompatible());
+            ExecutorService executor = getExecutor(schedulerName, configuration.getFork(), configuration.isVirtualThreadsCompatible());
             ScheduledExecutorTaskScheduler scheduler = new ScheduledExecutorTaskScheduler(executor);
             beanContext.registerSingleton(TaskScheduler.class, scheduler, Qualifiers.byName(schedulerName));
             return scheduler;
@@ -96,7 +93,6 @@ public class DefaultExecutorServiceProvider implements ExecutorServiceProvider, 
             .findBean(ExecutorService.class, byName)
             .filter(ScheduledExecutorService.class::isInstance)
             .orElseGet(() -> {
-                // TODO: also add configuration to the job
                 ExecutorService service = Executors.newScheduledThreadPool(
                         useVirtualThreads ? 0 : fork,
                         useVirtualThreads ? LoomSupport.newVirtualThreadFactory(schedulerName) : new NamedThreadFactory(schedulerName)

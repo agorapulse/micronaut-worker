@@ -68,6 +68,7 @@ public class MethodJobProcessor implements ExecutableMethodProcessor<Job> {
     private static final String MEMBER_MAX_MESSAGES = "maxMessages";
     private static final String MEMBER_WAITING_TIME = "waitingTime";
     private static final String MEMBER_SCHEDULER = "scheduler";
+    private static final String MEMBER_VIRTUAL_THREADS_COMPATIBLE = "scheduler";
     private static final String MEMBER_TYPE = "type";
     private static final String MEMBER_VALUE = "value";
     private static final String MEMBER_NAME = "name";
@@ -117,6 +118,15 @@ public class MethodJobProcessor implements ExecutableMethodProcessor<Job> {
         FixedDelay.class.getName(), MEMBER_SCHEDULER,
         QueueConsumer.class.getName(), MEMBER_SCHEDULER,
         QueueProducer.class.getName(), MEMBER_SCHEDULER
+    );
+    private static final Map<String, String> ANNOTATION_TO_VIRTUAL_THREADS_COMPATIBLE_MAP = Map.of(
+        Job.class.getName(), MEMBER_VIRTUAL_THREADS_COMPATIBLE,
+        Cron.class.getName(), MEMBER_VIRTUAL_THREADS_COMPATIBLE,
+        FixedRate.class.getName(), MEMBER_VIRTUAL_THREADS_COMPATIBLE,
+        InitialDelay.class.getName(), MEMBER_VIRTUAL_THREADS_COMPATIBLE,
+        FixedDelay.class.getName(), MEMBER_VIRTUAL_THREADS_COMPATIBLE,
+        QueueConsumer.class.getName(), MEMBER_VIRTUAL_THREADS_COMPATIBLE,
+        QueueProducer.class.getName(), MEMBER_VIRTUAL_THREADS_COMPATIBLE
     );
 
     private static final Map<String, String> ANNOTATION_TO_FORK_MAP = Map.of(
@@ -261,6 +271,7 @@ public class MethodJobProcessor implements ExecutableMethodProcessor<Job> {
         getFirstAnnotationValue(ANNOTATION_TO_FIXED_RATE_MAP, method::stringValue, StringUtils::isNotEmpty).ifPresent(fixedRate -> configuration.setFixedRate(convertDuration(jobName, fixedRate, "fixed rate")));
         getFirstAnnotationValue(ANNOTATION_TO_INITIAL_DELAY_MAP, method::stringValue, StringUtils::isNotEmpty).ifPresent(initialDelay -> configuration.setInitialDelay(convertDuration(jobName, initialDelay, "initial delay")));
         getFirstAnnotationValue(ANNOTATION_TO_SCHEDULER_MAP, method::stringValue, StringUtils::isNotEmpty).ifPresent(configuration::setScheduler);
+        getFirstAnnotationValue(ANNOTATION_TO_VIRTUAL_THREADS_COMPATIBLE_MAP, method::booleanValue, Boolean::booleanValue).ifPresent(configuration::setVirtualThreadsCompatible);
 
         boolean consumer = method.getArguments().length == 1;
         boolean producer = !method.getReturnType().getType().equals(void.class);
