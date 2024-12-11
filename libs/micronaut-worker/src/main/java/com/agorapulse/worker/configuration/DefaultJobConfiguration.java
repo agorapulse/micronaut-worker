@@ -138,6 +138,7 @@ public class DefaultJobConfiguration implements MutableJobConfiguration {
     int concurrency;
     boolean leaderOnly;
     boolean followerOnly;
+    boolean virtualThreadsCompatible;
 
     @Nullable private String cron;
     @Nullable private Duration fixedDelay;
@@ -269,8 +270,19 @@ public class DefaultJobConfiguration implements MutableJobConfiguration {
         return fork;
     }
 
+    @Override
     public void setFork(int fork) {
         this.fork = fork;
+    }
+
+    @Override
+    public boolean isVirtualThreadsCompatible() {
+        return virtualThreadsCompatible;
+    }
+
+    @Override
+    public void setVirtualThreadsCompatible(boolean virtualThreadCompatible) {
+        this.virtualThreadsCompatible = virtualThreadCompatible;
     }
 
     @Override
@@ -309,6 +321,10 @@ public class DefaultJobConfiguration implements MutableJobConfiguration {
         if (overrides.isFollowerOnly()) {
             this.followerOnly = overrides.isFollowerOnly();
             this.leaderOnly = false;
+        }
+
+        if (overrides.isVirtualThreadsCompatible() != WorkerConfiguration.DEFAULT_VIRTUAL_THREAD_COMPATIBLE) {
+            this.virtualThreadsCompatible = overrides.isVirtualThreadsCompatible();
         }
 
         if (StringUtils.isNotEmpty(overrides.getCron())) {
@@ -351,7 +367,7 @@ public class DefaultJobConfiguration implements MutableJobConfiguration {
 
     @Override
     public String toString() {
-        return "DefaultJobConfiguration{name='%s', enabled=%s, concurrency=%d, leaderOnly=%s, followerOnly=%s, cron='%s', fixedDelay=%s, initialDelay=%s, fixedRate=%s, scheduler='%s', fork=%d, consumer=%s, producer=%s}"
+        return "DefaultJobConfiguration{name='%s', enabled=%s, concurrency=%d, leaderOnly=%s, followerOnly=%s, cron=%s, fixedDelay=%s, initialDelay=%s, fixedRate=%s, scheduler='%s', fork=%d, consumer=%s, producer=%s}"
             .formatted(name, enabled, concurrency, leaderOnly, followerOnly, cron, fixedDelay, initialDelay, fixedRate, scheduler, fork, consumer, producer);
     }
 }

@@ -55,7 +55,7 @@ public class DefaultExecutorServiceProvider implements ExecutorServiceProvider, 
 
     @Override
     public ExecutorService getExecutorService(Job job) {
-        return getExecutor(ExecutorServiceProvider.getSchedulerName(job.getConfiguration()), job.getConfiguration().getFork());
+        return getExecutor(ExecutorServiceProvider.getSchedulerName(job.getConfiguration()), job.getConfiguration().getFork(), job.getConfiguration().isVirtualThreadsCompatible());
     }
 
     @Override
@@ -73,19 +73,21 @@ public class DefaultExecutorServiceProvider implements ExecutorServiceProvider, 
         }
 
         return optionalTaskScheduler.orElseGet(() -> {
-            ExecutorService executor = getExecutor(schedulerName, configuration.getFork());
+            ExecutorService executor = getExecutor(schedulerName, configuration.getFork(), configuration.isVirtualThreadsCompatible());
             ScheduledExecutorTaskScheduler scheduler = new ScheduledExecutorTaskScheduler(executor);
             beanContext.registerSingleton(TaskScheduler.class, scheduler, Qualifiers.byName(schedulerName));
             return scheduler;
         });
     }
 
-    private ExecutorService getExecutor(String schedulerName, int fork) {
+    private ExecutorService getExecutor(String schedulerName, int fork, boolean virtualThreadsCompatible) {
         if (createdExecutors.containsKey(schedulerName)) {
             return createdExecutors.get(schedulerName);
         }
 
         Qualifier<ExecutorService> byName = Qualifiers.byName(schedulerName);
+
+        boolean useVirtualThreads = LoomSupport.isSupported() && virtualThreadsCompatible;
 
         return beanContext
             .findBean(ExecutorService.class, byName)
@@ -93,8 +95,8 @@ public class DefaultExecutorServiceProvider implements ExecutorServiceProvider, 
             .orElseGet(() -> {
                 // TODO: also add configuration to the job
                 ExecutorService service = Executors.newScheduledThreadPool(
-                        LoomSupport.isSupported() ? 0 : fork,
-                        LoomSupport.isSupported() ? LoomSupport.newVirtualThreadFactory(schedulerName) : new NamedThreadFactory(schedulerName)
+                        useVirtualThreads ? 0 : fork,
+                        useVirtualThreads ? LoomSupport.newVirtualThreadFactory(schedulerName) : new NamedThreadFactory(schedulerName)
                 );
 
                 createdExecutors.put(schedulerName, service);
