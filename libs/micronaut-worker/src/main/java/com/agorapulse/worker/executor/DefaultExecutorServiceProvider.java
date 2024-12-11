@@ -22,6 +22,7 @@ import com.agorapulse.worker.JobConfiguration;
 import io.micronaut.context.BeanContext;
 import io.micronaut.context.Qualifier;
 import io.micronaut.inject.qualifiers.Qualifiers;
+import io.micronaut.scheduling.LoomSupport;
 import io.micronaut.scheduling.ScheduledExecutorTaskScheduler;
 import io.micronaut.scheduling.TaskScheduler;
 import jakarta.inject.Singleton;
@@ -90,7 +91,11 @@ public class DefaultExecutorServiceProvider implements ExecutorServiceProvider, 
             .findBean(ExecutorService.class, byName)
             .filter(ScheduledExecutorService.class::isInstance)
             .orElseGet(() -> {
-                ExecutorService service = Executors.newScheduledThreadPool(fork, new NamedThreadFactory(schedulerName));
+                // TODO: also add configuration to the job
+                ExecutorService service = Executors.newScheduledThreadPool(
+                        LoomSupport.isSupported() ? 0 : fork,
+                        LoomSupport.isSupported() ? LoomSupport.newVirtualThreadFactory(schedulerName) : new NamedThreadFactory(schedulerName)
+                );
 
                 createdExecutors.put(schedulerName, service);
 
