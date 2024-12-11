@@ -80,7 +80,7 @@ public class DefaultMethodJobInvoker implements MethodJobInvoker, ApplicationEve
 
         if (method.getArguments().length == 0) {
             context.message(null);
-            handleResult(configuration, context, executor(context, configuration).apply(() -> {
+            handleResult(producer, configuration, context, executor(context, configuration).apply(() -> {
                 if (configuration.getFork() > 1) {
                     ParallelFlux<Object> resultsOfParallelExecution = Flux.range(0, configuration.getFork())
                         .parallel(configuration.getFork())
@@ -115,7 +115,7 @@ public class DefaultMethodJobInvoker implements MethodJobInvoker, ApplicationEve
                 return method.invoke(bean);
             }));
         } else if (method.getArguments().length == 1) {
-            handleResult(configuration, context, executor(context, configuration).apply(() -> {
+            handleResult(producer, configuration, context, executor(context, configuration).apply(() -> {
                 JobConfiguration.ConsumerQueueConfiguration queueConfiguration = configuration.getConsumer();
                 Flux<? extends QueueMessage<?>> messages = Flux.from(
                     queues(queueConfiguration.getQueueType()).readMessages(
@@ -185,13 +185,24 @@ public class DefaultMethodJobInvoker implements MethodJobInvoker, ApplicationEve
         return s -> distributedJobExecutor.execute(context, s);
     }
 
-    protected void handleResult(JobConfiguration configuration, JobRunContext callback, Publisher<Object> resultPublisher) {
+    protected void handleResult(boolean producer, JobConfiguration configuration, JobRunContext callback, Publisher<Object> resultPublisher) {
         Object result = Flux.from(resultPublisher).blockFirst();
 
         if (result == null) {
             callback.finished();
             return;
         }
+
+        if (!producer && result instanceof Publisher<?> p) {
+            Mono.from(p)
+                .doOnNext(callback::result)
+                .doOnError(callback::error)
+                .doFinally(signalType -> callback.finished())
+                .block();
+
+            return;
+        }
+
 
         String queueName = configuration.getProducer().getQueueName();
 
