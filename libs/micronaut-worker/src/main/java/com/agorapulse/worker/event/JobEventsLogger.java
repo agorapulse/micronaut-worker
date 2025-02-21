@@ -57,6 +57,10 @@ public class JobEventsLogger {
 
     @EventListener
     void onJobExecutionFinished(JobExecutionFinishedEvent event) {
+        if (LOGGER.isErrorEnabled() && event.getStatus().getException() != null) {
+            LOGGER.error("Failed to execute job {}#{}", event.getName(), event.getStatus().getId(), event.getStatus().getException());
+
+        }
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Finished executing job {}#{} in {}", event.getName(), event.getStatus().getId(), event.getStatus().getHumanReadableDuration());
         }
