@@ -30,6 +30,8 @@ import io.micronaut.test.extensions.spock.annotation.MicronautTest
 @Property(name = 'worker.jobs.send-words-job-hello.enabled', value = 'true')
 @Property(name = 'worker.jobs.non-blocking-job-numbers.enabled', value = 'true')
 @Property(name = 'worker.jobs.non-blocking-job-consume.enabled', value = 'true')
+@Property(name = 'worker.jobs.non-blocking-job-more-numbers.enabled', value = 'true')
+@Property(name = 'worker.jobs.non-blocking-job-consume-ones.enabled', value = 'true')
 class SqsQueuesSpec extends AbstractQueuesSpec {
 
     @SuppressWarnings('GetterMethodCouldBeProperty')

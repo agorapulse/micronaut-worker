@@ -17,6 +17,7 @@
  */
 package com.agorapulse.worker.local;
 
+import com.agorapulse.worker.convention.QueueListener;
 import com.agorapulse.worker.queue.JobQueues;
 import com.agorapulse.worker.queue.QueueMessage;
 import io.micronaut.context.annotation.Requires;
@@ -96,24 +97,29 @@ public class LocalQueues implements JobQueues {
 
     @Override
     public <T> Publisher<QueueMessage<T>> readMessages(String queueName, int maxNumberOfMessages, Duration waitTime, Argument<T> argument) {
-        LocalQueue queue = queues.get(queueName);
-
-        if (queue == null || queue.isEmpty()) {
-            return Flux.empty();
-        }
+        LocalQueue queue = queues.computeIfAbsent(queueName, key -> new LocalQueue());
 
         return Flux.generate(() -> maxNumberOfMessages, (state, sink) -> {
-            if (queue.isEmpty()) {
+            if (queue.isEmpty() && !QueueListener.Utils.isInfinitePoll(maxNumberOfMessages, waitTime)) {
                 sink.complete();
                 return 0;
             }
 
             if (state > 0) {
+                while (QueueListener.Utils.isInfinitePoll(maxNumberOfMessages, waitTime) && queue.isEmpty()) {
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        sink.error(e);
+                        return 0;
+                    }
+                }
                 sink.next(queue.readMessage(conversionService, argument));
             }
 
-            if (state == 1) {
+            if (state == 1 && !QueueListener.Utils.isInfinitePoll(maxNumberOfMessages, waitTime)) {
                 sink.complete();
+                return 0;
             }
 
             return state - 1;

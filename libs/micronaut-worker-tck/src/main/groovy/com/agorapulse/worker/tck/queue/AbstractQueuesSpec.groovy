@@ -83,6 +83,16 @@ abstract class AbstractQueuesSpec extends Specification {
             nonBlockingJob.retrieved.last() % 3 == 0
     }
 
+    void 'can use infinite polling'() {
+        given:
+            PollingConditions pollingConditions = new PollingConditions(timeout: 30)
+
+        expect:
+            pollingConditions.eventually {
+                nonBlockingJob.ones.size() >= 30
+            }
+    }
+
     abstract Class<?> getExpectedImplementation()
     abstract String getName()
 

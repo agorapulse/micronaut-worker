@@ -18,6 +18,7 @@
 package com.agorapulse.worker.sqs.v2;
 
 import com.agorapulse.micronaut.amazon.awssdk.sqs.SimpleQueueService;
+import com.agorapulse.worker.convention.QueueListener;
 import com.agorapulse.worker.queue.JobQueues;
 import com.agorapulse.worker.queue.QueueMessage;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -63,12 +64,16 @@ public class SqsQueues implements JobQueues {
                         0,
                         Math.min(MAX_WAITING_TIME, Math.toIntExact(waitTime.getSeconds())));
 
-                    if (messages.isEmpty() && waitTime.getSeconds() <= MAX_WAITING_TIME) {
+                    if (messages.isEmpty() && waitTime.getSeconds() <= MAX_WAITING_TIME && !QueueListener.Utils.isInfinitePoll(maxNumberOfMessages, waitTime)) {
                         sink.complete();
                         return 0;
                     }
 
                     sink.next(messages);
+
+                    if (QueueListener.Utils.isInfinitePoll(maxNumberOfMessages, waitTime)) {
+                        return maxNumberOfMessages;
+                    }
 
                     int nextRemaining = remainingNumberOfMessages - messages.size();
 
