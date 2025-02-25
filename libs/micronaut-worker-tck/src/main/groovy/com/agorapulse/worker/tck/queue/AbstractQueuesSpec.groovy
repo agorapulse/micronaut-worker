@@ -76,16 +76,11 @@ abstract class AbstractQueuesSpec extends Specification {
 
         expect:
             pollingConditions.eventually {
-                nonBlockingJob.retrieved.size() >= 10
+                nonBlockingJob.retrieved.size() == 20
             }
 
             nonBlockingJob.retrieved
-
-        when:
-            List<Integer> reversed = nonBlockingJob.retrieved.reverse()
-        then:
-            reversed.take(3).every { it % 3 == 0 }
-
+            nonBlockingJob.retrieved.last() % 3 == 0
     }
 
     abstract Class<?> getExpectedImplementation()

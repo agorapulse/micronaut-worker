@@ -21,6 +21,7 @@ import com.agorapulse.micronaut.aws.sqs.SimpleQueueService;
 import com.agorapulse.worker.queue.JobQueues;
 import com.agorapulse.worker.queue.QueueMessage;
 import com.amazonaws.services.sqs.model.AmazonSQSException;
+import com.amazonaws.services.sqs.model.Message;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micronaut.core.type.Argument;
@@ -28,13 +29,19 @@ import io.micronaut.jackson.JacksonConfiguration;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class SqsQueues implements JobQueues {
+    private static final int MAX_MESSAGES_TO_POLL = 10;
+    private static final int MIN_PARALLELISM = 4;
+    private static final int MAX_WAITING_TIME = 20;
 
     private final SimpleQueueService simpleQueueService;
     private final ObjectMapper objectMapper;
@@ -46,16 +53,46 @@ public class SqsQueues implements JobQueues {
 
     @Override
     public <T> Publisher<QueueMessage<T>> readMessages(String queueName, int maxNumberOfMessages, Duration waitTime, Argument<T> argument) {
-        return Flux.merge(simpleQueueService.receiveMessages(queueName, maxNumberOfMessages, 0, Math.toIntExact(waitTime.getSeconds())).stream().map(m ->
-            readMessageInternal(queueName, argument, m.getBody(), true).map(
-                message -> QueueMessage.requeueIfDeleted(
-                    m.getMessageId(),
-                    message,
-                    () -> simpleQueueService.deleteMessage(queueName, m.getReceiptHandle()),
-                    () -> simpleQueueService.sendMessage(queueName, m.getBody())
+        Instant pollStart = Instant.now();
+        return Flux.<List<Message>, Integer>generate(() -> maxNumberOfMessages, (remainingNumberOfMessages, sink) -> {
+                try {
+                    List<Message> messages = simpleQueueService.receiveMessages(
+                        queueName,
+                        Math.min(MAX_MESSAGES_TO_POLL, remainingNumberOfMessages),
+                        0,
+                        Math.min(MAX_WAITING_TIME, Math.toIntExact(waitTime.getSeconds())));
+
+                    if (messages.isEmpty() && waitTime.getSeconds() <= MAX_WAITING_TIME) {
+                        sink.complete();
+                        return 0;
+                    }
+
+                    sink.next(messages);
+
+                    int nextRemaining = remainingNumberOfMessages - messages.size();
+
+                    if (nextRemaining <= 0 || pollStart.plus(waitTime).isBefore(Instant.now())) {
+                        sink.complete();
+                    }
+
+                    return nextRemaining;
+                } catch (Throwable th) {
+                    sink.error(th);
+                    return 0;
+                }
+            })
+            .flatMap(Flux::fromIterable)
+            .flatMap(m ->
+                readMessageInternal(queueName, argument, m.getBody(), true).map(
+                    message -> QueueMessage.requeueIfDeleted(
+                        m.getMessageId(),
+                        message,
+                        () -> simpleQueueService.deleteMessage(queueName, m.getReceiptHandle()),
+                        () -> simpleQueueService.sendMessage(queueName, m.getBody())
+                    )
                 )
             )
-        ).toList());
+            .parallel(Math.max(Schedulers.DEFAULT_POOL_SIZE, MIN_PARALLELISM));
     }
 
     @Override
