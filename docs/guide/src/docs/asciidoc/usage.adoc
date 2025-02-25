@@ -126,10 +126,14 @@ arguments they have and their return value.
 
 ==== Quick Start
 
-You can use two conventional annotations `@QueueProducer` and `@QueueConsumer` to publish and consume messages from a queue.
+You can use three conventional annotations `@QueueProducer`, `@QueueListener` and `@QueueConsumer` to publish and consume messages from a queue.
+
+`@QeueProducer` is used to publish messages to a queue, `@QueueListener` is used to poll messages from a queue and `@QueueConsumer` is used to consume messages from a queue. The difference between `@QueueListener` and `@QueueConsumer` is that the `@QueueListener` is triggered once using `initialDelay` and then polls the queue indefinitely until the application is terminated. The `@QueueConsumer` is triggered periodically using `fixedRate` and polls the queue for messages, at most `maxMessages` in a single job run.
+
+TIP: If you are in doubts, use `@QueueListener` to consume the messages from the queue as fast as possible. If you need more fine-grained control, use `@QueueConsumer`.
 
 [source,java]
-.Queue Producer and Consumer
+.Queue Quick Start
 ----
 include::{root-dir}/libs/micronaut-worker/src/test/groovy/com/agorapulse/worker/convention/QueueListenerAndProducerSpec.groovy[tag=quickstart,indent=0]
 ----
@@ -137,8 +141,10 @@ include::{root-dir}/libs/micronaut-worker/src/test/groovy/com/agorapulse/worker/
 <2> The producer jobs must have some scheduled trigger associated with them, for example cron or fixed rate
 <3> Use the `@QueueProducer` annotation with the name of the queue to publish messages
 <4> The producer job must return some value, ideally a `Publisher` of given messages
-<5> Use the `@QueueConsumer` annotation with the name of the queue to consume messages
+<5> Use the `@QueueListener` annotation with the name of the queue to poll the messages.
 <6> The consumer job must have a single parameter of the same type as the producer job returns
+<7> Use the `@QueueConsumer` annotation with the name of the queue to consume messages
+<8> The consumer job must have a single parameter of the same type as the producer job returns
 
 TIP: The value for `@Fork` is the same as the number of `maxMessages` for `@QueueConsumer` annotation. The value of `waitingTime` in `@QueueConsumer` is the same as the associated `@FixedRate` value.
 
