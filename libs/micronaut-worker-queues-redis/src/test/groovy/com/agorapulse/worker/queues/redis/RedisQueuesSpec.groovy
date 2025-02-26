@@ -47,9 +47,13 @@ class RedisQueuesSpec extends AbstractQueuesSpec implements TestPropertyProvider
     @Override
     Map<String, String> getProperties() {
         return [
-            'redis.uri'                                : "redis://$redis.host:${redis.getMappedPort(6379)}",
-            'worker.jobs.send-words-job-listen.enabled': 'true',
-            'worker.jobs.send-words-job-hello.enabled' : 'true',
+            'redis.uri'                                        : "redis://$redis.host:${redis.getMappedPort(6379)}",
+            'worker.jobs.send-words-job-listen.enabled'        : 'true',
+            'worker.jobs.send-words-job-hello.enabled'         : 'true',
+            'worker.jobs.non-blocking-job-numbers.enabled'     : 'true',
+            'worker.jobs.non-blocking-job-consume.enabled'     : 'true',
+            'worker.jobs.non-blocking-job-more-numbers.enabled': 'true',
+            'worker.jobs.non-blocking-job-consume-ones.enabled': 'true',
         ]
     }
 

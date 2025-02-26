@@ -19,10 +19,7 @@ package com.agorapulse.worker.convention;
 
 import com.agorapulse.worker.JobConfiguration;
 import com.agorapulse.worker.WorkerConfiguration;
-import com.agorapulse.worker.annotation.Consumes;
-import com.agorapulse.worker.annotation.FixedRate;
-import com.agorapulse.worker.annotation.Fork;
-import com.agorapulse.worker.annotation.Job;
+import com.agorapulse.worker.annotation.*;
 import io.micronaut.context.annotation.AliasFor;
 import jakarta.inject.Named;
 
@@ -30,27 +27,35 @@ import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
+import java.time.Duration;
 
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * Conventional annotation for queue consumer combines {@link FixedRate} and {@link Consumes} annotations.
- * <p>
- * The key conventions are:
- * <ul>
- *     <li>the job is executed in a fixed rate, by default 20ms</li>
- *     <li>the job consumes messages from a queue specified by the value of the annotation</li>
- *     <li>the job consumes messages in a fork of 1 thread per 1 message</li>
- *     <li>the maximum waiting time for message consumption is the same as the fixed rate of the job execution</li>
- * </ul>
+ *
  */
 @Documented
-@Consumes
+@Consumes(maxMessages = QueueListener.INFINITE_MAX_MESSAGES, waitingTime = QueueListener.INFINITE_WAITING_TIME)
 @Fork(JobConfiguration.ConsumerQueueConfiguration.DEFAULT_MAX_MESSAGES)
-@FixedRate(JobConfiguration.ConsumerQueueConfiguration.DEFAULT_WAITING_TIME_STRING)
+@InitialDelay(QueueListener.DEFAULT_INITIAL_DELAY)
 @Retention(RUNTIME)
 @Target({ElementType.METHOD, ElementType.ANNOTATION_TYPE})
-public @interface QueueConsumer {
+public @interface QueueListener {
+
+    class Utils {
+
+        private Utils() { }
+
+        public static boolean isInfinitePoll(int maxMessages, Duration waitingTime) {
+            return maxMessages == INFINITE_MAX_MESSAGES || waitingTime.compareTo(INFINITE_WAITING_TIME_THRESHOLD) >= 0;
+        }
+
+    }
+
+    String DEFAULT_INITIAL_DELAY = "30s";
+    int INFINITE_MAX_MESSAGES = Integer.MAX_VALUE;
+    String INFINITE_WAITING_TIME = "3500d";
+    Duration INFINITE_WAITING_TIME_THRESHOLD = Duration.ofDays(3500);
 
     /**
      * Allows to override the default name of the job which is <code>JobClassName</code> if there is only one executable
@@ -76,26 +81,26 @@ public @interface QueueConsumer {
     String type() default "";
 
     /**
-     * The time to wait for the next message to be available and also the time to wait for the next run.
-     * @return the maximum waiting time as duration string
-     */
-    @AliasFor(annotation = Consumes.class, member = "waitingTime")
-    @AliasFor(annotation = FixedRate.class, member = "value")
-    String waitingTime() default JobConfiguration.ConsumerQueueConfiguration.DEFAULT_WAITING_TIME_STRING;
-
-    /**
-     * The number of messages to consume and also the number of threads to use to consume the messages.
-     * @return the maximum of messages consumed in a single run, defaults to {@link JobConfiguration.ConsumerQueueConfiguration#DEFAULT_MAX_MESSAGES}
+     * The parallelism of the jod - how many messages can be consumed in parallel.
+     * @return the maximum of messages consumed in parallel, defaults to {@link JobConfiguration.ConsumerQueueConfiguration#DEFAULT_MAX_MESSAGES}
      */
     @AliasFor(annotation = Fork.class, member = "value")
-    @AliasFor(annotation = Consumes.class, member = "maxMessages")
-    int maxMessages() default JobConfiguration.ConsumerQueueConfiguration.DEFAULT_MAX_MESSAGES;
+    int fork() default JobConfiguration.ConsumerQueueConfiguration.DEFAULT_MAX_MESSAGES;
+
+    /**
+     * A String representation of the {@link java.time.Duration} before starting executions. For example
+     * 10m == 10 minutes
+     *
+     * @return The initial delay
+     */
+    @AliasFor(annotation = Job.class, member = "initialDelay")
+    String initialDelay() default DEFAULT_INITIAL_DELAY;
 
     /**
      * The name of the task executor to use to execute the job. If default value is usd then new scheduled executor
      * is created for each job with the number of threads equal to the fork value.
      *
-     * @return The name of a {@link jakarta.inject.Named} bean that is a
+     * @return The name of a {@link Named} bean that is a
      * {@link java.util.concurrent.ScheduledExecutorService} to use to schedule the task
      */
     @AliasFor(annotation = Job.class, member = "scheduler")

@@ -41,8 +41,13 @@ class QueueListenerAndProducerSpec extends Specification {
         return Flux.just("Hello", "World").map(Message::new);
     }
 
-    @QueueConsumer("my-queue")                                                          // <5>
+    @QueueListener("my-queue")                                                          // <5>
     public void listenToMyQueue(Message message) {                                      // <6>
+        // your code here
+    }
+
+    @QueueConsumer("my-queue")                                                          // <7>
+    public void consumeToMyQueue(Message message) {                                     // <8>
         // your code here
     }
     // end::quickstart[]

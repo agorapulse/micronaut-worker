@@ -27,6 +27,7 @@ import reactor.core.publisher.Flux
 import spock.lang.Specification
 
 import jakarta.inject.Inject
+import spock.util.concurrent.PollingConditions
 
 import java.time.Duration
 
@@ -39,6 +40,7 @@ abstract class AbstractQueuesSpec extends Specification {
 
     @Inject ApplicationContext context
     @Inject SendWordsJob sendWordsJob
+    @Inject NonBlockingJob nonBlockingJob
 
     void "jobs are executed"() {
         expect:
@@ -66,6 +68,29 @@ abstract class AbstractQueuesSpec extends Specification {
                 .collectList().block()
         then:
             messages == ['one', 'two']
+    }
+
+    void 'long running consumer jobs are not blocking the slow ones messages'() {
+        given:
+            PollingConditions pollingConditions = new PollingConditions(timeout: 30)
+
+        expect:
+            pollingConditions.eventually {
+                nonBlockingJob.retrieved.size() == 20
+            }
+
+            nonBlockingJob.retrieved
+            nonBlockingJob.retrieved.last() % 3 == 0
+    }
+
+    void 'can use infinite polling'() {
+        given:
+            PollingConditions pollingConditions = new PollingConditions(timeout: 30)
+
+        expect:
+            pollingConditions.eventually {
+                nonBlockingJob.ones.size() >= 30
+            }
     }
 
     abstract Class<?> getExpectedImplementation()

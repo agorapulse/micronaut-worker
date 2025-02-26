@@ -17,6 +17,7 @@
  */
 package com.agorapulse.worker.queues.redis;
 
+import com.agorapulse.worker.convention.QueueListener;
 import com.agorapulse.worker.queue.JobQueues;
 import com.agorapulse.worker.queue.QueueMessage;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -34,8 +35,10 @@ import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.time.Duration;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
@@ -65,52 +68,39 @@ public class RedisQueues implements JobQueues {
         pool = new BoundedAsyncPool<>(new ConnectionFactory(client), config);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public <T> Publisher<QueueMessage<T>> readMessages(String queueName, int maxNumberOfMessages, Duration waitTime, Argument<T> argument) {
-        TransactionResult result = withTransaction(redisCommands -> {
-            String key = getKey(queueName);
-            redisCommands.zrange(key, 0, maxNumberOfMessages - 1L);
-            redisCommands.zremrangebyrank(key, 0, maxNumberOfMessages - 1L);
-        });
-
-        if (result == null) {
-            return Flux.empty();
-        }
-
-
-        Object firstResponse = result.get(0);
-
-        if (!(firstResponse instanceof List)) {
-            throw new IllegalStateException("There result is not a list of Strings. Got: " + firstResponse);
-        }
-
-        List<String> messages = (List<String>) firstResponse;
-
-        return Flux.fromIterable(messages).handle((body, sink) -> {
-            try {
-                T message = objectMapper.readValue(body, JacksonConfiguration.constructType(argument, objectMapper.getTypeFactory()));
-                QueueMessage<T> queueMessage = QueueMessage.alwaysRequeue(
-                    UUID.randomUUID().toString(),
-                    message,
-                    () -> {},
-                    () -> sendRawMessage(queueName, body)
-                );
-                sink.next(queueMessage);
-            } catch (JsonProcessingException e) {
-                if (argument.equalsType(Argument.STRING)) {
-                    QueueMessage<T> queueMessage = QueueMessage.alwaysRequeue(
-                        UUID.randomUUID().toString(),
-                        (T) body,
-                        () -> {},
-                        () -> sendRawMessage(queueName, body)
-                    );
-                    sink.next(queueMessage);
-                } else {
-                    sink.error(new IllegalArgumentException("Cannot convert to " + argument + "from message\n" + body, e));
-                }
+        return Flux.<List<String>, Integer>generate(() -> maxNumberOfMessages, (state, sink) -> {
+            List<String> messages = readMessages(queueName, state);
+            if (messages.isEmpty() && !QueueListener.Utils.isInfinitePoll(maxNumberOfMessages, waitTime)) {
+                sink.complete();
+                return 0;
             }
-        });
+
+            if (state > 0) {
+                while (QueueListener.Utils.isInfinitePoll(maxNumberOfMessages, waitTime) && messages.isEmpty()) {
+                    try {
+                        Thread.sleep(100);
+                        messages = readMessages(queueName, state);
+                    } catch (InterruptedException e) {
+                        sink.error(e);
+                        return 0;
+                    }
+                }
+                sink.next(messages);
+            }
+
+            int nextRemainingMessages = state - messages.size();
+            if (nextRemainingMessages <= 0 && !QueueListener.Utils.isInfinitePoll(maxNumberOfMessages, waitTime)) {
+                sink.complete();
+                return 0;
+            }
+
+            return nextRemainingMessages;
+        })
+            .flatMap(Flux::fromIterable)
+            .flatMap(body -> readMessageInternalWithFallback(queueName, argument, body))
+            .take(maxNumberOfMessages);
     }
 
     @Override
@@ -135,6 +125,54 @@ public class RedisQueues implements JobQueues {
                 }
             });
         });
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<String> readMessages(String queueName, int maxNumberOfMessages) {
+        TransactionResult result = withTransaction(redisCommands -> {
+            String key = getKey(queueName);
+            redisCommands.zrange(key, 0, maxNumberOfMessages - 1L);
+            redisCommands.zremrangebyrank(key, 0, maxNumberOfMessages - 1L);
+        });
+
+        if (result == null) {
+            return Collections.emptyList();
+        }
+
+
+        Object firstResponse = result.get(0);
+
+        if (!(firstResponse instanceof List)) {
+            throw new IllegalStateException("There result is not a list of Strings. Got: " + firstResponse);
+        }
+
+        return (List<String>) firstResponse;
+    }
+
+    private <T> Mono<QueueMessage<T>> readMessageInternalWithFallback(String queueName, Argument<T> argument, String body) {
+        try {
+            return Mono.just(readMessageInternal(queueName, argument, body));
+        } catch (JsonProcessingException e) {
+            if (argument.equalsType(Argument.STRING)) {
+                return Mono.just(QueueMessage.alwaysRequeue(
+                    UUID.randomUUID().toString(),
+                    (T) body,
+                    () -> {},
+                    () -> sendRawMessage(queueName, body)
+                ));
+            }
+            return Mono.error(new IllegalArgumentException("Cannot convert to " + argument + "from message\n" + body, e));
+        }
+    }
+
+    private <T> QueueMessage<T> readMessageInternal(String queueName, Argument<T> argument, String body) throws JsonProcessingException {
+        T message = objectMapper.readValue(body, JacksonConfiguration.constructType(argument, objectMapper.getTypeFactory()));
+        return QueueMessage.alwaysRequeue(
+            UUID.randomUUID().toString(),
+            message,
+            () -> {},
+            () -> sendRawMessage(queueName, body)
+        );
     }
 
     private String getKey(String queueName) {
