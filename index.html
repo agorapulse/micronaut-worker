@@ -92,7 +92,7 @@ $(addBlockSwitches);
 <h1>Micronaut Worker</h1>
 <div class="details">
 <span id="author" class="author">Vladimir Orany</span><br>
-<span id="revnumber">version 2.8.0</span>
+<span id="revnumber">version 2.8.1</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -212,25 +212,25 @@ All jobs are disabled by default in the <code>function</code> and <code>cli</cod
 dependencies {
     // minimal dependency with local queue and executor
     // select some of the following dependencies to enable more features
-    implementation("com.agorapulse:micronaut-worker:2.8.0")
+    implementation("com.agorapulse:micronaut-worker:2.8.1")
 
     // to enable /jobs endpoint
-    implementation("com.agorapulse:micronaut-worker-management:2.8.0")
+    implementation("com.agorapulse:micronaut-worker-management:2.8.1")
 
     // to enable AWS SDK v1 SQS queues integration
-    implementation("com.agorapulse:micronaut-worker-queues-sqs-v1:2.8.0")
+    implementation("com.agorapulse:micronaut-worker-queues-sqs-v1:2.8.1")
 
     // to enable AWS SDK v2 SQS queues integration
-    implementation("com.agorapulse:micronaut-worker-queues-sqs-v2:2.8.0")
+    implementation("com.agorapulse:micronaut-worker-queues-sqs-v2:2.8.1")
 
     // to enable running jobs as CLI apps
-    implementation("com.agorapulse:micronaut-worker-runner:2.8.0")
+    implementation("com.agorapulse:micronaut-worker-runner:2.8.1")
 
     // to enable Redis leader/follower capabilities
-    implementation("com.agorapulse:micronaut-worker-executor-redis:2.8.0")
+    implementation("com.agorapulse:micronaut-worker-executor-redis:2.8.1")
 
     // to enable Redis queues integration
-    implementation("com.agorapulse:micronaut-worker-queues-redis:2.8.0")
+    implementation("com.agorapulse:micronaut-worker-queues-redis:2.8.1")
 }</code></pre>
 </div>
 </div>
@@ -455,10 +455,25 @@ arguments they have and their return value.</p>
 <div class="sect4">
 <h5 id="_quick_start"><a class="anchor" href="#_quick_start"></a>Quick Start</h5>
 <div class="paragraph">
-<p>You can use two conventional annotations <code>@QueueProducer</code> and <code>@QueueConsumer</code> to publish and consume messages from a queue.</p>
+<p>You can use three conventional annotations <code>@QueueProducer</code>, <code>@QueueListener</code> and <code>@QueueConsumer</code> to publish and consume messages from a queue.</p>
+</div>
+<div class="paragraph">
+<p><code>@QeueProducer</code> is used to publish messages to a queue, <code>@QueueListener</code> is used to poll messages from a queue and <code>@QueueConsumer</code> is used to consume messages from a queue. The difference between <code>@QueueListener</code> and <code>@QueueConsumer</code> is that the <code>@QueueListener</code> is triggered once using <code>initialDelay</code> and then polls the queue indefinitely until the application is terminated. The <code>@QueueConsumer</code> is triggered periodically using <code>fixedRate</code> and polls the queue for messages, at most <code>maxMessages</code> in a single job run.</p>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+If you are in doubts, use <code>@QueueListener</code> to consume the messages from the queue as fast as possible. If you need more fine-grained control, use <code>@QueueConsumer</code>.
+</td>
+</tr>
+</table>
 </div>
 <div class="listingblock">
-<div class="title">Queue Producer and Consumer</div>
+<div class="title">Queue Quick Start</div>
 <div class="content">
 <pre class="prettyprint highlight"><code data-lang="java">public record Message(String message) { }                                           <i class="conum" data-value="1"></i><b>(1)</b>
 
@@ -468,8 +483,13 @@ public Flux&lt;Message&gt; produceToMyQueue() {                                 
     return Flux.just("Hello", "World").map(Message::new);
 }
 
-@QueueConsumer("my-queue")                                                          <i class="conum" data-value="5"></i><b>(5)</b>
+@QueueListener("my-queue")                                                          <i class="conum" data-value="5"></i><b>(5)</b>
 public void listenToMyQueue(Message message) {                                      <i class="conum" data-value="6"></i><b>(6)</b>
+    // your code here
+}
+
+@QueueConsumer("my-queue")                                                          <i class="conum" data-value="7"></i><b>(7)</b>
+public void consumeToMyQueue(Message message) {                                     <i class="conum" data-value="8"></i><b>(8)</b>
     // your code here
 }</code></pre>
 </div>
@@ -494,10 +514,18 @@ public void listenToMyQueue(Message message) {                                  
 </tr>
 <tr>
 <td><i class="conum" data-value="5"></i><b>5</b></td>
-<td>Use the <code>@QueueConsumer</code> annotation with the name of the queue to consume messages</td>
+<td>Use the <code>@QueueListener</code> annotation with the name of the queue to poll the messages.</td>
 </tr>
 <tr>
 <td><i class="conum" data-value="6"></i><b>6</b></td>
+<td>The consumer job must have a single parameter of the same type as the producer job returns</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="7"></i><b>7</b></td>
+<td>Use the <code>@QueueConsumer</code> annotation with the name of the queue to consume messages</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="8"></i><b>8</b></td>
 <td>The consumer job must have a single parameter of the same type as the producer job returns</td>
 </tr>
 </table>
@@ -1100,8 +1128,8 @@ sampleJob.reconfigure {
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 2.8.0<br>
-Last updated 2025-02-21 12:31:33 UTC
+Version 2.8.1<br>
+Last updated 2025-02-26 18:15:58 UTC
 </div>
 </div>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.css">
