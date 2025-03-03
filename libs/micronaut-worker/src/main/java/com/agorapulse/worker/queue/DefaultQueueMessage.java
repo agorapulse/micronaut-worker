@@ -24,7 +24,7 @@ class DefaultQueueMessage<T> implements QueueMessage<T> {
     }
 
     static <T> DefaultQueueMessage<T> requeueIfDeleted(String id, T message, Runnable doDelete, Runnable doRequeue) {
-        return new DefaultQueueMessage<>(id, message, doDelete, doRequeue, true);
+        return new DefaultQueueMessage<>(id, message, doDelete, doRequeue, false);
     }
 
     private final String id;

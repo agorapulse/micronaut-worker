@@ -89,8 +89,8 @@ class QueueListenerAndProducerSpec extends Specification {
             Job job = jobManager.getJob(jobName).get()
         then:
             job.configuration.consumer.queueName == 'my-queue'
-            job.configuration.consumer.maxMessages == 10
-            job.configuration.fixedRate == Duration.ofSeconds(20)
+            job.configuration.consumer.maxMessages == Integer.MAX_VALUE
+            job.configuration.initialDelay == Duration.ofSeconds(30)
     }
 
     void 'producer job is registered'() {
