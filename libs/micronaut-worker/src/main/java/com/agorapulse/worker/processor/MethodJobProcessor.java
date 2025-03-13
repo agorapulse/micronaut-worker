@@ -231,7 +231,7 @@ public class MethodJobProcessor implements ExecutableMethodProcessor<Job> {
 
             jobScheduler.schedule(task);
         } catch (JobConfigurationException e) {
-            LOG.error("Job declared in method {} is ignored because it is not correctly configured", method, e);
+            LOG.error("Job declared in method {} declared in {} is ignored because it is not correctly configured", method, method.getDeclaringType(), e);
         }
     }
 
@@ -277,6 +277,17 @@ public class MethodJobProcessor implements ExecutableMethodProcessor<Job> {
         boolean consumer = method.getArguments().length == 1;
         boolean producer = !method.getReturnType().getType().equals(void.class);
 
+        configuration.setLeaderOnly(producer && !consumer || method.findAnnotation(LeaderOnly.class).isPresent());
+        configuration.setFollowerOnly(method.findAnnotation(FollowerOnly.class).isPresent());
+
+        method.findAnnotation(Concurrency.class).flatMap(a -> a.getValue(Integer.class)).ifPresent(configuration::setConcurrency);
+        getFirstAnnotationValue(ANNOTATION_TO_FORK_MAP, (annotation, member) -> method.intValue(annotation, member).stream().boxed().findAny(), i -> i > 0).ifPresent(configuration::setFork);
+
+        configureConsumerQueue(jobName, method, ANNOTATION_TO_CONSUMER_QUEUE_NAME_MAP, ANNOTATION_TO_CONSUMER_TYPE_MAP, configuration.getConsumer());
+        configureQueue(method, ANNOTATION_TO_PRODUCER_QUEUE_NAME_MAP, ANNOTATION_TO_PRODUCER_TYPE_MAP, configuration.getProducer());
+
+        configuration.mergeWith(configurationOverrides);
+
         if (method.hasAnnotation(QueueConsumer.class) && !consumer) {
             throw new JobConfigurationException(com.agorapulse.worker.Job.create(configuration, () -> {
             }), "Method annotated with @QueueListener must have exactly one argument");
@@ -293,21 +304,10 @@ public class MethodJobProcessor implements ExecutableMethodProcessor<Job> {
             }
         }
 
-        configuration.setLeaderOnly(producer && !consumer || method.findAnnotation(LeaderOnly.class).isPresent());
-        configuration.setFollowerOnly(method.findAnnotation(FollowerOnly.class).isPresent());
-
         if (configuration.isLeaderOnly() && configuration.isFollowerOnly()) {
             throw new JobConfigurationException(com.agorapulse.worker.Job.create(configuration, () -> {
             }), "Cannot use @FollowerOnly on a producer method or method annotated with @LeaderOnly");
         }
-
-        method.findAnnotation(Concurrency.class).flatMap(a -> a.getValue(Integer.class)).ifPresent(configuration::setConcurrency);
-        getFirstAnnotationValue(ANNOTATION_TO_FORK_MAP, (annotation, member) -> method.intValue(annotation, member).stream().boxed().findAny(), i -> i > 0).ifPresent(configuration::setFork);
-
-        configureConsumerQueue(jobName, method, ANNOTATION_TO_CONSUMER_QUEUE_NAME_MAP, ANNOTATION_TO_CONSUMER_TYPE_MAP, configuration.getConsumer());
-        configureQueue(method, ANNOTATION_TO_PRODUCER_QUEUE_NAME_MAP, ANNOTATION_TO_PRODUCER_TYPE_MAP, configuration.getProducer());
-
-        configuration.mergeWith(configurationOverrides);
 
         if (configuration.getConsumer().getQueueName() == null) {
             configuration.getConsumer().setQueueName(extractQueueNameFromMethod(method));
