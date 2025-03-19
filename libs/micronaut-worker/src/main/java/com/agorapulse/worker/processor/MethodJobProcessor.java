@@ -23,6 +23,7 @@ import com.agorapulse.worker.annotation.*;
 import com.agorapulse.worker.configuration.DefaultJobConfiguration;
 import com.agorapulse.worker.configuration.MutableJobConfiguration;
 import com.agorapulse.worker.convention.QueueConsumer;
+import com.agorapulse.worker.convention.QueueListener;
 import com.agorapulse.worker.convention.QueueProducer;
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.context.BeanContext;
@@ -64,6 +65,7 @@ public class MethodJobProcessor implements ExecutableMethodProcessor<Job> {
     private static final String MEMBER_FIXED_RATE = "fixedRate";
     private static final String MEMBER_INITIAL_DELAY = "initialDelay";
     private static final String MEMBER_CRON = "cron";
+    private static final String MEMBER_FORK = "fork";
     private static final String MEMBER_FIXED_DELAY = "fixedDelay";
     private static final String MEMBER_MAX_MESSAGES = "maxMessages";
     private static final String MEMBER_WAITING_TIME = "waitingTime";
@@ -78,6 +80,7 @@ public class MethodJobProcessor implements ExecutableMethodProcessor<Job> {
         "javax.inject.Named", MEMBER_VALUE,
         Job.class.getName(), MEMBER_VALUE,
         QueueConsumer.class.getName(), MEMBER_NAME,
+        QueueListener.class.getName(), MEMBER_NAME,
         QueueProducer.class.getName(), MEMBER_NAME,
         FixedRate.class.getName(), MEMBER_NAME,
         InitialDelay.class.getName(), MEMBER_NAME,
@@ -101,6 +104,7 @@ public class MethodJobProcessor implements ExecutableMethodProcessor<Job> {
     private static final Map<String, String> ANNOTATION_TO_INITIAL_DELAY_MAP = Map.of(
         InitialDelay.class.getName(), MEMBER_VALUE,
         QueueProducer.class.getName(), MEMBER_INITIAL_DELAY,
+        QueueListener.class.getName(), MEMBER_INITIAL_DELAY,
         Job.class.getName(), MEMBER_INITIAL_DELAY
     );
 
@@ -117,7 +121,8 @@ public class MethodJobProcessor implements ExecutableMethodProcessor<Job> {
         InitialDelay.class.getName(), MEMBER_SCHEDULER,
         FixedDelay.class.getName(), MEMBER_SCHEDULER,
         QueueConsumer.class.getName(), MEMBER_SCHEDULER,
-        QueueProducer.class.getName(), MEMBER_SCHEDULER
+        QueueProducer.class.getName(), MEMBER_SCHEDULER,
+        QueueListener.class.getName(), MEMBER_SCHEDULER
     );
     private static final Map<String, String> ANNOTATION_TO_VIRTUAL_THREADS_COMPATIBLE_MAP = Map.of(
         Job.class.getName(), MEMBER_VIRTUAL_THREADS_COMPATIBLE,
@@ -127,12 +132,14 @@ public class MethodJobProcessor implements ExecutableMethodProcessor<Job> {
         FixedDelay.class.getName(), MEMBER_VIRTUAL_THREADS_COMPATIBLE,
         QueueConsumer.class.getName(), MEMBER_VIRTUAL_THREADS_COMPATIBLE,
         QueueProducer.class.getName(), MEMBER_VIRTUAL_THREADS_COMPATIBLE,
+        QueueListener.class.getName(), MEMBER_VIRTUAL_THREADS_COMPATIBLE,
         Fork.class.getName(), MEMBER_VIRTUAL_THREADS_COMPATIBLE
     );
 
     private static final Map<String, String> ANNOTATION_TO_FORK_MAP = Map.of(
         Fork.class.getName(), MEMBER_VALUE,
-        QueueConsumer.class.getName(), MEMBER_MAX_MESSAGES
+        QueueConsumer.class.getName(), MEMBER_MAX_MESSAGES,
+        QueueListener.class.getName(), MEMBER_FORK
     );
 
     private static final Map<String, String> ANNOTATION_TO_MAX_MESSAGES_MAP = Map.of(
@@ -142,7 +149,8 @@ public class MethodJobProcessor implements ExecutableMethodProcessor<Job> {
 
     private static final Map<String, String> ANNOTATION_TO_CONSUMER_TYPE_MAP = Map.of(
         Consumes.class.getName(), MEMBER_TYPE,
-        QueueConsumer.class.getName(), MEMBER_TYPE
+        QueueConsumer.class.getName(), MEMBER_TYPE,
+        QueueListener.class.getName(), MEMBER_TYPE
     );
 
     public static final Map<String, String> ANNOTATION_TO_PRODUCER_TYPE_MAP = Map.of(
@@ -157,7 +165,8 @@ public class MethodJobProcessor implements ExecutableMethodProcessor<Job> {
 
     private static final Map<String, String> ANNOTATION_TO_CONSUMER_QUEUE_NAME_MAP = Map.of(
         Consumes.class.getName(), MEMBER_VALUE,
-        QueueConsumer.class.getName(), MEMBER_VALUE
+        QueueConsumer.class.getName(), MEMBER_VALUE,
+        QueueListener.class.getName(), MEMBER_VALUE
     );
 
     private static final Map<String, String> ANNOTATION_TO_PRODUCER_QUEUE_NAME_MAP = Map.of(
