@@ -21,6 +21,8 @@ dependencies {
 
     implementation 'io.micronaut.reactor:micronaut-reactor'
 
+    testImplementation project(':micronaut-worker-tck')
+
     // verify everything works as expected even with server environment present
     testImplementation 'io.micronaut:micronaut-http-server-netty'
 }
