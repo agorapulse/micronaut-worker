@@ -42,7 +42,6 @@ class QueueListenerEventsSpec extends Specification {
         then:
             job.configuration.enabled
             job.configuration.initialDelay == Duration.ofMillis(1)
-            job.configuration.initialDelay == Duration.ofMillis(1)
 
             job.configuration.consumer.queueName == QUEUE_NAME
             job.configuration.consumer.maxMessages == Integer.MAX_VALUE
