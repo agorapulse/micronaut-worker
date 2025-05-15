@@ -19,6 +19,7 @@ package com.agorapulse.worker.processor;
 
 import com.agorapulse.worker.Job;
 import com.agorapulse.worker.JobConfiguration;
+import com.agorapulse.worker.convention.QueueListener;
 import com.agorapulse.worker.executor.DistributedJobExecutor;
 import com.agorapulse.worker.executor.ExecutorServiceProvider;
 import com.agorapulse.worker.job.JobRunContext;
@@ -117,6 +118,8 @@ public class DefaultMethodJobInvoker implements MethodJobInvoker, ApplicationEve
         } else if (method.getArguments().length == 1) {
             handleResult(producer, configuration, context, executor(context, configuration).apply(() -> {
                 JobConfiguration.ConsumerQueueConfiguration queueConfiguration = configuration.getConsumer();
+                boolean infinitePoll = QueueListener.Utils.isInfinitePoll(queueConfiguration.getMaxMessages(), queueConfiguration.getWaitingTime());
+
                 Flux<? extends QueueMessage<?>> messages = Flux.from(
                     queues(queueConfiguration.getQueueType()).readMessages(
                         queueConfiguration.getQueueName(),
@@ -136,11 +139,21 @@ public class DefaultMethodJobInvoker implements MethodJobInvoker, ApplicationEve
                         message.delete();
 
                         if (result == null) {
+                            if (infinitePoll) {
+                                messageContext.finished();
+                            }
                             return Mono.empty();
                         }
 
                         if (result instanceof Publisher<?> p) {
+                            if (infinitePoll) {
+                                return  Flux.from(p).doFinally(s -> messageContext.finished());
+                            }
                             return Flux.from(p);
+                        }
+
+                        if (infinitePoll) {
+                            messageContext.finished();
                         }
 
                         return Mono.just(result);

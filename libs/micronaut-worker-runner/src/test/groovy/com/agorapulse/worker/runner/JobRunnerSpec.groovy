@@ -18,6 +18,7 @@
 package com.agorapulse.worker.runner
 
 import com.agorapulse.worker.JobManager
+import com.agorapulse.worker.tck.event.JobExecutionRecorder
 import io.micronaut.context.ApplicationContext
 import io.micronaut.context.annotation.Property
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
