@@ -15,10 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-plugins {
-    id 'com.agorapulse.gradle.aggregate-jacoco-reports'
-}
-
 if (!project.hasProperty('mavenCentralUsername'))       ext.mavenCentralUsername       = System.getenv('MAVEN_CENTRAL_USERNAME') ?: '**UNDEFINED**'
 if (!project.hasProperty('mavenCentralPassword'))       ext.mavenCentralPassword       = System.getenv('MAVEN_CENTRAL_PASSWORD') ?: '**UNDEFINED**'
 if (!project.hasProperty('signingInMemoryKeyId'))       ext.signingInMemoryKeyId       = System.getenv('SIGNING_KEY_ID') ?: '**UNDEFINED**'
