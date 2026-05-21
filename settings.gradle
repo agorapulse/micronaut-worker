@@ -29,7 +29,20 @@ pluginManagement {
             if (requested.id.id == 'io.micronaut.minimal.library' || requested.id.id == 'io.micronaut.library') {
                 useVersion(micronautGradlePluginVersion)
             }
+            if (requested.id.id == 'com.vanniktech.maven.publish') {
+                useVersion(mavenCentralPublishPluginVersion)
+            }
         }
+    }
+}
+
+buildscript {
+    repositories {
+        gradlePluginPortal()
+        maven { url = uri('https://agorapulse.jfrog.io/agorapulse/gradle-plugins-releases-local/') }
+    }
+    dependencies {
+        classpath group: 'com.vanniktech', name: 'gradle-maven-publish-plugin', version: mavenCentralPublishPluginVersion
     }
 }
 

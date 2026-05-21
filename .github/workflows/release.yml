@@ -7,16 +7,11 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
-    env:
-      SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
-      SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
-      SIGNING_KEY_ID: ${{ secrets.SIGNING_KEY_ID }}
-      SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-java@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
         with:
-          distribution: corretto
+          distribution: zulu
           java-version: 25
       - name: Semantic Version
         id: version
@@ -27,12 +22,20 @@ jobs:
         with:
           fileName: 'secret.pgp'
           encodedString: ${{ secrets.SIGNING_SECRET_KEY_BASE64 }}
+      - uses: gradle/actions/setup-gradle@v5
       - name: Release
         env:
+          SIGNING_KEY_ID: ${{ secrets.SIGNING_KEY_ID }}
+          SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
           SIGNING_SECRET_KEY_PATH: ${{ steps.write_file.outputs.filePath }}
-        uses: gradle/gradle-command-action@v2
-        with:
-          arguments: gitPublishPush publishToSonatype closeAndReleaseSonatypeStagingRepository -Pversion=${{ steps.version.outputs.tag }} -Prelease=true --stacktrace -Dorg.ajoberstar.grgit.auth.username=${{ secrets.AGORAPULSE_BOT_PERSONAL_TOKEN }}
+        run: |
+          ./gradlew :guide:gitPublishPush publishAndReleaseToMavenCentral \
+            -Pversion=${{ steps.version.outputs.tag }} \
+            -PmavenCentralUsername=${{ secrets.MAVEN_CENTRAL_USERNAME }} \
+            -PmavenCentralPassword=${{ secrets.MAVEN_CENTRAL_PASSWORD }} \
+            -Prelease=true \
+            -Dorg.ajoberstar.grgit.auth.username=${{ secrets.AGORAPULSE_BOT_PERSONAL_TOKEN }} \
+            --stacktrace
   ping:
     if: ${{ !github.event.release.prerelease }}
     name: Notify Upstream Repositories

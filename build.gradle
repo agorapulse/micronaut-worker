@@ -17,27 +17,15 @@
  */
 plugins {
     id 'com.agorapulse.gradle.aggregate-jacoco-reports'
-    id 'io.github.gradle-nexus.publish-plugin' version "$nexusPluginVersion"
 }
 
-if (!project.hasProperty('ossrhUsername'))      ext.ossrhUsername       = System.getenv('SONATYPE_USERNAME') ?: '**UNDEFINED**'
-if (!project.hasProperty('ossrhPassword'))      ext.ossrhPassword       = System.getenv('SONATYPE_PASSWORD') ?: '**UNDEFINED**'
-if (!project.hasProperty('signingKeyId'))       ext.signingKeyId        = System.getenv('SIGNING_KEY_ID') ?: '**UNDEFINED**'
-if (!project.hasProperty('signingPassword'))    ext.signingPassword     = System.getenv('SIGNING_PASSWORD') ?: '**UNDEFINED**'
-if (!project.hasProperty('signingSecretKey'))   ext.signingSecretKey    = System.getenv('SIGNING_SECRET_KEY_PATH') ? rootProject.file(System.getenv('SIGNING_SECRET_KEY_PATH')).text : '**UNDEFINED**'
+if (!project.hasProperty('mavenCentralUsername'))       ext.mavenCentralUsername       = System.getenv('MAVEN_CENTRAL_USERNAME') ?: '**UNDEFINED**'
+if (!project.hasProperty('mavenCentralPassword'))       ext.mavenCentralPassword       = System.getenv('MAVEN_CENTRAL_PASSWORD') ?: '**UNDEFINED**'
+if (!project.hasProperty('signingInMemoryKeyId'))       ext.signingInMemoryKeyId       = System.getenv('SIGNING_KEY_ID') ?: '**UNDEFINED**'
+if (!project.hasProperty('signingInMemoryKeyPassword')) ext.signingInMemoryKeyPassword = System.getenv('SIGNING_PASSWORD') ?: '**UNDEFINED**'
+if (!project.hasProperty('signingInMemoryKey'))         ext.signingInMemoryKey         = System.getenv('SIGNING_SECRET_KEY_PATH') ? rootProject.file(System.getenv('SIGNING_SECRET_KEY_PATH')).text : '**UNDEFINED**'
 
 ext.isRelease = (rootProject.findProperty('release') ?: false).toBoolean()
-
-nexusPublishing {
-    repositories {
-        sonatype {
-            nexusUrl = uri('https://s01.oss.sonatype.org/service/local/')
-            snapshotRepositoryUrl = uri('https://s01.oss.sonatype.org/content/repositories/snapshots/')
-            username = ossrhUsername
-            password = ossrhPassword
-        }
-    }
-}
 
 allprojects {
     repositories {
@@ -45,56 +33,52 @@ allprojects {
     }
 }
 
-// Shared POM block applied to libs and BOM publications.
-ext.configurePublishingPom = { MavenPublication pub ->
-    pub.pom {
-        name = project.name
-        description = 'Micronaut Worker'
-        url = "https://github.com/${rootProject.slug}"
-        licenses {
-            license {
-                name = 'The Apache Software License, Version 2.0'
-                url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
-                distribution = 'repo'
-            }
-        }
-        developers {
-            developer {
-                id = 'musketyr'
-                name = 'Vladimir Orany'
-            }
-        }
-        scm {
+configure(subprojects.findAll { it.projectDir.parentFile?.name in ['libs', 'platforms'] }) { Project sub ->
+    sub.apply plugin: 'com.vanniktech.maven.publish'
+
+    sub.mavenPublishing {
+        publishToMavenCentral(true)
+        signAllPublications()
+
+        pom {
+            name = sub.name
+            description = 'Micronaut Worker'
+            inceptionYear = '2021'
             url = "https://github.com/${rootProject.slug}"
-            connection = "scm:git:https://github.com/${rootProject.slug}.git"
-            developerConnection = "scm:git:git@github.com:${rootProject.slug}.git"
+            licenses {
+                license {
+                    name = 'The Apache Software License, Version 2.0'
+                    url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
+                    distribution = 'repo'
+                }
+            }
+            developers {
+                developer {
+                    id = 'musketyr'
+                    name = 'Vladimir Orany'
+                    url = 'https://github.com/musketyr/'
+                }
+            }
+            scm {
+                url = "https://github.com/${rootProject.slug}"
+                connection = "scm:git:https://github.com/${rootProject.slug}.git"
+                developerConnection = "scm:git:git@github.com:${rootProject.slug}.git"
+            }
+            issueManagement {
+                system = 'GitHub'
+                url = "https://github.com/${rootProject.slug}/issues"
+            }
         }
-        issueManagement {
-            system = 'GitHub'
-            url = "https://github.com/${rootProject.slug}/issues"
-        }
+    }
+
+    sub.signing {
+        useInMemoryPgpKeys(rootProject.ext.signingInMemoryKey, rootProject.ext.signingInMemoryKeyPassword)
+        sign publishing.publications
     }
 }
 
 configure(subprojects.findAll { it.projectDir.parentFile?.name == 'libs' }) { Project sub ->
-    sub.apply plugin: 'maven-publish'
-    sub.apply plugin: 'signing'
     sub.apply plugin: 'jacoco'
-
-    sub.tasks.withType(Test).configureEach {
-        useJUnitPlatform()
-        systemProperty 'user.timezone', 'UTC'
-        systemProperty 'user.language', 'en'
-    }
-
-    sub.tasks.withType(JavaCompile).configureEach {
-        options.encoding = 'UTF-8'
-        options.compilerArgs.add('-parameters')
-    }
-
-    sub.tasks.withType(GroovyCompile).configureEach {
-        groovyOptions.forkOptions.jvmArgs.add('-Dgroovy.parameters=true')
-    }
 
     sub.afterEvaluate {
         sub.tasks.findByName('processResources')?.with {
@@ -103,27 +87,9 @@ configure(subprojects.findAll { it.projectDir.parentFile?.name == 'libs' }) { Pr
             }
         }
 
-        // Add java publication once components.java is available.
         if (sub.plugins.hasPlugin('java')) {
             sub.tasks.named('jar').configure {
                 manifest.attributes provider: 'gradle'
-            }
-
-            sub.publishing {
-                publications {
-                    maven(MavenPublication) {
-                        from sub.components.java
-                        rootProject.configurePublishingPom(delegate)
-                    }
-                }
-            }
-
-            sub.signing {
-                required = { rootProject.isRelease }
-                if (rootProject.isRelease) {
-                    useInMemoryPgpKeys(signingKeyId, signingSecretKey, signingPassword)
-                }
-                sign sub.publishing.publications.maven
             }
         }
     }

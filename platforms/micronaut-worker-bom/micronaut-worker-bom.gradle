@@ -17,9 +17,11 @@
  */
 plugins {
     id 'java-platform'
-    id 'maven-publish'
-    id 'signing'
 }
+
+// `com.vanniktech.maven.publish` is applied centrally in the root build.gradle for
+// every project under libs/ and platforms/; for java-platform projects it wires up
+// `from components.javaPlatform` automatically.
 
 dependencies {
     constraints {
@@ -29,19 +31,6 @@ dependencies {
     }
 }
 
-publishing {
-    publications {
-        maven(MavenPublication) {
-            from components.javaPlatform
-            rootProject.configurePublishingPom(delegate)
-        }
-    }
-}
-
-signing {
-    required = { rootProject.isRelease }
-    if (rootProject.isRelease) {
-        useInMemoryPgpKeys(signingKeyId, signingSecretKey, signingPassword)
-    }
-    sign publishing.publications.maven
+project.afterEvaluate {
+    generatePomFileForMavenPublication.pom.packaging = 'pom'
 }
