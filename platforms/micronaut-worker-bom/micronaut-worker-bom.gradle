@@ -15,3 +15,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+plugins {
+    id 'java-platform'
+    id 'maven-publish'
+    id 'signing'
+}
+
+dependencies {
+    constraints {
+        rootProject.subprojects
+            .findAll { it.projectDir.parentFile?.name == 'libs' }
+            .each { api it }
+    }
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.javaPlatform
+            rootProject.configurePublishingPom(delegate)
+        }
+    }
+}
+
+signing {
+    required = { rootProject.isRelease }
+    if (rootProject.isRelease) {
+        useInMemoryPgpKeys(signingKeyId, signingSecretKey, signingPassword)
+    }
+    sign publishing.publications.maven
+}

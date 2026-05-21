@@ -16,11 +16,9 @@
  * limitations under the License.
  */
 plugins {
-    id 'org.kordamp.gradle.groovy-project'
-    id 'org.kordamp.gradle.checkstyle'
-    id 'org.kordamp.gradle.codenarc'
-    id 'org.kordamp.gradle.coveralls'
-    id 'io.github.gradle-nexus.publish-plugin'
+    id 'com.agorapulse.gradle.aggregate-checkstyle-reports'
+    id 'com.agorapulse.gradle.aggregate-jacoco-reports'
+    id 'io.github.gradle-nexus.publish-plugin' version "$nexusPluginVersion"
 }
 
 if (!project.hasProperty('ossrhUsername'))      ext.ossrhUsername       = System.getenv('SONATYPE_USERNAME') ?: '**UNDEFINED**'
@@ -29,90 +27,7 @@ if (!project.hasProperty('signingKeyId'))       ext.signingKeyId        = System
 if (!project.hasProperty('signingPassword'))    ext.signingPassword     = System.getenv('SIGNING_PASSWORD') ?: '**UNDEFINED**'
 if (!project.hasProperty('signingSecretKey'))   ext.signingSecretKey    = System.getenv('SIGNING_SECRET_KEY_PATH') ? rootProject.file(System.getenv('SIGNING_SECRET_KEY_PATH')).text : '**UNDEFINED**'
 
-
-config {
-    release = (rootProject.findProperty('release') ?: false).toBoolean()
-
-    info {
-        name        = 'Micronaut Worker'
-        vendor      = 'Agorapulse'
-        description = 'Micronaut Worker'
-
-        links {
-            website      = 'https://github.com/' + slug
-            issueTracker = 'https://github.com/' + slug + '/issues'
-            scm          = 'https://github.com/' + slug + '.git'
-        }
-
-        people {
-            person {
-                id    = 'musketyr'
-                name  = 'Vladimir Orany'
-                roles = ['developer']
-            }
-        }
-
-        repositories {
-            repository {
-                name = 'localReleases'
-                url  = '' + project.rootProject.buildDir + '/repos/local/releases'
-            }
-            repository {
-                name = 'localSnapshot'
-                url  = '' + project.rootProject.buildDir + '/repos/local/snapshot'
-            }
-        }
-    }
-
-    licensing {
-        licenses {
-            license {
-                id = 'Apache-2.0'
-            }
-        }
-    }
-
-    publishing {
-        signing {
-            enabled =  true
-            keyId = signingKeyId
-            secretKey = signingSecretKey
-            password = signingPassword
-        }
-        releasesRepository  = 'localReleases'
-        snapshotsRepository = 'localSnapshot'
-    }
-
-    quality {
-        checkstyle {
-            ignoreFailures  = false
-            toolVersion     = '8.27'
-        }
-
-        codenarc {
-            ignoreFailures  = false
-            toolVersion     = '1.5'
-        }
-    }
-
-    docs {
-        javadoc {
-            autoLinks {
-                enabled = false
-            }
-            aggregate {
-                enabled = false
-            }
-        }
-        groovydoc {
-            enabled = false
-            aggregate {
-                enabled = false
-            }
-        }
-    }
-
-}
+ext.isRelease = (rootProject.findProperty('release') ?: false).toBoolean()
 
 nexusPublishing {
     repositories {
@@ -129,99 +44,120 @@ allprojects {
     repositories {
         mavenCentral()
     }
+}
 
-    license {
-        exclude '**/*.json'
-        exclude '**/*.yml'
-        exclude '**/*.txt'
-        exclude '**/*.gdsl'
-        exclude '**/ConsoleSpec/*.groovy'
+// Shared POM block applied to libs and BOM publications.
+ext.configurePublishingPom = { MavenPublication pub ->
+    pub.pom {
+        name = project.name
+        description = 'Micronaut Worker'
+        url = "https://github.com/${rootProject.slug}"
+        licenses {
+            license {
+                name = 'The Apache Software License, Version 2.0'
+                url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
+                distribution = 'repo'
+            }
+        }
+        developers {
+            developer {
+                id = 'musketyr'
+                name = 'Vladimir Orany'
+            }
+        }
+        scm {
+            url = "https://github.com/${rootProject.slug}"
+            connection = "scm:git:https://github.com/${rootProject.slug}.git"
+            developerConnection = "scm:git:git@github.com:${rootProject.slug}.git"
+        }
+        issueManagement {
+            system = 'GitHub'
+            url = "https://github.com/${rootProject.slug}/issues"
+        }
     }
 }
 
-gradleProjects {
-    subprojects {
-        dirs(['libs']) { Project subproject ->
-            java {
-                toolchain {
-                    languageVersion = JavaLanguageVersion.of(javaVersion)
-                }
+configure(subprojects.findAll { it.projectDir.parentFile?.name == 'libs' }) { Project sub ->
+    sub.apply plugin: 'maven-publish'
+    sub.apply plugin: 'signing'
+    sub.apply plugin: 'checkstyle'
+    sub.apply plugin: 'codenarc'
+    sub.apply plugin: 'jacoco'
+
+    sub.checkstyle {
+        toolVersion = '10.17.0'
+        configFile = rootProject.file('config/checkstyle/checkstyle.xml')
+        ignoreFailures = false
+    }
+
+    sub.codenarc {
+        toolVersion = '3.6.0'
+        configFile = rootProject.file('config/codenarc/codenarc.xml')
+        ignoreFailures = false
+    }
+
+    sub.tasks.withType(Test).configureEach {
+        useJUnitPlatform()
+        systemProperty 'user.timezone', 'UTC'
+        systemProperty 'user.language', 'en'
+    }
+
+    sub.tasks.withType(JavaCompile).configureEach {
+        options.encoding = 'UTF-8'
+        options.compilerArgs.add('-parameters')
+    }
+
+    sub.tasks.withType(GroovyCompile).configureEach {
+        groovyOptions.forkOptions.jvmArgs.add('-Dgroovy.parameters=true')
+    }
+
+    sub.afterEvaluate {
+        sub.tasks.findByName('processResources')?.with {
+            filesMatching('**/org.codehaus.groovy.runtime.ExtensionModule') {
+                filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: [VERSION: sub.version.toString()])
             }
+        }
 
-            micronaut {
-                importMicronautPlatform = true
-                testRuntime 'spock'
-                processing {
-                    incremental false
-                }
-            }
-
-            repositories {
-                mavenCentral()
-            }
-
-            // location independent tests (useful for stable CI builds)
-            tasks.withType(Test){
-                useJUnitPlatform()
-                systemProperty 'user.timezone', 'UTC'
-                systemProperty 'user.language', 'en'
-            }
-
-            tasks.withType(JavaCompile) {
-                options.encoding = 'UTF-8'
-                options.compilerArgs.add('-parameters')
-            }
-
-            tasks.withType(GroovyCompile) {
-                groovyOptions.forkOptions.jvmArgs.add('-Dgroovy.parameters=true')
-            }
-
-            dependencies {
-                annotationProcessor 'io.micronaut.validation:micronaut-validation-processor'
-
-                implementation 'io.micronaut.validation:micronaut-validation'
-
-                compileOnly 'io.micronaut:micronaut-inject-groovy'
-
-                testImplementation 'com.agorapulse:micronaut-log4aws:4.0.0'
-                testImplementation 'io.micronaut:micronaut-inject-groovy'
-
-                testImplementation(group: 'org.testcontainers', name: 'spock', version: project.testcontainersVersion)
-            }
-
-            // useful for IntelliJ
-            task cleanOut(type: Delete) {
-                delete file('out')
-            }
-
-            clean.dependsOn cleanOut
-
-            processResources {
-                filesMatching('**/org.codehaus.groovy.runtime.ExtensionModule') {
-                    filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: [VERSION: version])
-                }
-            }
-
-            jar {
+        // Add java publication once components.java is available.
+        if (sub.plugins.hasPlugin('java')) {
+            sub.tasks.named('jar').configure {
                 manifest.attributes provider: 'gradle'
             }
 
-            project(':micronaut-worker-bom').dependencies.constraints.api subproject
-        }
-
-        dir('examples') {
-            config {
-                publishing {
-                    enabled = false
+            sub.publishing {
+                publications {
+                    maven(MavenPublication) {
+                        from sub.components.java
+                        rootProject.configurePublishingPom(delegate)
+                    }
                 }
             }
 
-            dependencies {
-                implementation project(':micronaut-worker')
+            sub.signing {
+                required = { rootProject.isRelease }
+                if (rootProject.isRelease) {
+                    useInMemoryPgpKeys(signingKeyId, signingSecretKey, signingPassword)
+                }
+                sign sub.publishing.publications.maven
             }
         }
     }
+
+    sub.tasks.register('cleanOut', Delete) {
+        delete sub.file('out')
+    }
+    sub.tasks.named('clean').configure { dependsOn 'cleanOut' }
+
+    sub.dependencies {
+        annotationProcessor 'io.micronaut.validation:micronaut-validation-processor'
+
+        implementation 'io.micronaut.validation:micronaut-validation'
+
+        compileOnly 'io.micronaut:micronaut-inject-groovy'
+
+        testImplementation 'com.agorapulse:micronaut-log4aws:4.0.0'
+        testImplementation 'io.micronaut:micronaut-inject-groovy'
+
+        testImplementation(group: 'org.testcontainers', name: 'spock', version: project.testcontainersVersion)
+    }
 }
-
-
-check.dependsOn('aggregateCheckstyle', 'aggregateCodenarc', 'aggregateAllTestReports', 'coveralls')
