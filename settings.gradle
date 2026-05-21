@@ -1,7 +1,7 @@
 /*
  * SPDX-License-Identifier: Apache-2.0
  *
- * Copyright 2021-2025 Agorapulse.
+ * Copyright 2021-2026 Agorapulse.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,53 +15,73 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        maven { url 'https://agorapulse.jfrog.io/agorapulse/gradle-plugins-releases-local/' }
+        mavenCentral()
+    }
+    resolutionStrategy {
+        eachPlugin {
+            if (requested.id.id.startsWith('com.agorapulse.gradle.')) {
+                useVersion(agorapulseGradlePluginsVersion)
+            }
+        }
+    }
+    plugins {
+        id 'com.agorapulse.gradle.micronaut-library'           version "${agorapulseGradlePluginsVersion}"
+        id 'com.agorapulse.gradle.groovy-common-configuration' version "${agorapulseGradlePluginsVersion}"
+        id 'com.agorapulse.gradle.micronaut-compatibility'     version "${agorapulseGradlePluginsVersion}"
+        id 'com.agorapulse.gradle.guide'                       version "${agorapulseGradlePluginsVersion}"
+        id 'com.vanniktech.maven.publish'                      version "${mavenCentralPublishPluginVersion}"
+    }
+}
+
 buildscript {
     repositories {
-        mavenCentral()
         gradlePluginPortal()
+        maven { url 'https://agorapulse.jfrog.io/agorapulse/gradle-plugins-releases-local/' }
     }
     dependencies {
-        classpath group: 'org.kordamp.gradle',      name: 'settings-gradle-plugin',         version: kordampPluginVersion
-        classpath group: 'org.kordamp.gradle',      name: 'groovy-project-gradle-plugin',   version: kordampPluginVersion
-        classpath group: 'org.kordamp.gradle',      name: 'checkstyle-gradle-plugin',       version: kordampPluginVersion
-        classpath group: 'org.kordamp.gradle',      name: 'codenarc-gradle-plugin',         version: kordampPluginVersion
-        classpath group: 'org.kordamp.gradle',      name: 'guide-gradle-plugin',            version: kordampPluginVersion
-        classpath group: 'org.kordamp.gradle',      name: 'coveralls-gradle-plugin',        version: kordampPluginVersion
-        classpath group: 'org.ajoberstar',          name: 'gradle-git-publish',             version: gitPublishPluginVersion
-        classpath group: 'io.github.gradle-nexus',  name: 'publish-plugin',                 version: nexusPluginVersion
-        classpath group: 'io.micronaut.gradle',     name: 'micronaut-minimal-plugin',       version: micronautGradlePluginVersion
+        classpath group: 'io.micronaut.gradle',   name: 'micronaut-minimal-plugin',     version: micronautGradlePluginVersion
+        classpath group: 'com.agorapulse.gradle', name: 'micronaut-library',            version: agorapulseGradlePluginsVersion
+        classpath group: 'com.agorapulse.gradle', name: 'groovy-common-configuration',  version: agorapulseGradlePluginsVersion
+        classpath group: 'com.vanniktech',        name: 'gradle-maven-publish-plugin',  version: mavenCentralPublishPluginVersion
     }
 }
 
 plugins {
-    id 'org.kordamp.gradle.settings' version "$kordampPluginVersion"
-    id 'com.gradle.enterprise' version '3.15.1'
+    id 'com.agorapulse.gradle.settings'                 version "${agorapulseGradlePluginsVersion}"
+    id 'com.agorapulse.gradle.internal-version-catalog' version "${agorapulseGradlePluginsVersion}"
+    id 'com.gradle.develocity'                          version "${develocityPluginVersion}"
 }
 
-gradleEnterprise {
+develocity {
     buildScan {
-        publishAlways()
-        termsOfServiceUrl = "https://gradle.com/terms-of-service"
-        termsOfServiceAgree = "yes"
+        termsOfUseUrl = 'https://gradle.com/terms-of-service'
+        termsOfUseAgree = 'yes'
+        publishing.onlyIf { true }
     }
 }
 
 rootProject.name = 'micronaut-worker-root'
 
-projects {
-    directories = ['libs', 'docs', 'platforms']
-
-    plugins {
-        dir('docs') {
-            id 'org.kordamp.gradle.guide'
-            id 'org.ajoberstar.git-publish'
-        }
-        dirs(['libs']) {
-            id 'io.micronaut.minimal.library'
-            id 'groovy'
-        }
-        dir('platforms') {
-            id 'java-platform'
+def includeSubprojectsFrom = { String parentDir ->
+    file(parentDir).listFiles().findAll { it.isDirectory() }.each { dir ->
+        include ":${dir.name}"
+        def descriptor = project(":${dir.name}")
+        descriptor.projectDir = dir
+        def customBuildFile = new File(dir, "${dir.name}.gradle")
+        if (customBuildFile.exists()) {
+            descriptor.buildFileName = "${dir.name}.gradle"
         }
     }
 }
+
+includeSubprojectsFrom('libs')
+includeSubprojectsFrom('platforms')
+
+// docs
+include ':guide'
+project(':guide').projectDir = file('docs/guide')
+project(':guide').buildFileName = 'guide.gradle'
