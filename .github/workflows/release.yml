@@ -34,6 +34,7 @@ jobs:
         with:
           arguments: gitPublishPush publishToSonatype closeAndReleaseSonatypeStagingRepository -Pversion=${{ steps.version.outputs.tag }} -Prelease=true --stacktrace -Dorg.ajoberstar.grgit.auth.username=${{ secrets.AGORAPULSE_BOT_PERSONAL_TOKEN }}
   ping:
+    if: ${{ !github.event.release.prerelease }}
     name: Notify Upstream Repositories
     runs-on: ubuntu-latest
     needs: [release]
