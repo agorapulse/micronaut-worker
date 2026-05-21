@@ -21,13 +21,13 @@ import com.agorapulse.micronaut.aws.sqs.SimpleQueueService
 import com.agorapulse.worker.local.LocalQueues
 import com.amazonaws.SdkClientException
 import com.amazonaws.auth.AWSCredentialsProvider
-import com.fasterxml.jackson.databind.ObjectMapper
+import io.micronaut.json.JsonMapper
 import io.micronaut.context.env.Environment
 import spock.lang.Specification
 
 class SqsQueuesFactorySpec extends Specification {
 
-    ObjectMapper mapper = new ObjectMapper()
+    JsonMapper mapper = JsonMapper.createDefault()
 
     AWSCredentialsProvider provider = Mock()
     SimpleQueueService simpleQueueService = Mock()

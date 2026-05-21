@@ -23,15 +23,14 @@ import com.agorapulse.worker.queue.JobQueues;
 import com.agorapulse.worker.queue.QueueMessage;
 import com.amazonaws.services.sqs.model.AmazonSQSException;
 import com.amazonaws.services.sqs.model.Message;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micronaut.core.type.Argument;
-import io.micronaut.jackson.JacksonConfiguration;
+import io.micronaut.json.JsonMapper;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
@@ -45,11 +44,11 @@ public class SqsQueues implements JobQueues {
     private static final int MAX_WAITING_TIME = 20;
 
     private final SimpleQueueService simpleQueueService;
-    private final ObjectMapper objectMapper;
+    private final JsonMapper jsonMapper;
 
-    public SqsQueues(SimpleQueueService simpleQueueService, ObjectMapper objectMapper) {
+    public SqsQueues(SimpleQueueService simpleQueueService, JsonMapper jsonMapper) {
         this.simpleQueueService = simpleQueueService;
-        this.objectMapper = objectMapper;
+        this.jsonMapper = jsonMapper;
     }
 
     @Override
@@ -103,8 +102,8 @@ public class SqsQueues implements JobQueues {
     @Override
     public void sendMessage(String queueName, Object result) {
         try {
-            sendRawMessage(queueName, objectMapper.writeValueAsString(result));
-        } catch (JsonProcessingException e) {
+            sendRawMessage(queueName, jsonMapper.writeValueAsString(result));
+        } catch (IOException e) {
             throw new IllegalArgumentException("Cannot marshal object " + result + " to JSON", e);
         }
     }
@@ -124,8 +123,8 @@ public class SqsQueues implements JobQueues {
 
     private <T> Mono<T> readMessageInternal(String queueName, Argument<T> argument, String body, boolean tryReformat) {
         try {
-            return Mono.just(objectMapper.readValue(body, JacksonConfiguration.constructType(argument, objectMapper.getTypeFactory())));
-        } catch (JsonProcessingException e) {
+            return Mono.just(jsonMapper.readValue(body, argument));
+        } catch (IOException e) {
             if (tryReformat) {
                 if (String.class.isAssignableFrom(argument.getType())) {
                     return Mono.just(argument.getType().cast(body));

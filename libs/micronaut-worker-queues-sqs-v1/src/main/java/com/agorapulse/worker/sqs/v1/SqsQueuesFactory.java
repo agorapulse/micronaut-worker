@@ -22,11 +22,11 @@ import com.agorapulse.worker.local.LocalQueues;
 import com.agorapulse.worker.queue.JobQueues;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.auth.AWSCredentialsProvider;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micronaut.context.annotation.Bean;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.env.Environment;
+import io.micronaut.json.JsonMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,7 +45,7 @@ public class SqsQueuesFactory {
     @Requires(property = "worker.queues.sqs.enabled", value = "true", defaultValue = "true")
     public JobQueues sqsQueues(
             AWSCredentialsProvider provider,
-            ObjectMapper mapper,
+            JsonMapper mapper,
             SimpleQueueService service,
             Environment environment
     ) {
