@@ -16,7 +16,6 @@
  * limitations under the License.
  */
 plugins {
-    id 'com.agorapulse.gradle.aggregate-checkstyle-reports'
     id 'com.agorapulse.gradle.aggregate-jacoco-reports'
     id 'io.github.gradle-nexus.publish-plugin' version "$nexusPluginVersion"
 }
@@ -80,21 +79,7 @@ ext.configurePublishingPom = { MavenPublication pub ->
 configure(subprojects.findAll { it.projectDir.parentFile?.name == 'libs' }) { Project sub ->
     sub.apply plugin: 'maven-publish'
     sub.apply plugin: 'signing'
-    sub.apply plugin: 'checkstyle'
-    sub.apply plugin: 'codenarc'
     sub.apply plugin: 'jacoco'
-
-    sub.checkstyle {
-        toolVersion = '10.17.0'
-        configFile = rootProject.file('config/checkstyle/checkstyle.xml')
-        ignoreFailures = false
-    }
-
-    sub.codenarc {
-        toolVersion = '3.6.0'
-        configFile = rootProject.file('config/codenarc/codenarc.xml')
-        ignoreFailures = false
-    }
 
     sub.tasks.withType(Test).configureEach {
         useJUnitPlatform()
