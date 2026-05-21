@@ -19,7 +19,7 @@ package com.agorapulse.worker.job;
 
 import com.agorapulse.worker.JobRunStatus;
 import com.agorapulse.worker.queue.QueueMessage;
-import jakarta.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;

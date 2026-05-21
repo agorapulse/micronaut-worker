@@ -21,7 +21,7 @@ import com.agorapulse.worker.JobRunStatus;
 import com.agorapulse.worker.json.StacktraceSerializer;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import jakarta.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -54,18 +54,18 @@ public class DefaultJobRunStatus implements JobRunStatus {
         this.executionCount = executionCount;
     }
 
-    @Override @Nonnull
+    @Override @NonNull
     public String getId() {
         return id;
     }
 
-    @Override @Nonnull
+    @Override @NonNull
     public String getName() {
         return name;
     }
 
 
-    @Override @Nonnull
+    @Override @NonNull
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     public Instant getStarted() {
         return started;

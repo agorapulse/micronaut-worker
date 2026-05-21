@@ -21,8 +21,8 @@ import com.agorapulse.worker.job.DefaultJobRunStatus;
 import com.agorapulse.worker.json.DurationSerializer;
 import com.agorapulse.worker.report.JobReport;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -33,7 +33,7 @@ public interface JobRunStatus {
         return DefaultJobRunStatus.create(name);
     }
 
-    @Nonnull
+    @NonNull
     @JsonSerialize(using = DurationSerializer.class)
     default Duration getDuration() {
         Instant started = getStarted();
@@ -56,10 +56,10 @@ public interface JobRunStatus {
 
     int getExecutionCount();
 
-    @Nonnull String getName();
-    @Nonnull String getId();
+    @NonNull String getName();
+    @NonNull String getId();
 
-    @Nonnull Instant getStarted();
+    @NonNull Instant getStarted();
     @Nullable Instant getFinished();
 
     @Nullable Throwable getException();

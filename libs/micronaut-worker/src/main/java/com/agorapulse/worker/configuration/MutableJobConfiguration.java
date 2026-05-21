@@ -19,7 +19,7 @@ package com.agorapulse.worker.configuration;
 
 import com.agorapulse.worker.JobConfiguration;
 
-import jakarta.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;

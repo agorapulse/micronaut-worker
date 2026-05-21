@@ -13,7 +13,7 @@ jobs:
       - uses: actions/setup-java@v3
         with:
           distribution: corretto
-          java-version: 17
+          java-version: 25
       - name: Get Latest Release
         id: latest_version
         uses: abatilo/release-info-action@v1.3.0

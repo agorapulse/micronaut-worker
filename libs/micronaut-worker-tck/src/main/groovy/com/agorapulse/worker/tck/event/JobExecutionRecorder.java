@@ -20,7 +20,7 @@ package com.agorapulse.worker.tck.event;
 import com.agorapulse.worker.event.JobExecutionFinishedEvent;
 import com.agorapulse.worker.event.JobExecutionResultEvent;
 import com.agorapulse.worker.event.JobExecutionStartedEvent;
-import io.micronaut.core.annotation.NonNull;
+import org.jspecify.annotations.NonNull;
 import io.micronaut.runtime.context.scope.Refreshable;
 import io.micronaut.runtime.context.scope.refresh.RefreshEvent;
 import io.micronaut.runtime.context.scope.refresh.RefreshEventListener;

@@ -17,7 +17,7 @@ jobs:
       - uses: actions/setup-java@v3
         with:
           distribution: corretto
-          java-version: 17
+          java-version: 25
       - name: Semantic Version
         id: version
         uses: ncipollo/semantic-version-action@v1
@@ -34,6 +34,7 @@ jobs:
         with:
           arguments: gitPublishPush publishToSonatype closeAndReleaseSonatypeStagingRepository -Pversion=${{ steps.version.outputs.tag }} -Prelease=true --stacktrace -Dorg.ajoberstar.grgit.auth.username=${{ secrets.AGORAPULSE_BOT_PERSONAL_TOKEN }}
   ping:
+    if: ${{ !github.event.release.prerelease }}
     name: Notify Upstream Repositories
     runs-on: ubuntu-latest
     needs: [release]
@@ -53,4 +54,4 @@ jobs:
           token: ${{ secrets.AGORAPULSE_BOT_PERSONAL_TOKEN }}
           repository: ${{ matrix.repository }}
           event-type: ap-new-version-released-event
-          client-payload: '{ "group": "com.agorapulse", "module": "micronaut-worker", "micronautCompatibility": [4], "version": "${{ steps.version.outputs.tag }}", "property" : "micronaut.worker.version", "github" : ${{ toJson(github) }} }'
+          client-payload: '{ "group": "com.agorapulse", "module": "micronaut-worker", "micronautCompatibility": [4, 5], "version": "${{ steps.version.outputs.tag }}", "property" : "micronaut.worker.version", "github" : ${{ toJson(github) }} }'

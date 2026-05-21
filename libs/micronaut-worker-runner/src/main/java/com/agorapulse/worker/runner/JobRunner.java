@@ -22,7 +22,7 @@ import com.agorapulse.worker.JobManager;
 import com.agorapulse.worker.report.JobReport;
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.context.ApplicationContextBuilder;
-import io.micronaut.core.annotation.NonNull;
+import org.jspecify.annotations.NonNull;
 import io.micronaut.core.cli.CommandLine;
 import io.micronaut.function.executor.FunctionInitializer;
 import jakarta.inject.Inject;
