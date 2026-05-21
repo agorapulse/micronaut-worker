@@ -21,6 +21,10 @@ jobs:
           owner: agorapulse
           repo: micronaut-worker
       - uses: gradle/actions/setup-gradle@v5
+      - name: Configure git identity for gitPublishCommit
+        run: |
+          git config --global user.name 'Agorapulse Bot'
+          git config --global user.email 'oss@agorapulse.com'
       - name: Publish GitHub Pages
         run: |
           ./gradlew :guide:gitPublishPush \
