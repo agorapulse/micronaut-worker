@@ -20,8 +20,8 @@ package com.agorapulse.worker.sqs.v2
 import com.agorapulse.micronaut.amazon.awssdk.sqs.SimpleQueueService
 import com.agorapulse.worker.queue.JobQueues
 import com.agorapulse.worker.queue.QueueMessage
-import com.fasterxml.jackson.databind.ObjectMapper
 import io.micronaut.core.type.Argument
+import io.micronaut.json.JsonMapper
 import reactor.core.publisher.Flux
 import software.amazon.awssdk.services.sqs.model.Message
 import software.amazon.awssdk.services.sqs.model.SqsException
@@ -36,7 +36,7 @@ class SqsQueuesUnitSpec extends Specification {
     private static final int MAX_MESSAGES = 2
     private static final Duration WAIT_TIME = Duration.ofSeconds(1)
 
-    @Shared ObjectMapper mapper = new ObjectMapper()
+    @Shared JsonMapper mapper = JsonMapper.createDefault()
 
     SimpleQueueService simpleQueueService = Mock()
 
@@ -152,8 +152,8 @@ class SqsQueuesUnitSpec extends Specification {
 
     void 'send wrong message'() {
         given:
-            ObjectMapper objectMapper = new ObjectMapper()
-            SqsQueues queues = new SqsQueues(simpleQueueService, objectMapper)
+            JsonMapper jsonMapper = JsonMapper.createDefault()
+            SqsQueues queues = new SqsQueues(simpleQueueService, jsonMapper)
 
         when:
             queues.sendMessage(QUEUE_NAME, new Object())

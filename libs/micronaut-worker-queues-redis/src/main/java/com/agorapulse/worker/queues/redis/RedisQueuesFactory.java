@@ -18,11 +18,11 @@
 package com.agorapulse.worker.queues.redis;
 
 import com.agorapulse.worker.queue.JobQueues;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.lettuce.core.RedisClient;
 import io.micronaut.context.annotation.Bean;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.annotation.Requires;
+import io.micronaut.json.JsonMapper;
 
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
@@ -38,7 +38,7 @@ public class RedisQueuesFactory {
     @Requires(property = "worker.queues.redis.enabled", value = "true", defaultValue = "true")
     public JobQueues redisQueues(
             RedisClient redisClient,
-            ObjectMapper mapper,
+            JsonMapper mapper,
             RedisPoolConfiguration redisPoolConfiguration
     ) {
         return new RedisQueues(mapper, redisClient, redisPoolConfiguration);
