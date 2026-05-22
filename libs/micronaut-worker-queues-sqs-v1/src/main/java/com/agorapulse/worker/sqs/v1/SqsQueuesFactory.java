@@ -58,7 +58,7 @@ public class SqsQueuesFactory {
             } else if (LOGGER.isInfoEnabled()) {
                 LOGGER.info("AWS SDK is not authenticated correctly, Using local job queues");
             }
-            return new LocalQueues(environment);
+            return new LocalQueues(environment.getConversionService());
         }
     }
 

@@ -21,7 +21,7 @@ import com.agorapulse.worker.JobConfiguration;
 import com.agorapulse.worker.WorkerConfiguration;
 import com.agorapulse.worker.json.DurationSerializer;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import tools.jackson.databind.annotation.JsonSerialize;
 import io.micronaut.context.annotation.ConfigurationBuilder;
 import io.micronaut.context.annotation.EachProperty;
 import io.micronaut.context.annotation.Parameter;

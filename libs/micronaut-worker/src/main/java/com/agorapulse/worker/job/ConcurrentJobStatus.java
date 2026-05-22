@@ -23,7 +23,7 @@ import com.agorapulse.worker.json.DurationSerializer;
 import com.agorapulse.worker.json.StacktraceSerializer;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import tools.jackson.databind.annotation.JsonSerialize;
 
 import java.time.Duration;
 import java.time.Instant;

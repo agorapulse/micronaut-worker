@@ -18,12 +18,11 @@
 package com.agorapulse.worker.json;
 
 import com.agorapulse.worker.report.JobReport;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.databind.JavaType;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.ser.std.StdSerializer;
 
-import java.io.IOException;
 import java.time.Duration;
 
 public class DurationSerializer extends StdSerializer<Duration> {
@@ -49,7 +48,7 @@ public class DurationSerializer extends StdSerializer<Duration> {
     }
 
     @Override
-    public void serialize(Duration value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+    public void serialize(Duration value, JsonGenerator gen, SerializationContext provider) {
         gen.writeString(JobReport.humanReadableFormat(value));
     }
 

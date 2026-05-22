@@ -205,7 +205,7 @@ public class MethodJobProcessor implements ExecutableMethodProcessor<Job> {
     }
 
     @Override
-    public void process(BeanDefinition<?> beanDefinition, ExecutableMethod<?, ?> method) {
+    public <B> void process(BeanDefinition<B> beanDefinition, ExecutableMethod<B, ?> method) {
         if (!(beanContext instanceof ApplicationContext)) {
             return;
         }
@@ -358,7 +358,7 @@ public class MethodJobProcessor implements ExecutableMethodProcessor<Job> {
     }
 
     private Duration convertDuration(String jobName, String durationString, String humanReadableProperty) {
-        Optional<Duration> converted = environment.convert(durationString, Duration.class);
+        Optional<Duration> converted = environment.getConversionService().convert(durationString, Duration.class);
 
         if (converted.isPresent()) {
             return converted.get();

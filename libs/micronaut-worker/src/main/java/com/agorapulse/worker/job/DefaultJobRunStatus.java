@@ -20,7 +20,7 @@ package com.agorapulse.worker.job;
 import com.agorapulse.worker.JobRunStatus;
 import com.agorapulse.worker.json.StacktraceSerializer;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import tools.jackson.databind.annotation.JsonSerialize;
 import jakarta.annotation.Nonnull;
 
 import java.time.Instant;
