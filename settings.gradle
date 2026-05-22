@@ -29,6 +29,7 @@ pluginManagement {
         }
     }
     plugins {
+        id 'com.agorapulse.gradle.root-project'                version "${agorapulseGradlePluginsVersion}"
         id 'com.agorapulse.gradle.micronaut-library'           version "${agorapulseGradlePluginsVersion}"
         id 'com.agorapulse.gradle.groovy-common-configuration' version "${agorapulseGradlePluginsVersion}"
         id 'com.agorapulse.gradle.micronaut-compatibility'     version "${agorapulseGradlePluginsVersion}"
@@ -66,20 +67,20 @@ develocity {
 
 rootProject.name = 'micronaut-worker-root'
 
-def includeSubprojectsFrom = { String parentDir ->
-    file(parentDir).listFiles().findAll { it.isDirectory() }.each { dir ->
-        include ":${dir.name}"
-        def descriptor = project(":${dir.name}")
-        descriptor.projectDir = dir
-        def customBuildFile = new File(dir, "${dir.name}.gradle")
-        if (customBuildFile.exists()) {
-            descriptor.buildFileName = "${dir.name}.gradle"
+gradleProjects {
+    directories = ['libs', 'platforms']
+
+    plugins {
+        dirs(['libs']) {
+            id 'groovy'
+            id 'com.agorapulse.gradle.micronaut-library'
+            id 'com.agorapulse.gradle.groovy-common-configuration'
+        }
+        dirs(['platforms']) {
+            id 'java-platform'
         }
     }
 }
-
-includeSubprojectsFrom('libs')
-includeSubprojectsFrom('platforms')
 
 // docs
 include ':guide'

@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 plugins {
-    id 'lifecycle-base'
+    id 'com.agorapulse.gradle.root-project'
 }
 
 if (!project.hasProperty('mavenCentralUsername'))       ext.mavenCentralUsername       = System.getenv('MAVEN_CENTRAL_USERNAME') ?: '**UNDEFINED**'
@@ -33,110 +33,111 @@ allprojects {
     }
 }
 
-// Centralised Maven Central publishing for every publishable subproject
-// (every library under libs/ and the BOM under platforms/).
-configure(subprojects.findAll { it.projectDir.parentFile?.name in ['libs', 'platforms'] }) { Project sub ->
-    sub.apply plugin: 'com.vanniktech.maven.publish'
+gradleProjects {
+    subprojects {
+        dirs(['libs', 'platforms']) {
+            apply plugin: 'com.vanniktech.maven.publish'
 
-    sub.mavenPublishing {
-        publishToMavenCentral(true)
-        signAllPublications()
+            mavenPublishing {
+                publishToMavenCentral(true)
+                signAllPublications()
 
-        pom {
-            name = sub.name
-            description = 'Micronaut Worker'
-            inceptionYear = '2021'
-            url = "https://github.com/${rootProject.slug}"
-            licenses {
-                license {
-                    name = 'The Apache License, Version 2.0'
-                    url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
-                    distribution = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
+                pom {
+                    name = project.name
+                    description = 'Micronaut Worker'
+                    inceptionYear = '2021'
+                    url = "https://github.com/${rootProject.slug}"
+                    licenses {
+                        license {
+                            name = 'The Apache License, Version 2.0'
+                            url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
+                            distribution = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
+                        }
+                    }
+                    developers {
+                        developer {
+                            id = 'musketyr'
+                            name = 'Vladimir Orany'
+                            url = 'https://github.com/musketyr/'
+                        }
+                    }
+                    scm {
+                        url = "https://github.com/${rootProject.slug}.git"
+                        connection = "scm:git:git://github.com/${rootProject.slug}.git"
+                        developerConnection = "scm:git:ssh://git@github.com/${rootProject.slug}.git"
+                    }
+                    issueManagement {
+                        system = 'GitHub'
+                        url = "https://github.com/${rootProject.slug}/issues"
+                    }
                 }
             }
-            developers {
-                developer {
-                    id = 'musketyr'
-                    name = 'Vladimir Orany'
-                    url = 'https://github.com/musketyr/'
+
+            signing {
+                useInMemoryPgpKeys(rootProject.ext.signingInMemoryKey, rootProject.ext.signingInMemoryKeyPassword)
+                sign publishing.publications
+            }
+        }
+
+        dirs(['libs']) {
+            apply plugin: 'jacoco'
+
+            plugins.withId('com.agorapulse.gradle.micronaut-library') {
+                micronaut {
+                    importMicronautPlatform = true
+                    testRuntime 'spock'
+                    processing {
+                        incremental false
+                    }
                 }
             }
-            scm {
-                url = "https://github.com/${rootProject.slug}.git"
-                connection = "scm:git:git://github.com/${rootProject.slug}.git"
-                developerConnection = "scm:git:ssh://git@github.com/${rootProject.slug}.git"
+
+            afterEvaluate {
+                tasks.withType(JavaCompile).configureEach {
+                    options.encoding = 'UTF-8'
+                    options.compilerArgs.add('-parameters')
+                }
+
+                tasks.withType(GroovyCompile).configureEach {
+                    groovyOptions.forkOptions.jvmArgs.add('-Dgroovy.parameters=true')
+                }
+
+                tasks.withType(Test).configureEach {
+                    useJUnitPlatform()
+                    systemProperty 'user.timezone', 'UTC'
+                    systemProperty 'user.language', 'en'
+                }
+
+                tasks.named('processResources').configure {
+                    filesMatching('**/org.codehaus.groovy.runtime.ExtensionModule') {
+                        filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: [VERSION: project.version.toString()])
+                    }
+                }
+
+                tasks.named('jar').configure {
+                    manifest.attributes provider: 'gradle'
+                }
             }
-            issueManagement {
-                system = 'GitHub'
-                url = "https://github.com/${rootProject.slug}/issues"
+
+            tasks.register('cleanOut', Delete) {
+                delete file('out')
             }
-        }
-    }
-
-    sub.signing {
-        useInMemoryPgpKeys(rootProject.ext.signingInMemoryKey, rootProject.ext.signingInMemoryKeyPassword)
-        sign sub.publishing.publications
-    }
-}
-
-// Library convention shared by every subproject under libs/.
-configure(subprojects.findAll { it.projectDir.parentFile?.name == 'libs' }) { Project sub ->
-    sub.apply plugin: 'jacoco'
-
-    sub.plugins.withId('com.agorapulse.gradle.micronaut-library') {
-        sub.micronaut {
-            importMicronautPlatform = true
-            testRuntime 'spock'
-            processing {
-                incremental false
+            tasks.named('clean').configure {
+                dependsOn 'cleanOut'
             }
-        }
-    }
 
-    sub.afterEvaluate {
-        sub.tasks.withType(JavaCompile).configureEach {
-            options.encoding = 'UTF-8'
-            options.compilerArgs.add('-parameters')
-        }
+            dependencies {
+                annotationProcessor 'io.micronaut.validation:micronaut-validation-processor'
 
-        sub.tasks.withType(GroovyCompile).configureEach {
-            groovyOptions.forkOptions.jvmArgs.add('-Dgroovy.parameters=true')
-        }
+                implementation 'io.micronaut.validation:micronaut-validation'
 
-        sub.tasks.withType(Test).configureEach {
-            useJUnitPlatform()
-            systemProperty 'user.timezone', 'UTC'
-            systemProperty 'user.language', 'en'
-        }
+                compileOnly 'io.micronaut:micronaut-inject-groovy'
 
-        sub.tasks.named('processResources').configure {
-            filesMatching('**/org.codehaus.groovy.runtime.ExtensionModule') {
-                filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: [VERSION: sub.version.toString()])
+                testImplementation 'com.agorapulse:micronaut-log4aws:4.0.0'
+                testImplementation 'io.micronaut:micronaut-inject-groovy'
+
+                testImplementation(group: 'org.testcontainers', name: 'spock', version: project.testcontainersVersion)
             }
         }
-
-        sub.tasks.named('jar').configure {
-            manifest.attributes provider: 'gradle'
-        }
-    }
-
-    sub.tasks.register('cleanOut', Delete) {
-        delete sub.file('out')
-    }
-    sub.tasks.named('clean').configure {
-        dependsOn 'cleanOut'
-    }
-
-    sub.dependencies {
-        annotationProcessor 'io.micronaut.validation:micronaut-validation-processor'
-
-        implementation 'io.micronaut.validation:micronaut-validation'
-
-        compileOnly 'io.micronaut:micronaut-inject-groovy'
-
-        testImplementation 'com.agorapulse:micronaut-log4aws:4.0.0'
-        testImplementation 'io.micronaut:micronaut-inject-groovy'
-
-        testImplementation(group: 'org.testcontainers', name: 'spock', version: sub.project.testcontainersVersion)
     }
 }
