@@ -151,7 +151,10 @@ public class SqsQueues implements JobQueues {
     private String convertMessageToJson(Object result) {
         try {
             return jsonMapper.writeValueAsString(result);
-        } catch (IOException e) {
+        } catch (IOException | RuntimeException e) {
+            // Jackson 2's mapping exceptions extended IOException; Jackson 3's
+            // tools.jackson.databind.exc.InvalidDefinitionException is a plain
+            // RuntimeException, so widen the catch to cover both.
             throw new IllegalArgumentException("Cannot marshal object " + result + " to JSON", e);
         }
     }

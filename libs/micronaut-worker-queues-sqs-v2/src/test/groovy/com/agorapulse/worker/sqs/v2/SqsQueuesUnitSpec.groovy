@@ -154,12 +154,21 @@ class SqsQueuesUnitSpec extends Specification {
         given:
             JsonMapper jsonMapper = JsonMapper.createDefault()
             SqsQueues queues = new SqsQueues(simpleQueueService, jsonMapper)
+            // a self-referencing bean — Jackson rejects this with an IOException,
+            // which SqsQueues then wraps as IllegalArgumentException. Using
+            // `new Object()` no longer works because Jackson 3 serializes it to "{}".
+            Object cyclic = new SelfReferencing()
 
         when:
-            queues.sendMessage(QUEUE_NAME, new Object())
+            queues.sendMessage(QUEUE_NAME, cyclic)
 
         then:
             thrown IllegalArgumentException
+    }
+
+    @SuppressWarnings('unused')
+    private static class SelfReferencing {
+        SelfReferencing self = this
     }
 
 }

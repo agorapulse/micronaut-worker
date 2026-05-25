@@ -32,6 +32,10 @@ class JobRunStatusSpec extends Specification {
             status.durationMillis == 0
 
         when:
+            // ensure at least one millisecond elapses; on fast hardware (JDK 25 + Mn5)
+            // create + finish can otherwise land in the same millisecond and leave
+            // durationMillis at 0.
+            Thread.sleep(2)
             status.finish()
         then:
             status.duration > Duration.ZERO

@@ -133,7 +133,7 @@ gradleProjects {
 
                 compileOnly 'io.micronaut:micronaut-inject-groovy'
 
-                testImplementation 'com.agorapulse:micronaut-log4aws:4.0.0'
+                testImplementation 'com.agorapulse:micronaut-log4aws:5.0.0.RC2'
                 testImplementation 'io.micronaut:micronaut-inject-groovy'
 
                 testImplementation(group: 'org.testcontainers', name: 'spock', version: project.testcontainersVersion)
