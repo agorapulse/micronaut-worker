@@ -26,9 +26,11 @@ jobs:
           git config --global user.name 'Agorapulse Bot'
           git config --global user.email 'oss@agorapulse.com'
       - name: Publish GitHub Pages
+        env:
+          GIT_PUBLISH_USERNAME: agorapulse-bot
+          GIT_PUBLISH_PASSWORD: ${{ secrets.AGORAPULSE_BOT_PERSONAL_TOKEN }}
         run: |
           ./gradlew :guide:gitPublishPush \
             -Pversion=${{ steps.latest_version.outputs.latest_tag }} \
             -Prelease=true \
-            -Dorg.ajoberstar.grgit.auth.username=${{ secrets.AGORAPULSE_BOT_PERSONAL_TOKEN }} \
             --stacktrace

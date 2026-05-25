@@ -32,13 +32,14 @@ jobs:
           SIGNING_KEY_ID: ${{ secrets.SIGNING_KEY_ID }}
           SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
           SIGNING_SECRET_KEY_PATH: ${{ steps.write_file.outputs.filePath }}
+          GIT_PUBLISH_USERNAME: agorapulse-bot
+          GIT_PUBLISH_PASSWORD: ${{ secrets.AGORAPULSE_BOT_PERSONAL_TOKEN }}
         run: |
           ./gradlew :guide:gitPublishPush publishAndReleaseToMavenCentral \
             -Pversion=${{ steps.version.outputs.tag }} \
             -PmavenCentralUsername=${{ secrets.MAVEN_CENTRAL_USERNAME }} \
             -PmavenCentralPassword=${{ secrets.MAVEN_CENTRAL_PASSWORD }} \
             -Prelease=true \
-            -Dorg.ajoberstar.grgit.auth.username=${{ secrets.AGORAPULSE_BOT_PERSONAL_TOKEN }} \
             --stacktrace
   ping:
     if: ${{ !github.event.release.prerelease }}
