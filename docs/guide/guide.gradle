@@ -19,17 +19,7 @@ plugins {
     id 'com.agorapulse.gradle.guide'
 }
 
-configurations {
-    asciidoctorExtensions
-}
-
-dependencies {
-    asciidoctorExtensions 'com.bmuschko:asciidoctorj-tabbed-code-extension:0.3'
-}
-
 asciidoctor {
-    configurations 'asciidoctorExtensions'
-
     baseDirFollowsSourceDir()
 
     attributes = [
