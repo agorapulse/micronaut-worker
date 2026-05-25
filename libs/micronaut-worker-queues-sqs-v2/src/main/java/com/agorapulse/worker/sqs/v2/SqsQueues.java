@@ -21,10 +21,8 @@ import com.agorapulse.micronaut.amazon.awssdk.sqs.SimpleQueueService;
 import com.agorapulse.worker.convention.QueueListener;
 import com.agorapulse.worker.queue.JobQueues;
 import com.agorapulse.worker.queue.QueueMessage;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micronaut.core.type.Argument;
-import io.micronaut.jackson.JacksonConfiguration;
+import io.micronaut.json.JsonMapper;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -32,6 +30,7 @@ import reactor.core.scheduler.Schedulers;
 import software.amazon.awssdk.services.sqs.model.Message;
 import software.amazon.awssdk.services.sqs.model.SqsException;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
@@ -46,11 +45,11 @@ public class SqsQueues implements JobQueues {
     private static final int MAX_WAITING_TIME = 20;
 
     private final SimpleQueueService simpleQueueService;
-    private final ObjectMapper objectMapper;
+    private final JsonMapper jsonMapper;
 
-    public SqsQueues(SimpleQueueService simpleQueueService, ObjectMapper objectMapper) {
+    public SqsQueues(SimpleQueueService simpleQueueService, JsonMapper jsonMapper) {
         this.simpleQueueService = simpleQueueService;
-        this.objectMapper = objectMapper;
+        this.jsonMapper = jsonMapper;
     }
 
     @Override
@@ -131,8 +130,8 @@ public class SqsQueues implements JobQueues {
 
     private <T> Mono<T> readMessageInternal(String queueName, Argument<T> argument, String body, boolean tryReformat) {
         try {
-            return Mono.just(objectMapper.readValue(body, JacksonConfiguration.constructType(argument, objectMapper.getTypeFactory())));
-        } catch (JsonProcessingException e) {
+            return Mono.just(jsonMapper.readValue(body, argument));
+        } catch (IOException e) {
             if (tryReformat) {
                 if (String.class.isAssignableFrom(argument.getType())) {
                     return Mono.just(argument.getType().cast(body));
@@ -151,8 +150,11 @@ public class SqsQueues implements JobQueues {
 
     private String convertMessageToJson(Object result) {
         try {
-            return objectMapper.writeValueAsString(result);
-        } catch (JsonProcessingException e) {
+            return jsonMapper.writeValueAsString(result);
+        } catch (IOException | RuntimeException e) {
+            // Jackson 2's mapping exceptions extended IOException; Jackson 3's
+            // tools.jackson.databind.exc.InvalidDefinitionException is a plain
+            // RuntimeException, so widen the catch to cover both.
             throw new IllegalArgumentException("Cannot marshal object " + result + " to JSON", e);
         }
     }

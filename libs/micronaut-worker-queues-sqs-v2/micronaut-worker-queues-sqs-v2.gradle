@@ -15,6 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 dependencies {
     api project(':micronaut-worker')
     api "com.agorapulse:micronaut-amazon-awssdk-sqs:$micronautAwsSdkVersion"
@@ -25,8 +26,4 @@ dependencies {
     testImplementation project(':micronaut-worker-tck')
 
     testImplementation "com.agorapulse:micronaut-amazon-awssdk-integration-testing:$micronautAwsSdkVersion"
-}
-
-repositories {
-    mavenCentral()
 }

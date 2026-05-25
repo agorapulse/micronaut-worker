@@ -17,12 +17,11 @@
  */
 package com.agorapulse.worker.json;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.databind.JavaType;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.ser.std.StdSerializer;
 
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
@@ -49,7 +48,7 @@ public class StacktraceSerializer extends StdSerializer<Throwable> {
     }
 
     @Override
-    public void serialize(Throwable value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+    public void serialize(Throwable value, JsonGenerator gen, SerializationContext provider) {
         StringWriter writer = new StringWriter();
         PrintWriter printWriter = new PrintWriter(writer);
         value.printStackTrace(printWriter);

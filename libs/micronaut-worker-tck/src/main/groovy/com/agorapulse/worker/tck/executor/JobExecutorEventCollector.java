@@ -19,7 +19,6 @@ package com.agorapulse.worker.tck.executor;
 
 import com.agorapulse.worker.event.JobExecutionFinishedEvent;
 import com.agorapulse.worker.event.JobExecutorEvent;
-import io.micronaut.context.annotation.Primary;
 import io.micronaut.context.event.ApplicationEventPublisher;
 import io.micronaut.core.annotation.NonNull;
 import io.micronaut.runtime.context.scope.Refreshable;
@@ -32,7 +31,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-@Primary
 @Singleton
 @Refreshable
 public class JobExecutorEventCollector implements ApplicationEventPublisher<JobExecutorEvent>, RefreshEventListener {

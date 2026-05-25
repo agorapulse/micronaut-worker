@@ -20,11 +20,11 @@ package com.agorapulse.worker.sqs.v2;
 import com.agorapulse.micronaut.amazon.awssdk.sqs.SimpleQueueService;
 import com.agorapulse.worker.local.LocalQueues;
 import com.agorapulse.worker.queue.JobQueues;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micronaut.context.annotation.Bean;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.env.Environment;
+import io.micronaut.json.JsonMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
@@ -45,7 +45,7 @@ public class SqsQueuesFactory {
     @Requires(property = "worker.queues.sqs.enabled", value = "true", defaultValue = "true")
     public JobQueues sqsQueues(
             AwsCredentialsProvider provider,
-            ObjectMapper mapper,
+            JsonMapper mapper,
             SimpleQueueService service,
             Environment environment
     ) {
@@ -58,7 +58,7 @@ public class SqsQueuesFactory {
             } else if (LOGGER.isInfoEnabled()) {
                 LOGGER.info("AWS SDK is not authenticated correctly, Using local job queues");
             }
-            return new LocalQueues(environment);
+            return new LocalQueues(environment.getConversionService());
         }
     }
 

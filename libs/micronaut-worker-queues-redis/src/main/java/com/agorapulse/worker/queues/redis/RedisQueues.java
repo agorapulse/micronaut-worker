@@ -20,8 +20,6 @@ package com.agorapulse.worker.queues.redis;
 import com.agorapulse.worker.convention.QueueListener;
 import com.agorapulse.worker.queue.JobQueues;
 import com.agorapulse.worker.queue.QueueMessage;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.TransactionResult;
 import io.lettuce.core.api.StatefulRedisConnection;
@@ -30,13 +28,14 @@ import io.lettuce.core.api.sync.RedisCommands;
 import io.lettuce.core.support.BoundedAsyncPool;
 import io.lettuce.core.support.BoundedPoolConfig;
 import io.micronaut.core.type.Argument;
-import io.micronaut.jackson.JacksonConfiguration;
+import io.micronaut.json.JsonMapper;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
@@ -49,11 +48,11 @@ public class RedisQueues implements JobQueues {
     private static final Logger LOGGER = LoggerFactory.getLogger(RedisQueues.class);
     private static final String PREFIX_DATED_QUEUE = "DATED_QUEUE::";
 
-    private final ObjectMapper objectMapper;
+    private final JsonMapper jsonMapper;
     private final BoundedAsyncPool<StatefulRedisConnection<String, String>> pool;
 
-    public RedisQueues(ObjectMapper objectMapper, RedisClient client, RedisPoolConfiguration redisPoolConfiguration) {
-        this.objectMapper = objectMapper;
+    public RedisQueues(JsonMapper jsonMapper, RedisClient client, RedisPoolConfiguration redisPoolConfiguration) {
+        this.jsonMapper = jsonMapper;
 
         BoundedPoolConfig config = BoundedPoolConfig
             .builder()
@@ -106,9 +105,9 @@ public class RedisQueues implements JobQueues {
     @Override
     public void sendMessage(String queueName, Object result) {
         try {
-            String item = objectMapper.writeValueAsString(result);
+            String item = jsonMapper.writeValueAsString(result);
             sendRawMessage(queueName, item);
-        } catch (JsonProcessingException e) {
+        } catch (IOException e) {
             throw new IllegalArgumentException("Cannot write " + result + " to JSON", e);
         }
     }
@@ -152,7 +151,7 @@ public class RedisQueues implements JobQueues {
     private <T> Mono<QueueMessage<T>> readMessageInternalWithFallback(String queueName, Argument<T> argument, String body) {
         try {
             return Mono.just(readMessageInternal(queueName, argument, body));
-        } catch (JsonProcessingException e) {
+        } catch (IOException e) {
             if (argument.equalsType(Argument.STRING)) {
                 return Mono.just(QueueMessage.alwaysRequeue(
                     UUID.randomUUID().toString(),
@@ -165,8 +164,8 @@ public class RedisQueues implements JobQueues {
         }
     }
 
-    private <T> QueueMessage<T> readMessageInternal(String queueName, Argument<T> argument, String body) throws JsonProcessingException {
-        T message = objectMapper.readValue(body, JacksonConfiguration.constructType(argument, objectMapper.getTypeFactory()));
+    private <T> QueueMessage<T> readMessageInternal(String queueName, Argument<T> argument, String body) throws IOException {
+        T message = jsonMapper.readValue(body, argument);
         return QueueMessage.alwaysRequeue(
             UUID.randomUUID().toString(),
             message,
