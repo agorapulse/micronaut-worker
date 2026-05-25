@@ -15,9 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-plugins {
-    id 'com.agorapulse.gradle.micronaut-compatibility'
-}
 
 dependencies {
     api "space.jasan:groovy-closure-support:$closureSupportVersion"
