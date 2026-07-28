@@ -5,8 +5,8 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 2.0.18">
-<meta name="author" content="{project-author}">
-<title>{project-title}</title>
+<meta name="author" content="Agorapulse">
+<title>Micronaut Worker</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /*! Asciidoctor default stylesheet | MIT License | https://asciidoctor.org */
@@ -516,10 +516,10 @@ $(addBlockSwitches);
 </head>
 <body class="article">
 <div id="header">
-<h1>{project-title}</h1>
+<h1>Micronaut Worker</h1>
 <div class="details">
-<span id="author" class="author">{project-author}</span><br>
-<span id="revnumber">version {project-version}</span>
+<span id="author" class="author">Agorapulse</span><br>
+<span id="revnumber">version 3.0.1</span>
 </div>
 </div>
 <div id="content">
@@ -593,22 +593,22 @@ All jobs are disabled by default in the <code>function</code> and <code>cli</cod
 dependencies {
     // minimal dependency with local queue and executor
     // select some of the following dependencies to enable more features
-    implementation("com.agorapulse:micronaut-worker:{project-version}")
+    implementation("com.agorapulse:micronaut-worker:3.0.1")
 
     // to enable /jobs endpoint
-    implementation("com.agorapulse:micronaut-worker-management:{project-version}")
+    implementation("com.agorapulse:micronaut-worker-management:3.0.1")
 
     // to enable AWS SDK v2 SQS queues integration
-    implementation("com.agorapulse:micronaut-worker-queues-sqs-v2:{project-version}")
+    implementation("com.agorapulse:micronaut-worker-queues-sqs-v2:3.0.1")
 
     // to enable running jobs as CLI apps
-    implementation("com.agorapulse:micronaut-worker-runner:{project-version}")
+    implementation("com.agorapulse:micronaut-worker-runner:3.0.1")
 
     // to enable Redis leader/follower capabilities
-    implementation("com.agorapulse:micronaut-worker-executor-redis:{project-version}")
+    implementation("com.agorapulse:micronaut-worker-executor-redis:3.0.1")
 
     // to enable Redis queues integration
-    implementation("com.agorapulse:micronaut-worker-queues-redis:{project-version}")
+    implementation("com.agorapulse:micronaut-worker-queues-redis:3.0.1")
 }</code></pre>
 </div>
 </div>
@@ -1494,8 +1494,8 @@ sampleJob.reconfigure {
 </div>
 <div id="footer">
 <div id="footer-text">
-Version {project-version}<br>
-Last updated 2026-07-27 10:12:38 UTC
+Version 3.0.1<br>
+Last updated 2026-07-28 09:40:36 UTC
 </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/run_prettify.min.js"></script>
