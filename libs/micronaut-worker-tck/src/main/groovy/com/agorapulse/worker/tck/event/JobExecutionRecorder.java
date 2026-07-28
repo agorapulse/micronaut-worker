@@ -78,9 +78,4 @@ public class JobExecutionRecorder implements RefreshEventListener {
         resultEvents.clear();
     }
 
-    @Override
-    public String toString() {
-        return "JobExecutionRecorder{startedEvents=%s, finishedEvents=%s, resultEvents=%s}".formatted(startedEvents, finishedEvents, resultEvents);
-    }
-
 }

@@ -34,6 +34,9 @@ asciidoctor {
         'gradle-version': project.gradle.gradleVersion,
         'source-highlighter': 'prettify',
         'root-dir': rootDir,
-        'project-slug': slug
+        'project-slug': slug,
+        'project-title': 'Micronaut Worker',
+        'project-version': project.version,
+        'project-author': 'Agorapulse'
     ]
 }
