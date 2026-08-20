@@ -107,7 +107,7 @@ public class RedisQueues implements JobQueues {
         try {
             String item = jsonMapper.writeValueAsString(result);
             sendRawMessage(queueName, item);
-        } catch (IOException e) {
+        } catch (IOException | RuntimeException e) {
             throw new IllegalArgumentException("Cannot write " + result + " to JSON", e);
         }
     }
@@ -151,7 +151,10 @@ public class RedisQueues implements JobQueues {
     private <T> Mono<QueueMessage<T>> readMessageInternalWithFallback(String queueName, Argument<T> argument, String body) {
         try {
             return Mono.just(readMessageInternal(queueName, argument, body));
-        } catch (IOException e) {
+        } catch (IOException | RuntimeException e) {
+            // Jackson 2's mapping exceptions extended IOException; Jackson 3's
+            // tools.jackson.core.JacksonException is a plain RuntimeException,
+            // so widen the catch to keep the raw body fallback reachable.
             if (argument.equalsType(Argument.STRING)) {
                 return Mono.just(QueueMessage.alwaysRequeue(
                     UUID.randomUUID().toString(),

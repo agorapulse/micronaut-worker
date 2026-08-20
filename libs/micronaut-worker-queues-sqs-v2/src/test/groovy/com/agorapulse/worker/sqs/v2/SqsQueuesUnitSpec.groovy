@@ -96,6 +96,24 @@ class SqsQueuesUnitSpec extends Specification {
             }
     }
 
+    void 'object payload falls back to the raw body for a string argument'() {
+        when:
+            List<String> values = Flux.from(
+                sqsQueues.readMessages(QUEUE_NAME, 1, WAIT_TIME, Argument.STRING)
+            ).map(QueueMessage::getMessage).collectList().block()
+        then:
+            values == ['{"key":"value"}']
+
+            1 * simpleQueueService.receiveMessages(QUEUE_NAME, 1, 0, WAIT_TIME.seconds) >> {
+                [
+                    Message.builder()
+                        .body('{"key":"value"}')
+                        .receiptHandle('one')
+                        .build(),
+                ]
+            }
+    }
+
     void 'message not deleted on error'() {
         when:
             Flux.from(
