@@ -131,7 +131,10 @@ public class SqsQueues implements JobQueues {
     private <T> Mono<T> readMessageInternal(String queueName, Argument<T> argument, String body, boolean tryReformat) {
         try {
             return Mono.just(jsonMapper.readValue(body, argument));
-        } catch (IOException e) {
+        } catch (IOException | RuntimeException e) {
+            // Jackson 2's mapping exceptions extended IOException; Jackson 3's
+            // tools.jackson.core.JacksonException is a plain RuntimeException,
+            // so widen the catch to keep the raw body fallback reachable.
             if (tryReformat) {
                 if (String.class.isAssignableFrom(argument.getType())) {
                     return Mono.just(argument.getType().cast(body));
