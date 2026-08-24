@@ -19,6 +19,7 @@ package com.agorapulse.worker.runner;
 
 import com.agorapulse.worker.Job;
 import com.agorapulse.worker.JobManager;
+import com.agorapulse.worker.WorkerConfiguration;
 import com.agorapulse.worker.report.JobReport;
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.context.ApplicationContextBuilder;
@@ -42,8 +43,16 @@ public class JobRunner extends FunctionInitializer {
     private static final Logger LOGGER = LoggerFactory.getLogger(JobRunner.class);
 
     public static void main(String[] args) throws IOException {
+        List<String> jobNames = CommandLine.build().parse(args).getRemainingArgs();
+        if (!jobNames.isEmpty()) {
+            // set before the context starts so other jobs' consumers are never scheduled: once an infinite-poll
+            // consumer starts, disabling it later cannot interrupt its running poll loop
+            System.setProperty(WorkerConfiguration.SCHEDULED_JOB_NAMES_PROPERTY, String.join(",", jobNames));
+        }
         try (JobRunner runner = new JobRunner()) {
             runner.run(args);
+        } finally {
+            System.clearProperty(WorkerConfiguration.SCHEDULED_JOB_NAMES_PROPERTY);
         }
     }
 

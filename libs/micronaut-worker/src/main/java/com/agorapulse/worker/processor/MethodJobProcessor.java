@@ -229,6 +229,12 @@ public class MethodJobProcessor implements ExecutableMethodProcessor<Job> {
                 return;
             }
 
+            List<String> scheduledJobNames = workerConfiguration.getScheduledJobNames();
+            if (!scheduledJobNames.isEmpty() && !scheduledJobNames.contains(configuration.getName())) {
+                LOG.info("Job {} is not in {}={}. It is registered but will not be scheduled.", configuration.getName(), WorkerConfiguration.SCHEDULED_JOB_NAMES_PROPERTY, scheduledJobNames);
+                return;
+            }
+
             jobScheduler.schedule(task);
         } catch (JobConfigurationException e) {
             LOG.error("Job declared in method {} declared in {} is ignored because it is not correctly configured", method, method.getDeclaringType(), e);

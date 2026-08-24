@@ -19,10 +19,18 @@ package com.agorapulse.worker;
 
 import io.micronaut.scheduling.TaskExecutors;
 
+import java.util.Collections;
+import java.util.List;
+
 public interface WorkerConfiguration {
 
     String DEFAULT_SCHEDULER = TaskExecutors.SCHEDULED;
     boolean DEFAULT_VIRTUAL_THREAD_COMPATIBLE = false;
+
+    /**
+     * Property holding the allow-list of job names to schedule. Bound to {@link #getScheduledJobNames()}.
+     */
+    String SCHEDULED_JOB_NAMES_PROPERTY = "worker.scheduled-job-names";
 
     WorkerConfiguration ENABLED = new WorkerConfiguration() {
         @Override
@@ -57,5 +65,17 @@ public interface WorkerConfiguration {
     String getScheduler();
 
     boolean isVirtualThreadsCompatible();
+
+    /**
+     * Allow-list of job names to schedule. When empty (the default) every enabled job is scheduled. When
+     * non-empty only the listed jobs are scheduled; all other jobs are still registered with the
+     * {@link JobManager} but never started. Used by the job runner to run a single job without letting the
+     * other jobs' consumers poll their queues.
+     *
+     * @return the names of the jobs to schedule, or an empty list to schedule every enabled job
+     */
+    default List<String> getScheduledJobNames() {
+        return Collections.emptyList();
+    }
 
 }

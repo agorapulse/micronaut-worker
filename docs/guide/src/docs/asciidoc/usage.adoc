@@ -304,7 +304,7 @@ TIP: If https://github.com/agorapulse/micronaut-snitch[Micronaut Snitch] is pres
 
 == CLI Runner
 
-You can run a single job from the command line using the `com.agorapulse.worker.runner.JobRunner` class as the main class. The arguments are the names of the jobs to run. All other jobs are disabled, even when enabled in the configuration (see corner cases below). The application will run until all jobs are finished.
+You can run a single job from the command line using the `com.agorapulse.worker.runner.JobRunner` class as the main class. The arguments are the names of the jobs to run. Only the jobs named on the command line are scheduled; every other job is registered but never scheduled, even when enabled in the configuration. The application will run until all the named jobs are finished.
 
 [source,shell]
 .Run Job from CLI
@@ -312,7 +312,18 @@ You can run a single job from the command line using the `com.agorapulse.worker.
 java -cp myapp-shadow.jar com.agorapulse.worker.runner.JobRunner sample-job other-job
 ----
 
-WARNING: In some corner cases, some unrelated jobs can still be executed if they have a very short delay or frequency if they are manually enabled in the configuration. Please, prefer annotation driven jobs over configuring them manually in the configuration to avoid this issue.
+The runner enforces this by setting the `worker.scheduled-job-names` property to the job names from the command line before the application context starts. When that property is set (whether by the runner or directly in the configuration), only the listed jobs are scheduled. Setting it prevents the other jobs' `@QueueListener` consumers from ever starting their poll loop — a running infinite poll cannot be interrupted by disabling the job after the context has started.
+
+[source,yaml]
+.Scheduling only selected jobs
+----
+worker:
+  scheduled-job-names:
+    - sample-job
+    - other-job
+----
+
+NOTE: Leave `worker.scheduled-job-names` empty (the default) to schedule every enabled job as usual.
 
 == Management
 
