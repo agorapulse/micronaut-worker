@@ -43,17 +43,27 @@ public class JobRunner extends FunctionInitializer {
     private static final Logger LOGGER = LoggerFactory.getLogger(JobRunner.class);
 
     public static void main(String[] args) throws IOException {
-        List<String> jobNames = CommandLine.build().parse(args).getRemainingArgs();
-        if (!jobNames.isEmpty()) {
+        String value = scheduledJobNamesValue(args);
+        String previous = System.getProperty(WorkerConfiguration.SCHEDULED_JOB_NAMES_PROPERTY);
+        if (value != null) {
             // set before the context starts so other jobs' consumers are never scheduled: once an infinite-poll
             // consumer starts, disabling it later cannot interrupt its running poll loop
-            System.setProperty(WorkerConfiguration.SCHEDULED_JOB_NAMES_PROPERTY, String.join(",", jobNames));
+            System.setProperty(WorkerConfiguration.SCHEDULED_JOB_NAMES_PROPERTY, value);
         }
         try (JobRunner runner = new JobRunner()) {
             runner.run(args);
         } finally {
-            System.clearProperty(WorkerConfiguration.SCHEDULED_JOB_NAMES_PROPERTY);
+            if (previous == null) {
+                System.clearProperty(WorkerConfiguration.SCHEDULED_JOB_NAMES_PROPERTY);
+            } else {
+                System.setProperty(WorkerConfiguration.SCHEDULED_JOB_NAMES_PROPERTY, previous);
+            }
         }
+    }
+
+    static String scheduledJobNamesValue(String[] args) {
+        List<String> jobNames = CommandLine.build().parse(args).getRemainingArgs();
+        return jobNames.isEmpty() ? null : String.join(",", jobNames);
     }
 
     @Inject
