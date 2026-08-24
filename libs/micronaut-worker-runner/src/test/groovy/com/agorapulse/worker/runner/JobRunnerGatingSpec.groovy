@@ -38,7 +38,7 @@ class JobRunnerGatingSpec extends Specification {
     @Inject RunnerGatingConsumer consumer
     @Inject JobExecutionRecorder recorder
 
-    @Property(name = 'worker.scheduled-job-names', value = 'runner-gating-target')
+    @Property(name = 'worker.forced-job-names', value = 'runner-gating-target')
     void 'running a single job leaves the other jobs infinite-poll consumers unscheduled'() {
         when: 'a message is waiting on the other consumer and the runner runs only its target job'
             jobManager.enqueue('runner-gating-consumer', 'hello')

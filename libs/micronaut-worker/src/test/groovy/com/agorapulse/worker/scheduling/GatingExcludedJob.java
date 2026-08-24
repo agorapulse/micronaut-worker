@@ -24,7 +24,7 @@ import jakarta.inject.Singleton;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Singleton
-@Requires(env = ScheduledJobNamesSpec.SPEC_ENV)
+@Requires(env = ForcedJobNamesSpec.SPEC_ENV)
 public class GatingExcludedJob {
 
     private final AtomicInteger executions = new AtomicInteger();

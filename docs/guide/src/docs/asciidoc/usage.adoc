@@ -312,18 +312,18 @@ You can run a single job from the command line using the `com.agorapulse.worker.
 java -cp myapp-shadow.jar com.agorapulse.worker.runner.JobRunner sample-job other-job
 ----
 
-The runner enforces this by setting the `worker.scheduled-job-names` property to the job names from the command line before the application context starts. When that property is set (whether by the runner or directly in the configuration), only the listed jobs are scheduled. Setting it prevents the other jobs' `@QueueListener` consumers from ever starting their poll loop — a running infinite poll cannot be interrupted by disabling the job after the context has started.
+The runner enforces this by passing the job names from the command line as the `worker.forced-job-names` property when it builds the application context. When that property is set (whether by the runner or directly in the configuration), only the listed jobs are scheduled. Setting it prevents the other jobs' `@QueueListener` consumers from ever starting their poll loop — a running infinite poll cannot be interrupted by disabling the job after the context has started.
 
 [source,yaml]
 .Scheduling only selected jobs
 ----
 worker:
-  scheduled-job-names:
+  forced-job-names:
     - sample-job
     - other-job
 ----
 
-NOTE: Leave `worker.scheduled-job-names` empty (the default) to schedule every enabled job as usual.
+NOTE: Leave `worker.forced-job-names` empty (the default) to schedule every enabled job as usual.
 
 == Management
 

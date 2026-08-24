@@ -31,7 +31,7 @@ public class DefaultWorkerConfiguration implements WorkerConfiguration {
     private boolean virtualThreadsCompatible = WorkerConfiguration.DEFAULT_VIRTUAL_THREAD_COMPATIBLE;
     private String queueType;
     private String scheduler = WorkerConfiguration.DEFAULT_SCHEDULER;
-    private List<String> scheduledJobNames = Collections.emptyList();
+    private List<String> forcedJobNames = Collections.emptyList();
 
     public DefaultWorkerConfiguration(Environment env) {
         // disable for tests and functions
@@ -77,12 +77,12 @@ public class DefaultWorkerConfiguration implements WorkerConfiguration {
     }
 
     @Override
-    public List<String> getScheduledJobNames() {
-        return scheduledJobNames;
+    public List<String> getForcedJobNames() {
+        return forcedJobNames;
     }
 
-    public void setScheduledJobNames(List<String> scheduledJobNames) {
-        this.scheduledJobNames = scheduledJobNames == null ? Collections.emptyList() : scheduledJobNames;
+    public void setForcedJobNames(List<String> forcedJobNames) {
+        this.forcedJobNames = forcedJobNames == null ? Collections.emptyList() : forcedJobNames;
     }
 
 }

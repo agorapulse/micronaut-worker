@@ -229,9 +229,9 @@ public class MethodJobProcessor implements ExecutableMethodProcessor<Job> {
                 return;
             }
 
-            List<String> scheduledJobNames = workerConfiguration.getScheduledJobNames();
-            if (!scheduledJobNames.isEmpty() && !scheduledJobNames.contains(configuration.getName())) {
-                LOG.info("Job {} is not in {}={}. It is registered but will not be scheduled.", configuration.getName(), WorkerConfiguration.SCHEDULED_JOB_NAMES_PROPERTY, scheduledJobNames);
+            List<String> forcedJobNames = workerConfiguration.getForcedJobNames();
+            if (!forcedJobNames.isEmpty() && !forcedJobNames.contains(configuration.getName())) {
+                LOG.info("Job {} is not in {}={}. It is registered but will not be scheduled.", configuration.getName(), WorkerConfiguration.FORCED_JOB_NAMES_PROPERTY, forcedJobNames);
                 return;
             }
 

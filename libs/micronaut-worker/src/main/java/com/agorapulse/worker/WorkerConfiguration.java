@@ -28,9 +28,9 @@ public interface WorkerConfiguration {
     boolean DEFAULT_VIRTUAL_THREAD_COMPATIBLE = false;
 
     /**
-     * Property holding the allow-list of job names to schedule. Bound to {@link #getScheduledJobNames()}.
+     * Property holding the allow-list of job names to schedule. Bound to {@link #getForcedJobNames()}.
      */
-    String SCHEDULED_JOB_NAMES_PROPERTY = "worker.scheduled-job-names";
+    String FORCED_JOB_NAMES_PROPERTY = "worker.forced-job-names";
 
     WorkerConfiguration ENABLED = new WorkerConfiguration() {
         @Override
@@ -74,7 +74,7 @@ public interface WorkerConfiguration {
      *
      * @return the names of the jobs to schedule, or an empty list to schedule every enabled job
      */
-    default List<String> getScheduledJobNames() {
+    default List<String> getForcedJobNames() {
         return Collections.emptyList();
     }
 

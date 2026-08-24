@@ -24,18 +24,18 @@ import jakarta.inject.Inject
 import spock.lang.Specification
 import spock.util.concurrent.PollingConditions
 
-@MicronautTest(rebuildContext = true, environments = ScheduledJobNamesSpec.SPEC_ENV)
+@MicronautTest(rebuildContext = true, environments = ForcedJobNamesSpec.SPEC_ENV)
 @Property(name = 'worker.enabled', value = 'true')
-@Property(name = 'worker.scheduled-job-names', value = 'gating-included-job')
-class ScheduledJobNamesSpec extends Specification {
+@Property(name = 'worker.forced-job-names', value = 'gating-included-job')
+class ForcedJobNamesSpec extends Specification {
 
-    public static final String SPEC_ENV = 'scheduled-job-names-spec'
+    public static final String SPEC_ENV = 'forced-job-names-spec'
 
     @Inject JobManager jobManager
     @Inject GatingIncludedJob includedJob
     @Inject GatingExcludedJob excludedJob
 
-    void 'only the allow-listed job is scheduled; the excluded one is registered but never runs'() {
+    void 'only the forced job is scheduled; the other one is registered but never runs'() {
         given:
             PollingConditions conditions = new PollingConditions(timeout: 10)
 
@@ -48,12 +48,12 @@ class ScheduledJobNamesSpec extends Specification {
                 includedJob.executions >= 3
             }
 
-        then: 'the excluded job was never scheduled, so it never executed'
+        then: 'the job outside worker.forced-job-names was never scheduled, so it never executed'
             excludedJob.executions == 0
     }
 
-    @Property(name = 'worker.scheduled-job-names', value = 'gating-included-job,gating-excluded-job')
-    void 'a comma-separated allow-list schedules every listed job'() {
+    @Property(name = 'worker.forced-job-names', value = 'gating-included-job,gating-excluded-job')
+    void 'a comma-separated list forces every listed job'() {
         given:
             PollingConditions conditions = new PollingConditions(timeout: 10)
 
