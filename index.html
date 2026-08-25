@@ -519,7 +519,7 @@ $(addBlockSwitches);
 <h1>Micronaut Worker</h1>
 <div class="details">
 <span id="author" class="author">Agorapulse</span><br>
-<span id="revnumber">version 3.0.3</span>
+<span id="revnumber">version 3.0.4</span>
 </div>
 </div>
 <div id="content">
@@ -593,22 +593,22 @@ All jobs are disabled by default in the <code>function</code> and <code>cli</cod
 dependencies {
     // minimal dependency with local queue and executor
     // select some of the following dependencies to enable more features
-    implementation("com.agorapulse:micronaut-worker:3.0.3")
+    implementation("com.agorapulse:micronaut-worker:3.0.4")
 
     // to enable /jobs endpoint
-    implementation("com.agorapulse:micronaut-worker-management:3.0.3")
+    implementation("com.agorapulse:micronaut-worker-management:3.0.4")
 
     // to enable AWS SDK v2 SQS queues integration
-    implementation("com.agorapulse:micronaut-worker-queues-sqs-v2:3.0.3")
+    implementation("com.agorapulse:micronaut-worker-queues-sqs-v2:3.0.4")
 
     // to enable running jobs as CLI apps
-    implementation("com.agorapulse:micronaut-worker-runner:3.0.3")
+    implementation("com.agorapulse:micronaut-worker-runner:3.0.4")
 
     // to enable Redis leader/follower capabilities
-    implementation("com.agorapulse:micronaut-worker-executor-redis:3.0.3")
+    implementation("com.agorapulse:micronaut-worker-executor-redis:3.0.4")
 
     // to enable Redis queues integration
-    implementation("com.agorapulse:micronaut-worker-queues-redis:3.0.3")
+    implementation("com.agorapulse:micronaut-worker-queues-redis:3.0.4")
 }</code></pre>
 </div>
 </div>
@@ -1241,7 +1241,7 @@ If <a href="https://github.com/agorapulse/micronaut-snitch">Micronaut Snitch</a>
 <div class="sect2">
 <h3 id="_cli_runner">CLI Runner</h3>
 <div class="paragraph">
-<p>You can run a single job from the command line using the <code>com.agorapulse.worker.runner.JobRunner</code> class as the main class. The arguments are the names of the jobs to run. All other jobs are disabled, even when enabled in the configuration (see corner cases below). The application will run until all jobs are finished.</p>
+<p>You can run a single job from the command line using the <code>com.agorapulse.worker.runner.JobRunner</code> class as the main class. The arguments are the names of the jobs to run. Only the jobs named on the command line are scheduled; every other job is registered but never scheduled, even when enabled in the configuration. The application will run until all the named jobs are finished.</p>
 </div>
 <div class="listingblock">
 <div class="title">Run Job from CLI</div>
@@ -1249,14 +1249,26 @@ If <a href="https://github.com/agorapulse/micronaut-snitch">Micronaut Snitch</a>
 <pre class="prettyprint highlight"><code data-lang="shell">java -cp myapp-shadow.jar com.agorapulse.worker.runner.JobRunner sample-job other-job</code></pre>
 </div>
 </div>
-<div class="admonitionblock warning">
+<div class="paragraph">
+<p>The runner enforces this by passing the job names from the command line as the <code>worker.forced-job-names</code> property when it builds the application context. When that property is set (whether by the runner or directly in the configuration), only the listed jobs are scheduled. Setting it prevents the other jobs' <code>@QueueListener</code> consumers from ever starting their poll loop — a running infinite poll cannot be interrupted by disabling the job after the context has started.</p>
+</div>
+<div class="listingblock">
+<div class="title">Scheduling only selected jobs</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="yaml">worker:
+  forced-job-names:
+    - sample-job
+    - other-job</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
 <table>
 <tr>
 <td class="icon">
-<div class="title">Warning</div>
+<div class="title">Note</div>
 </td>
 <td class="content">
-In some corner cases, some unrelated jobs can still be executed if they have a very short delay or frequency if they are manually enabled in the configuration. Please, prefer annotation driven jobs over configuring them manually in the configuration to avoid this issue.
+Leave <code>worker.forced-job-names</code> empty (the default) to schedule every enabled job as usual.
 </td>
 </tr>
 </table>
@@ -1494,8 +1506,8 @@ sampleJob.reconfigure {
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 3.0.3<br>
-Last updated 2026-08-20 05:47:02 UTC
+Version 3.0.4<br>
+Last updated 2026-08-25 09:38:17 UTC
 </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/run_prettify.min.js"></script>
