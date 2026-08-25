@@ -21,6 +21,9 @@ import com.agorapulse.worker.WorkerConfiguration;
 import io.micronaut.context.annotation.ConfigurationProperties;
 import io.micronaut.context.env.Environment;
 
+import java.util.Collections;
+import java.util.List;
+
 @ConfigurationProperties("worker")
 public class DefaultWorkerConfiguration implements WorkerConfiguration {
 
@@ -28,6 +31,7 @@ public class DefaultWorkerConfiguration implements WorkerConfiguration {
     private boolean virtualThreadsCompatible = WorkerConfiguration.DEFAULT_VIRTUAL_THREAD_COMPATIBLE;
     private String queueType;
     private String scheduler = WorkerConfiguration.DEFAULT_SCHEDULER;
+    private List<String> forcedJobNames = Collections.emptyList();
 
     public DefaultWorkerConfiguration(Environment env) {
         // disable for tests and functions
@@ -70,6 +74,15 @@ public class DefaultWorkerConfiguration implements WorkerConfiguration {
 
     public void setVirtualThreadsCompatible(boolean virtualThreadsCompatible) {
         this.virtualThreadsCompatible = virtualThreadsCompatible;
+    }
+
+    @Override
+    public List<String> getForcedJobNames() {
+        return forcedJobNames;
+    }
+
+    public void setForcedJobNames(List<String> forcedJobNames) {
+        this.forcedJobNames = forcedJobNames == null ? Collections.emptyList() : forcedJobNames;
     }
 
 }

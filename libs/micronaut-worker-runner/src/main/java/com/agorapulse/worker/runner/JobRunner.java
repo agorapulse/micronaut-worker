@@ -19,9 +19,11 @@ package com.agorapulse.worker.runner;
 
 import com.agorapulse.worker.Job;
 import com.agorapulse.worker.JobManager;
+import com.agorapulse.worker.WorkerConfiguration;
 import com.agorapulse.worker.report.JobReport;
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.context.ApplicationContextBuilder;
+import io.micronaut.context.env.Environment;
 import io.micronaut.core.annotation.NonNull;
 import io.micronaut.core.cli.CommandLine;
 import io.micronaut.function.executor.FunctionInitializer;
@@ -33,6 +35,7 @@ import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -41,8 +44,23 @@ public class JobRunner extends FunctionInitializer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JobRunner.class);
 
+    private static final String JOB_ENVIRONMENT = "job";
+
     public static void main(String[] args) throws IOException {
-        try (JobRunner runner = new JobRunner()) {
+        List<String> jobNames = CommandLine.build().parse(args).getRemainingArgs();
+
+        ApplicationContextBuilder builder = ApplicationContext.builder(Environment.FUNCTION)
+            .environments(JOB_ENVIRONMENT)
+            .packages(JobRunner.class.getPackage().getName());
+
+        if (!jobNames.isEmpty()) {
+            // pass the requested jobs before the context starts so the other jobs' consumers are never
+            // scheduled: once an infinite-poll consumer starts, disabling it later cannot interrupt its poll loop
+            builder.properties(Collections.singletonMap(WorkerConfiguration.FORCED_JOB_NAMES_PROPERTY, jobNames));
+        }
+
+        try (ApplicationContext context = builder.build().start();
+             JobRunner runner = new JobRunner(context)) {
             runner.run(args);
         }
     }
@@ -75,7 +93,7 @@ public class JobRunner extends FunctionInitializer {
 
     @Override
     protected @NonNull ApplicationContextBuilder newApplicationContextBuilder() {
-        return super.newApplicationContextBuilder().environments("job");
+        return super.newApplicationContextBuilder().environments(JOB_ENVIRONMENT);
     }
 
     private boolean run(List<String> jobNames) {
