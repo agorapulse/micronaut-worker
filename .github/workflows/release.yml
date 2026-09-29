@@ -8,17 +8,25 @@ jobs:
     name: Release
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
         with:
           java-version: 25
           distribution: zulu
       - name: Semantic Version
         id: version
-        uses: ncipollo/semantic-version-action@v1
+        # Replaces ncipollo/semantic-version-action (no Node 24 release); only the `tag` output is consumed.
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$GITHUB_REF" != refs/tags/* ]]; then
+            echo "::error::No tag found in ref or input!"
+            exit 1
+          fi
+          echo "tag=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
       - name: Decode PGP
         id: write_file
-        uses: timheuer/base64-to-file@v1
+        uses: timheuer/base64-to-file@v2
         with:
           fileName: 'secret.pgp'
           encodedString: ${{ secrets.SIGNING_SECRET_KEY_BASE64 }}
@@ -52,12 +60,20 @@ jobs:
           - agorapulse/agorapulse-bom
           - agorapulse/agorapulse-oss
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Semantic Version
         id: version
-        uses: ncipollo/semantic-version-action@v1
+        # Replaces ncipollo/semantic-version-action (no Node 24 release); only the `tag` output is consumed.
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$GITHUB_REF" != refs/tags/* ]]; then
+            echo "::error::No tag found in ref or input!"
+            exit 1
+          fi
+          echo "tag=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
       - name: Dispatch to ${{ matrix.repository }}
-        uses: peter-evans/repository-dispatch@v1
+        uses: peter-evans/repository-dispatch@v4
         with:
           token: ${{ secrets.AGORAPULSE_BOT_PERSONAL_TOKEN }}
           repository: ${{ matrix.repository }}
